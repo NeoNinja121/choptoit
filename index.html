@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v117';
+const VERSION = 'v120';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -287,6 +287,16 @@ function create() {
           const sign = Math.random() < 0.5 ? -1 : 1;
           obj.setRotation(sign * Phaser.Math.DegToRad(90));
         }
+      }
+      // After hitting the ground start a timer to fully freeze the body
+      if (!obj.freezeTimer) {
+        obj.freezeTimer = scene.time.delayedCall(1000, () => {
+          body.setVelocity(0, 0);
+          body.setAngularVelocity(0);
+          body.setAllowGravity(false);
+          body.setImmovable(true);
+          body.moves = false;
+        });
       }
     }
   });
