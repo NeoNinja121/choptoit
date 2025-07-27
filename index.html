@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v43';
+const VERSION = 'v45';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -64,6 +64,11 @@ let prisoner;
 let prisonerBody;
 let prisonerHead;
 let prisonerFace;
+let aimArrow;
+let arrowTween;
+let awaitingAngle = false;
+let pendingBlood = 0;
+let pendingSpawnSide = null;
 let prisonerClass;
 let swingSpeed = 5;
 
@@ -140,6 +145,10 @@ function create() {
   const headSquare = scene.add.rectangle(0, 0, 30, 30, 0xdddddd);
   prisonerFace = scene.add.text(0, 0, ':(', { font: '16px monospace', fill: '#000' }).setOrigin(0.5);
   prisonerHead.add([headSquare, prisonerFace]);
+  aimArrow = scene.add.triangle(0, -25, 0, -20, -6, 0, 6, 0, 0xffff00)
+    .setOrigin(0.5, 1)
+    .setVisible(false);
+  prisonerHead.add(aimArrow);
   prisoner.add([prisonerBody, prisonerHead]);
 
   // Gold text
@@ -264,7 +273,11 @@ function create() {
     if (swingActive && inputEnabled) endSwing(scene);
   });
   scene.input.on('pointerdown', () => {
-    if (swingActive && inputEnabled) endSwing(scene);
+    if (awaitingAngle) {
+      chooseAngle(scene);
+    } else if (swingActive && inputEnabled) {
+      endSwing(scene);
+    }
   });
 }
 
@@ -325,13 +338,19 @@ function savePrisoner(scene) {
   });
 }
 
-function beheadPrisoner(scene, bloodAmount) {
+function beheadPrisoner(scene, bloodAmount, angleDeg) {
   if (headResetEvent) {
     headResetEvent.remove(false);
     headResetEvent = null;
   }
-  const angle = Phaser.Math.Between(-110, -70);
+  const angle = angleDeg !== undefined ? angleDeg : Phaser.Math.Between(-110, -70);
   const rad = Phaser.Math.DegToRad(angle);
+  const neckX = prisoner.x;
+  const neckY = prisoner.y - 10;
+  bloodEmitter.explode(bloodAmount, neckX, neckY);
+  const headX0 = prisoner.x + prisonerHead.x;
+  const headY0 = prisoner.y + prisonerHead.y;
+  headEmitter.explode(bloodAmount / 2, headX0, headY0);
 
   // Detach head from prisoner container so it can fly freely
   if (prisonerHead.parentContainer === prisoner) {
@@ -367,6 +386,33 @@ function beheadPrisoner(scene, bloodAmount) {
   scene.time.delayedCall(600, () => {
     headEmitter.on = false;
     headEmitter.stopFollow();
+  });
+}
+
+function showAimArrow(scene, bloodAmount, nextSide) {
+  pendingBlood = bloodAmount;
+  pendingSpawnSide = nextSide;
+  aimArrow.setAngle(-90);
+  aimArrow.setVisible(true);
+  arrowTween = scene.tweens.add({
+    targets: aimArrow,
+    angle: { from: -180, to: 0 },
+    duration: 800,
+    yoyo: true,
+    repeat: -1
+  });
+  awaitingAngle = true;
+}
+
+function chooseAngle(scene) {
+  if (!awaitingAngle) return;
+  awaitingAngle = false;
+  if (arrowTween) arrowTween.stop();
+  aimArrow.setVisible(false);
+  const deg = aimArrow.angle;
+  beheadPrisoner(scene, pendingBlood, deg);
+  scene.time.delayedCall(500, () => {
+    spawnPrisoner(scene, pendingSpawnSide === 'right');
   });
 }
 
@@ -499,9 +545,9 @@ function endSwing(scene) {
   killStreak++;
   killText.setText(`Kills: ${killCount}`);
   killStreakText.setText(`Streak: ${killStreak}`);
-  beheadPrisoner(scene, bloodAmount);
-  spawnSide = 'left';
-  spawnDelay = 500;
+  showAimArrow(scene, bloodAmount, 'left');
+  spawnSide = null;
+  spawnDelay = 0;
 }
   missText.setText(`Misses: ${missStreak}`);
 
@@ -513,12 +559,14 @@ function endSwing(scene) {
   if (!missed) {
     bloodPool.displayWidth = Math.min(bloodPool.displayWidth + 10, 300);
   }
-  const neckX = prisoner.x;
-  const neckY = prisoner.y - 10;
-  bloodEmitter.explode(bloodAmount, neckX, neckY);
-  const headX = prisoner.x + prisonerHead.x;
-  const headY = prisoner.y + prisonerHead.y;
-  headEmitter.explode(bloodAmount / 2, headX, headY);
+  if (missed) {
+    const neckX = prisoner.x;
+    const neckY = prisoner.y - 10;
+    bloodEmitter.explode(bloodAmount, neckX, neckY);
+    const headX = prisoner.x + prisonerHead.x;
+    const headY = prisoner.y + prisonerHead.y;
+    headEmitter.explode(bloodAmount / 2, headX, headY);
+  }
 
   // Show popup
   scene.popupText.setText(message);
@@ -531,6 +579,9 @@ function endSwing(scene) {
     yellowZone.setVisible(false);
     greenZone.setVisible(false);
     scene.time.delayedCall(spawnDelay, () => {
+      if (awaitingAngle) {
+        return;
+      }
       if (spawnSide) {
         spawnPrisoner(scene, spawnSide === 'right');
       } else {
