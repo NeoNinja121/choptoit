@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v79';
+const VERSION = 'v81';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -477,9 +477,10 @@ function chooseAngle(scene) {
   if (arrowTween) arrowTween.stop();
   selectedAngle = aimArrow.angle;
   // start power selection tween
+  // grow the arrow length only, keeping width constant
+  aimArrow.scaleX = 1;
   arrowPowerTween = scene.tweens.add({
     targets: aimArrow,
-    scaleX: { from: 0.5, to: 2 },
     scaleY: { from: 0.5, to: 2 },
     duration: 800,
     yoyo: true,
