@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v71';
+const VERSION = 'v73';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -143,7 +143,9 @@ function create() {
 
   // Condemned figure with separate head and body
   prisoner = scene.add.container(400, 460);
-  prisonerBody = scene.add.rectangle(0, 20, 30, 60, 0xaaaaaa).setOrigin(0.5, 0);
+  // Position the body so its top aligns with the neck when using a top origin
+  prisonerBody = scene.add.rectangle(0, -10, 30, 60, 0xaaaaaa)
+    .setOrigin(0.5, 0);
   prisonerHead = scene.add.container(0, -20);
   const headSquare = scene.add.rectangle(0, 0, 30, 30, 0xdddddd);
   prisonerFace = scene.add.text(0, 0, ':(', { font: '16px monospace', fill: '#000' }).setOrigin(0.5);
@@ -527,7 +529,8 @@ function spawnPrisoner(scene, fromRight) {
   prisonerHead.setPosition(0, -20);
   prisonerHead.setRotation(0);
   prisonerBody.setAngle(0);
-  prisonerBody.y = 20;
+  // Keep body aligned under the head when resetting for a new prisoner
+  prisonerBody.y = -10;
   prisoner.setAngle(0);
 
   const startX = fromRight ? 850 : -50;
