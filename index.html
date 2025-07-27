@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v89';
+const VERSION = 'v92';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -77,6 +77,8 @@ let pendingBlood = 0;
 let pendingSpawnSide = null;
 let prisonerClass;
 let swingSpeed = 5;
+let executioner;
+let executionerIntro = true;
 
 const baseSizes = { red: 60, yellow: 40, green: 20 };
 let zoneMods = { red: 0, yellow: 0, green: 0 };
@@ -143,8 +145,16 @@ function create() {
   // Execution platform (placeholder)
   scene.add.rectangle(400, 500, 300, 20, 0x553311);
 
+  // Executioner, starts off-screen and walks in on first spawn
+  executioner = scene.add.container(400, 460).setDepth(-1);
+  const execBody = scene.add.rectangle(0, 80, 60, 120, 0x111111)
+    .setOrigin(0.5, 1);
+  const execHead = scene.add.rectangle(0, -20, 50, 50, 0x222222);
+  executioner.add([execBody, execHead]);
+  executioner.setVisible(false);
+
   // Condemned figure with separate head and body
-  prisoner = scene.add.container(400, 460);
+  prisoner = scene.add.container(400, 460).setDepth(1);
   // Pivot the body around the feet so it can topple realistically
   // Position it so the top still aligns with the neck
   prisonerBody = scene.add.rectangle(0, 50, 30, 60, 0xaaaaaa)
@@ -532,6 +542,17 @@ function spawnPrisoner(scene, fromRight) {
   }
   bloodEmitter.stop();
   bloodEmitter.stopFollow();
+  if (executionerIntro) {
+    executionerIntro = false;
+    executioner.setPosition(850, 460);
+    executioner.setVisible(true);
+    scene.tweens.add({
+      targets: executioner,
+      x: 400,
+      duration: 1500,
+      ease: 'Linear'
+    });
+  }
   prisonerClass = pickClass();
   prisonerBody.fillColor = prisonerClass.color;
   swingSpeed = prisonerClass.speed;
