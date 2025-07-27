@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v85';
+const VERSION = 'v87';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -677,6 +677,7 @@ function endSwing(scene) {
     missStreak = 0;
     savePrisoner(scene);
     spawnSide = 'left';
+    pendingSpawnSide = 'left';
     spawnDelay = 1000;
   }
   message = `Missed!\n${strikeMsg}`;
