@@ -1,0 +1,3 @@
+#!/bin/sh
+# Pre-commit hook to update version automatically
+./scripts/update_version.sh

@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Idle Executioner</title>
+  <title>Chop To It!</title>
   <style>
     body {
       margin: 0;
@@ -45,7 +45,7 @@ let bloodEmitter;
 let dripEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.0';
+const VERSION = 'v28';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -127,7 +127,8 @@ function create() {
   // Start screen
   startContainer = scene.add.container(0, 0).setDepth(10);
   const startBg = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.7).setDepth(10);
-  const startText = scene.add.text(300, 280, '[ Tap or Click To Start ]', { font: '32px monospace', fill: '#ffffff' })
+  const startText = scene.add.text(400, 300, '[ Tap or Click To Start ]', { font: '32px monospace', fill: '#ffffff' })
+    .setOrigin(0.5)
     .setInteractive()
     .setDepth(10)
     .on('pointerdown', () => {
@@ -155,7 +156,7 @@ function create() {
   g.fillCircle(2, 2, 2);
   g.generateTexture('blood', 4, 4);
   g.destroy();
-  const particles = scene.add.particles('blood');
+  const particles = scene.add.particles('blood').setDepth(1);
   bloodEmitter = particles.createEmitter({
     speed: { min: 150, max: 250 },
     angle: { min: 260, max: 280 }, // shoot upward like a fountain
@@ -168,7 +169,7 @@ function create() {
   dripEmitter = particles.createEmitter({
     speed: { min: 20, max: 40 },
     angle: 90,
-    gravityY: 100,
+    gravityY: 300,
     lifespan: 1000,
     scale: { start: 0.5, end: 0 },
     quantity: 0,
@@ -181,7 +182,7 @@ function create() {
     callback: () => {
       const half = bloodPool.displayWidth / 2;
       const x = Phaser.Math.Between(bloodPool.x - half, bloodPool.x + half);
-      dripEmitter.emitParticleAt(x, bloodPool.y + bloodPool.displayHeight);
+      dripEmitter.emitParticleAt(x, bloodPool.y + bloodPool.displayHeight, 1);
     }
   });
 
@@ -219,7 +220,9 @@ function create() {
   shopContainer.add(closeBtn);
 
   // Text popup
-  scene.popupText = scene.add.text(300, 250, '', { font: '24px serif', fill: '#ffffff' }).setVisible(false);
+  scene.popupText = scene.add.text(400, 250, '', { font: '24px serif', fill: '#ffffff' })
+    .setOrigin(0.5)
+    .setVisible(false);
 
   // Input key for timing
   scene.input.keyboard.on('keydown-SPACE', () => {
