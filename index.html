@@ -113,10 +113,13 @@ function startSwingMeter(scene) {
 function endSwing(scene) {
   swingActive = false;
   cursor.setVisible(false);
-  swingBar.setVisible(false);
-  redZone.setVisible(false);
-  yellowZone.setVisible(false);
-  greenZone.setVisible(false);
+  // Leave the meter visible briefly so players can see the result
+  scene.time.delayedCall(1000, () => {
+    swingBar.setVisible(false);
+    redZone.setVisible(false);
+    yellowZone.setVisible(false);
+    greenZone.setVisible(false);
+  });
 
   const accuracy = Math.abs(cursor.x - redZone.x);
   let payout = 0;
