@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v61';
+const VERSION = 'v63';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -184,7 +184,7 @@ function create() {
   cursor = scene.add.rectangle(250, meterY, 10, 20, 0xffffff).setVisible(false);
 
   // Blood pool
-  bloodPool = scene.add.rectangle(400, 500, 60, 10, 0x770000)
+  bloodPool = scene.add.rectangle(400, 500, 40, 10, 0x770000)
     .setOrigin(0.5, 0)
     .setVisible(false);
 
@@ -352,6 +352,10 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   const headX0 = prisoner.x + prisonerHead.x;
   const headY0 = prisoner.y + prisonerHead.y;
   headEmitter.explode(bloodAmount / 2, headX0, headY0);
+
+  // Reveal and grow the blood pool once the head is off
+  bloodPool.setVisible(true);
+  bloodPool.displayWidth = Math.min(bloodPool.displayWidth + 5, 300);
 
   // Detach head from prisoner container so it can fly freely
   if (prisonerHead.parentContainer === prisoner) {
@@ -585,10 +589,6 @@ function endSwing(scene) {
   goldText.setText(`Gold: ${gold}`);
 
   // Increase and show blood bursts
-  if (!missed) {
-    bloodPool.setVisible(true);
-    bloodPool.displayWidth = Math.min(bloodPool.displayWidth + 10, 300);
-  }
   if (missed) {
     const neckX = prisoner.x;
     const neckY = prisoner.y - 10;
