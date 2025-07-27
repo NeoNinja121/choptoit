@@ -23,6 +23,7 @@ const config = {
   width: 800,
   height: 600,
   backgroundColor: '#222',
+  physics: { default: 'arcade', arcade: { gravity: { y: 400 } } },
   scene: {
     preload,
     create,
@@ -46,11 +47,13 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v29';
+const VERSION = 'v31';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
 let killText;
+let killStreak = 0;
+let killStreakText;
 let shopButton;
 let shopContainer;
 let shopOverlay;
@@ -60,9 +63,19 @@ let prisoner;
 let prisonerBody;
 let prisonerHead;
 let prisonerFace;
+let prisonerClass;
+let swingSpeed = 5;
 
 const baseSizes = { red: 60, yellow: 40, green: 20 };
 let zoneMods = { red: 0, yellow: 0, green: 0 };
+
+const classes = [
+  { name: 'Peasant', color: 0x777777, speed: 5, weight: 50 },
+  { name: 'Merchant', color: 0x996633, speed: 6, weight: 25 },
+  { name: 'Knight', color: 0x0033cc, speed: 7, weight: 15 },
+  { name: 'Clergy', color: 0x800080, speed: 8, weight: 7 },
+  { name: 'Lord', color: 0xffff00, speed: 9, weight: 3 }
+];
 
 const weapons = [
   {
@@ -95,6 +108,16 @@ const weapons = [
   }
 ];
 
+function pickClass() {
+  const total = classes.reduce((s, c) => s + c.weight, 0);
+  let r = Phaser.Math.Between(1, total);
+  for (const c of classes) {
+    r -= c.weight;
+    if (r <= 0) return c;
+  }
+  return classes[0];
+}
+
 function preload() {
   // Placeholder assets using graphics
 }
@@ -122,6 +145,7 @@ function create() {
   goldText = scene.add.text(16, 16, 'Gold: 0', { font: '20px monospace', fill: '#ffff88' });
   missText = scene.add.text(16, 40, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
   killText = scene.add.text(16, 64, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
+  killStreakText = scene.add.text(16, 88, 'Streak: 0', { font: '20px monospace', fill: '#ffffff' });
   versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#888' })
     .setOrigin(1, 1);
 
@@ -301,24 +325,25 @@ function savePrisoner(scene) {
 }
 
 function beheadPrisoner(scene, bloodAmount) {
-  const angle = Phaser.Math.Between(-120, -60);
+  const angle = Phaser.Math.Between(-110, -70);
   const rad = Phaser.Math.DegToRad(angle);
-  const distance = 1000; // send the head flying off screen
-  scene.tweens.add({
-    targets: prisonerHead,
-    x: prisonerHead.x + Math.cos(rad) * distance,
-    y: prisonerHead.y + Math.sin(rad) * distance,
-    rotation: Phaser.Math.DegToRad(Phaser.Math.Between(-720, 720)),
-    duration: 2000,
-    ease: 'Power2',
-    onComplete: () => {
-      prisonerHead.setPosition(0, -20);
-      prisonerHead.setRotation(0);
-    }
+  if (!prisonerHead.body) {
+    scene.physics.world.enable(prisonerHead);
+  }
+  const body = prisonerHead.body;
+  body.setAllowGravity(true);
+  body.setVelocity(Math.cos(rad) * 250, Math.sin(rad) * 250);
+  body.setAngularVelocity(Phaser.Math.Between(-200, 200));
+  scene.time.delayedCall(2500, () => {
+    body.setVelocity(0, 0);
+    body.setAngularVelocity(0);
+    body.setAllowGravity(false);
+    prisonerHead.setPosition(0, -20);
+    prisonerHead.setRotation(0);
   });
 
   // Continuous spurting from the flying head
-  headEmitter.startFollow(prisonerHead);
+  headEmitter.startFollow(prisonerHead, 0, 15);
   headEmitter.on = true;
   headEmitter.setQuantity(Math.max(5, bloodAmount / 30));
   scene.time.delayedCall(600, () => {
@@ -344,6 +369,10 @@ function startSwingMeter(scene) {
   scene.popupText.setVisible(false);
 
   updateZones();
+
+  prisonerClass = pickClass();
+  prisonerBody.fillColor = prisonerClass.color;
+  swingSpeed = prisonerClass.speed;
 
   // Reset positions
   cursor.x = 250;
@@ -401,10 +430,14 @@ function endSwing(scene) {
       savePrisoner(scene);
     }
     message = `Missed!\n${strikeMsg}`;
+    killStreak = 0;
+    killStreakText.setText(`Streak: ${killStreak}`);
   } else {
     missStreak = 0;
     killCount++;
+    killStreak++;
     killText.setText(`Kills: ${killCount}`);
+    killStreakText.setText(`Streak: ${killStreak}`);
     beheadPrisoner(scene, bloodAmount);
   }
   missText.setText(`Misses: ${missStreak}`);
@@ -431,7 +464,7 @@ function update(time, delta) {
 
   // Move cursor
   if (swingActive) {
-    cursor.x += swingDirection * 5;
+    cursor.x += swingDirection * swingSpeed;
     if (cursor.x > 550 || cursor.x < 250) {
       swingDirection *= -1;
     }
