@@ -116,11 +116,12 @@ function create() {
   startContainer.add([startBg, startText]);
 
   // Swing meter base
-  swingBar = scene.add.rectangle(400, 350, 300, 20, 0x333333).setVisible(false);
-  redZone = scene.add.rectangle(400, 350, baseSizes.red, 20, 0xff0000).setVisible(false);
-  yellowZone = scene.add.rectangle(400, 350, baseSizes.yellow, 20, 0xffff00).setVisible(false);
-  greenZone = scene.add.rectangle(400, 350, baseSizes.green, 20, 0x00ff00).setVisible(false);
-  cursor = scene.add.rectangle(250, 350, 10, 20, 0xffffff).setVisible(false);
+  const meterY = 550;
+  swingBar = scene.add.rectangle(400, meterY, 300, 20, 0x333333).setVisible(false);
+  redZone = scene.add.rectangle(400, meterY, baseSizes.red, 20, 0xff0000).setVisible(false);
+  yellowZone = scene.add.rectangle(400, meterY, baseSizes.yellow, 20, 0xffff00).setVisible(false);
+  greenZone = scene.add.rectangle(400, meterY, baseSizes.green, 20, 0x00ff00).setVisible(false);
+  cursor = scene.add.rectangle(250, meterY, 10, 20, 0xffffff).setVisible(false);
 
   // Blood pool
   bloodPool = scene.add.rectangle(400, 500, 60, 10, 0x770000)
@@ -135,8 +136,8 @@ function create() {
   g.destroy();
   const particles = scene.add.particles('blood');
   bloodEmitter = particles.createEmitter({
-    speed: { min: 150, max: 300 },
-    angle: { min: -110, max: -70 },
+    speed: { min: 50, max: 100 },
+    angle: { min: 80, max: 100 },
     gravityY: 400,
     lifespan: 800,
     scale: { start: 1, end: 0 },
@@ -193,6 +194,11 @@ function toggleShop(scene) {
   const visible = !shopContainer.visible;
   shopOverlay.setVisible(visible);
   shopContainer.setVisible(visible);
+  if (visible) {
+    scene.scene.pause();
+  } else {
+    scene.scene.resume();
+  }
 }
 
 function buyWeapon(scene, index) {
