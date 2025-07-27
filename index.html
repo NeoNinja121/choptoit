@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v59';
+const VERSION = 'v61';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -186,7 +186,7 @@ function create() {
   // Blood pool
   bloodPool = scene.add.rectangle(400, 500, 60, 10, 0x770000)
     .setOrigin(0.5, 0)
-    .setVisible(true);
+    .setVisible(false);
 
   // Blood particle emitter
   const g = scene.add.graphics();
@@ -335,11 +335,7 @@ function savePrisoner(scene) {
     x: 850,
     y: 460,
     duration: 2000,
-    ease: 'Linear',
-    onComplete: () => {
-      prisoner.setPosition(400, 460);
-      prisonerFace.setText(':(');
-    }
+    ease: 'Linear'
   });
 }
 
@@ -452,6 +448,7 @@ function spawnPrisoner(scene, fromRight) {
   prisonerClass = pickClass();
   prisonerBody.fillColor = prisonerClass.color;
   swingSpeed = prisonerClass.speed;
+  prisonerFace.setText(':(');
 
   // Ensure the head is reattached to the prisoner container
   if (prisonerHead.parentContainer !== prisoner) {
@@ -588,8 +585,8 @@ function endSwing(scene) {
   goldText.setText(`Gold: ${gold}`);
 
   // Increase and show blood bursts
-  bloodPool.setVisible(true);
   if (!missed) {
+    bloodPool.setVisible(true);
     bloodPool.displayWidth = Math.min(bloodPool.displayWidth + 10, 300);
   }
   if (missed) {
