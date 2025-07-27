@@ -282,6 +282,11 @@ function create() {
         body.setVelocity(0, 0);
         body.setAngularVelocity(0);
         body.setAllowGravity(false);
+        // Lay the corpse on its side most of the time
+        if (Math.random() < 0.9) {
+          const sign = Math.random() < 0.5 ? -1 : 1;
+          obj.setRotation(sign * Phaser.Math.DegToRad(90));
+        }
       }
     }
   });
@@ -430,7 +435,8 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   const corpseSpeed = 80 * power;
   // Throw the body based on the chosen slash angle and power
   corpse.body.setVelocity(Math.sin(rad) * corpseSpeed, Math.cos(rad) * corpseSpeed);
-  corpse.body.setAngularVelocity(Phaser.Math.Between(-100, 100));
+  // Spin faster so bodies topple onto their side
+  corpse.body.setAngularVelocity(Phaser.Math.Between(-200, 200));
 
   // Pumping neck spurts while the body tumbles
   bloodEmitter.startFollow(corpse, 0, -50);
