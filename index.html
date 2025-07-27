@@ -36,7 +36,9 @@ let gold = 0;
 let goldText;
 let swingActive = false;
 let cursor;
-let targetZone;
+let redZone;
+let yellowZone;
+let greenZone;
 let swingBar;
 let splatter;
 let executeButton;
@@ -71,7 +73,9 @@ function create() {
 
   // Swing meter base
   swingBar = scene.add.rectangle(400, 350, 300, 20, 0x333333).setVisible(false);
-  targetZone = scene.add.rectangle(400, 350, 60, 20, 0x660000).setVisible(false);
+  redZone = scene.add.rectangle(400, 350, 60, 20, 0xff0000).setVisible(false);
+  yellowZone = scene.add.rectangle(400, 350, 40, 20, 0xffff00).setVisible(false);
+  greenZone = scene.add.rectangle(400, 350, 20, 20, 0x00ff00).setVisible(false);
   cursor = scene.add.rectangle(250, 350, 10, 20, 0xffffff).setVisible(false);
 
   // Splatter placeholder
@@ -92,33 +96,43 @@ function startSwingMeter(scene) {
   swingActive = true;
   cursor.setVisible(true);
   swingBar.setVisible(true);
-  targetZone.setVisible(true);
+  redZone.setVisible(true);
+  yellowZone.setVisible(true);
+  greenZone.setVisible(true);
   splatter.setVisible(false);
   scene.popupText.setVisible(false);
 
   // Reset positions
   cursor.x = 250;
-  targetZone.x = Phaser.Math.Between(300, 500);
+  const zoneX = Phaser.Math.Between(300, 500);
+  redZone.x = zoneX;
+  yellowZone.x = zoneX;
+  greenZone.x = zoneX;
 }
 
 function endSwing(scene) {
   swingActive = false;
   cursor.setVisible(false);
   swingBar.setVisible(false);
-  targetZone.setVisible(false);
+  redZone.setVisible(false);
+  yellowZone.setVisible(false);
+  greenZone.setVisible(false);
 
-  const accuracy = Math.abs(cursor.x - targetZone.x);
+  const accuracy = Math.abs(cursor.x - redZone.x);
   let payout = 0;
   let message = '';
 
   if (accuracy < 10) {
     payout = 10;
     message = 'One Cut!';
-  } else if (accuracy < 40) {
+  } else if (accuracy < 20) {
     payout = 5;
+    message = 'Close!';
+  } else if (accuracy < 30) {
+    payout = 2;
     message = 'Messy...';
   } else {
-    payout = 2;
+    payout = 1;
     message = 'Botched!';
   }
 
