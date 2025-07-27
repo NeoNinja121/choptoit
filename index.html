@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v76';
+const VERSION = 'v77';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -163,8 +163,9 @@ function create() {
   missText = scene.add.text(16, 40, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
   killText = scene.add.text(16, 64, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
   killStreakText = scene.add.text(16, 88, 'Streak: 0', { font: '20px monospace', fill: '#ffffff' });
-  versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#888' })
-    .setOrigin(1, 1);
+  versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#ffffff' })
+    .setOrigin(1, 1)
+    .setDepth(11);
 
   // Start screen
   startContainer = scene.add.container(0, 0).setDepth(10);
