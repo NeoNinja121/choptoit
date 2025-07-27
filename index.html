@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v31';
+const VERSION = 'v34';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -314,9 +314,9 @@ function savePrisoner(scene) {
   scene.tweens.add({
     targets: prisoner,
     x: 850,
-    y: 420,
-    duration: 1000,
-    ease: 'Bounce.easeOut',
+    y: 460,
+    duration: 2000,
+    ease: 'Linear',
     onComplete: () => {
       prisoner.setPosition(400, 460);
       prisonerFace.setText(':(');
@@ -380,6 +380,24 @@ function startSwingMeter(scene) {
   redZone.x = zoneX;
   yellowZone.x = zoneX;
   greenZone.x = zoneX;
+
+  // Ensure head is attached and physics disabled
+  if (prisonerHead.body) {
+    prisonerHead.body.stop();
+    prisonerHead.body.setAllowGravity(false);
+    scene.physics.world.disable(prisonerHead);
+  }
+  prisonerHead.setPosition(0, -20);
+  prisonerHead.setRotation(0);
+
+  // Start prisoner off-screen and walk on from the left
+  prisoner.setPosition(-50, 460);
+  scene.tweens.add({
+    targets: prisoner,
+    x: 400,
+    duration: 1500,
+    ease: 'Linear'
+  });
 }
 
 function endSwing(scene) {
