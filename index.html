@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v70';
+const VERSION = 'v71';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -60,6 +60,7 @@ let shopOverlay;
 let startContainer;
 let hideMeterEvent;
 let headResetEvent;
+let neckPumpEvent;
 let prisoner;
 let prisonerBody;
 let prisonerHead;
@@ -142,7 +143,7 @@ function create() {
 
   // Condemned figure with separate head and body
   prisoner = scene.add.container(400, 460);
-  prisonerBody = scene.add.rectangle(0, 20, 30, 60, 0xaaaaaa);
+  prisonerBody = scene.add.rectangle(0, 20, 30, 60, 0xaaaaaa).setOrigin(0.5, 0);
   prisonerHead = scene.add.container(0, -20);
   const headSquare = scene.add.rectangle(0, 0, 30, 30, 0xdddddd);
   prisonerFace = scene.add.text(0, 0, ':(', { font: '16px monospace', fill: '#000' }).setOrigin(0.5);
@@ -354,6 +355,37 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   const headY0 = prisoner.y + prisonerHead.y;
   headEmitter.explode(bloodAmount / 2, headX0, headY0);
 
+  // Pumping neck spurts while the head flies
+  bloodEmitter.startFollow(prisoner, 0, -10);
+  bloodEmitter.setFrequency(60);
+  bloodEmitter.setQuantity(Math.max(5, bloodAmount / 25));
+  bloodEmitter.start();
+  let pumpOn = true;
+  if (neckPumpEvent) {
+    neckPumpEvent.remove(false);
+    neckPumpEvent = null;
+  }
+  neckPumpEvent = scene.time.addEvent({
+    delay: 200,
+    repeat: 6,
+    callback: () => {
+      pumpOn = !pumpOn;
+      if (pumpOn) {
+        bloodEmitter.start();
+      } else {
+        bloodEmitter.stop();
+      }
+    }
+  });
+  scene.time.delayedCall(1600, () => {
+    bloodEmitter.stop();
+    bloodEmitter.stopFollow();
+    if (neckPumpEvent) {
+      neckPumpEvent.remove(false);
+      neckPumpEvent = null;
+    }
+  });
+
   // Reveal and grow the blood pool once the head is off
   bloodPool.setVisible(true);
   bloodPool.displayWidth = Math.min(bloodPool.displayWidth + 5, 300);
@@ -366,6 +398,19 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
     prisonerHead.setPosition(worldX, worldY);
     scene.add.existing(prisonerHead);
   }
+  scene.tweens.add({
+    targets: prisonerBody,
+    angle: 90,
+    duration: 400,
+    ease: 'Cubic.easeIn'
+  });
+  scene.tweens.add({
+    targets: prisoner,
+    y: 660,
+    duration: 800,
+    ease: 'Cubic.easeIn',
+    delay: 300
+  });
 
   // Always re-enable physics on the head so it can fly each time
   scene.physics.world.enable(prisonerHead);
@@ -385,6 +430,12 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
     prisonerHead.setPosition(0, -20);
     headEmitter.stop();
     headEmitter.stopFollow();
+    bloodEmitter.stop();
+    bloodEmitter.stopFollow();
+    if (neckPumpEvent) {
+      neckPumpEvent.remove(false);
+      neckPumpEvent = null;
+    }
     headResetEvent = null;
   });
 
@@ -451,6 +502,12 @@ function spawnPrisoner(scene, fromRight) {
     headEmitter.stopFollow();
     headResetEvent = null;
   }
+  if (neckPumpEvent) {
+    neckPumpEvent.remove(false);
+    neckPumpEvent = null;
+  }
+  bloodEmitter.stop();
+  bloodEmitter.stopFollow();
   prisonerClass = pickClass();
   prisonerBody.fillColor = prisonerClass.color;
   swingSpeed = prisonerClass.speed;
@@ -469,6 +526,9 @@ function spawnPrisoner(scene, fromRight) {
   }
   prisonerHead.setPosition(0, -20);
   prisonerHead.setRotation(0);
+  prisonerBody.setAngle(0);
+  prisonerBody.y = 20;
+  prisoner.setAngle(0);
 
   const startX = fromRight ? 850 : -50;
   prisoner.setPosition(startX, 460);
