@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v105';
+const VERSION = 'v108';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -70,6 +70,7 @@ let rightEscort;
 let aimArrow;
 let arrowTween;
 let arrowPowerTween;
+let slashTween;
 let awaitingAngle = false;
 let awaitingPower = false;
 let selectedAngle = 0;
@@ -530,10 +531,27 @@ function choosePower(scene) {
   if (arrowPowerTween) arrowPowerTween.stop();
   const power = aimArrow.scaleY;
   aimArrow.setVisible(false);
-  beheadPrisoner(scene, pendingBlood, selectedAngle, power);
-  // give the head time to fly off screen before the next prisoner arrives
-  scene.time.delayedCall(2600, () => {
-    spawnPrisoner(scene, pendingSpawnSide === 'right');
+  slashExecutioner(scene, selectedAngle, () => {
+    beheadPrisoner(scene, pendingBlood, selectedAngle, power);
+    // give the head time to fly off screen before the next prisoner arrives
+    scene.time.delayedCall(2600, () => {
+      spawnPrisoner(scene, pendingSpawnSide === 'right');
+    });
+  });
+}
+
+function slashExecutioner(scene, angle, onComplete) {
+  if (slashTween) slashTween.stop();
+  slashTween = scene.tweens.add({
+    targets: executioner,
+    angle: { from: 0, to: angle },
+    duration: 150,
+    yoyo: true,
+    ease: 'Cubic.easeOut',
+    onComplete: () => {
+      slashTween = null;
+      if (onComplete) onComplete();
+    }
   });
 }
 function introExecutioner(scene, onComplete) {
