@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v109';
+const VERSION = 'v111';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -80,6 +80,9 @@ let prisonerClass;
 let swingSpeed = 5;
 let executioner;
 let executionerIntro = true;
+
+// Group to hold fallen bodies that pile up at the bottom
+let bodyGroup;
 
 const baseSizes = { red: 60, yellow: 40, green: 20 };
 let zoneMods = { red: 0, yellow: 0, green: 0 };
@@ -264,6 +267,11 @@ function create() {
     on: false
   });
 
+  // Physics group to accumulate fallen bodies
+  bodyGroup = scene.physics.add.group();
+  // Enable collisions between bodies so they pile up
+  scene.physics.add.collider(bodyGroup, bodyGroup);
+
   scene.time.addEvent({
     delay: 400,
     loop: true,
@@ -394,8 +402,21 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   const headY0 = prisoner.y + prisonerHead.y;
   headEmitter.explode(bloodAmount / 2, headX0, headY0);
 
-  // Pumping neck spurts while the head flies
-  bloodEmitter.startFollow(prisoner, 0, -10);
+  // Create a physics body to represent the headless corpse
+  const corpse = scene.add.rectangle(prisoner.x, prisoner.y + 50, 30, 60, prisonerClass.color)
+    .setOrigin(0.5, 1)
+    .setDepth(0.5);
+  bodyGroup.add(corpse);
+  corpse.body.setBounce(0.1);
+  corpse.body.setCollideWorldBounds(true);
+  corpse.body.setDrag(30, 0);
+  const corpseSpeed = 120 * power;
+  // Throw the body based on the chosen slash angle and power
+  corpse.body.setVelocity(Math.sin(rad) * corpseSpeed, Math.cos(rad) * corpseSpeed);
+  corpse.body.setAngularVelocity(Phaser.Math.Between(-100, 100));
+
+  // Pumping neck spurts while the body tumbles
+  bloodEmitter.startFollow(corpse, 0, -50);
   bloodEmitter.setFrequency(60);
   bloodEmitter.setQuantity(Math.max(5, bloodAmount / 25));
   bloodEmitter.start();
@@ -438,20 +459,8 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
     scene.add.existing(prisonerHead);
     prisonerHead.setDepth(1);
   }
-  const bodyFallAngle = angle >= 0 ? 90 : -90;
-  scene.tweens.add({
-    targets: prisonerBody,
-    angle: bodyFallAngle,
-    duration: 400,
-    ease: 'Cubic.easeIn'
-  });
-  scene.tweens.add({
-    targets: prisoner,
-    y: 660,
-    duration: 800,
-    ease: 'Cubic.easeIn',
-    delay: 300
-  });
+  // Hide the template prisoner while the physics body takes over
+  prisoner.setVisible(false);
 
   // Always re-enable physics on the head so it can fly each time
   scene.physics.world.enable(prisonerHead);
