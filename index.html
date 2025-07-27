@@ -48,11 +48,15 @@ let missStreak = 0;
 const VERSION = 'v1.0';
 let versionText;
 let inputEnabled = true;
+let killCount = 0;
+let killText;
 let shopButton;
 let shopContainer;
 let shopOverlay;
 let startContainer;
 let hideMeterEvent;
+let prisoner;
+let prisonerFace;
 
 const baseSizes = { red: 60, yellow: 40, green: 20 };
 let zoneMods = { red: 0, yellow: 0, green: 0 };
@@ -102,12 +106,16 @@ function create() {
   scene.add.rectangle(400, 500, 300, 20, 0x553311);
   scene.add.text(320, 470, 'Execution Block', { font: '16px serif', fill: '#aaa' });
 
-  // Condemned figure (placeholder)
-  scene.add.rectangle(400, 460, 30, 60, 0xaaaaaa);
+  // Condemned figure with face
+  prisoner = scene.add.container(400, 460);
+  const body = scene.add.rectangle(0, 0, 30, 60, 0xaaaaaa);
+  prisonerFace = scene.add.text(0, -10, ':(', { font: '16px monospace', fill: '#000' }).setOrigin(0.5);
+  prisoner.add([body, prisonerFace]);
 
   // Gold text
   goldText = scene.add.text(16, 16, 'Gold: 0', { font: '20px monospace', fill: '#ffff88' });
   missText = scene.add.text(16, 40, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
+  killText = scene.add.text(16, 64, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
   versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#888' })
     .setOrigin(1, 1);
 
@@ -174,7 +182,8 @@ function create() {
 
   // Shop button
   // Move the shop button to the top right corner
-  shopButton = scene.add.text(760, 20, '[ Shop ]', { font: '20px monospace', fill: '#ffffff' })
+  shopButton = scene.add.text(780, 20, '[ Shop ]', { font: '20px monospace', fill: '#ffffff' })
+    .setOrigin(1, 0)
     .setInteractive()
     .on('pointerdown', () => {
       toggleShop(scene);
@@ -252,6 +261,21 @@ function updateZones() {
   greenZone.displayWidth = baseSizes.green + zoneMods.green;
 }
 
+function savePrisoner(scene) {
+  prisonerFace.setText(':D');
+  scene.tweens.add({
+    targets: prisoner,
+    x: 850,
+    y: 420,
+    duration: 1000,
+    ease: 'Bounce.easeOut',
+    onComplete: () => {
+      prisoner.setPosition(400, 460);
+      prisonerFace.setText(':(');
+    }
+  });
+}
+
 function startSwingMeter(scene) {
   if (hideMeterEvent) {
     hideMeterEvent.remove(false);
@@ -320,10 +344,13 @@ function endSwing(scene) {
       payout -= 20;
       strikeMsg = 'Strike 3\nSaved!';
       missStreak = 0;
+      savePrisoner(scene);
     }
     message = `Missed!\n${strikeMsg}`;
   } else {
     missStreak = 0;
+    killCount++;
+    killText.setText(`Kills: ${killCount}`);
   }
   missText.setText(`Misses: ${missStreak}`);
 
