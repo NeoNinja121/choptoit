@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v55';
+const VERSION = 'v58';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -413,7 +413,8 @@ function chooseAngle(scene) {
   aimArrow.setVisible(false);
   const deg = aimArrow.angle;
   beheadPrisoner(scene, pendingBlood, deg);
-  scene.time.delayedCall(500, () => {
+  // give the head time to fly off screen before the next prisoner arrives
+  scene.time.delayedCall(2600, () => {
     spawnPrisoner(scene, pendingSpawnSide === 'right');
   });
 }
