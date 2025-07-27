@@ -56,6 +56,8 @@ let shopOverlay;
 let startContainer;
 let hideMeterEvent;
 let prisoner;
+let prisonerBody;
+let prisonerHead;
 let prisonerFace;
 
 const baseSizes = { red: 60, yellow: 40, green: 20 };
@@ -106,11 +108,14 @@ function create() {
   scene.add.rectangle(400, 500, 300, 20, 0x553311);
   scene.add.text(320, 470, 'Execution Block', { font: '16px serif', fill: '#aaa' });
 
-  // Condemned figure with face
+  // Condemned figure with separate head and body
   prisoner = scene.add.container(400, 460);
-  const body = scene.add.rectangle(0, 0, 30, 60, 0xaaaaaa);
-  prisonerFace = scene.add.text(0, -10, ':(', { font: '16px monospace', fill: '#000' }).setOrigin(0.5);
-  prisoner.add([body, prisonerFace]);
+  prisonerBody = scene.add.rectangle(0, 20, 30, 60, 0xaaaaaa);
+  prisonerHead = scene.add.container(0, -20);
+  const headSquare = scene.add.rectangle(0, 0, 30, 30, 0xdddddd);
+  prisonerFace = scene.add.text(0, 0, ':(', { font: '16px monospace', fill: '#000' }).setOrigin(0.5);
+  prisonerHead.add([headSquare, prisonerFace]);
+  prisoner.add([prisonerBody, prisonerHead]);
 
   // Gold text
   goldText = scene.add.text(16, 16, 'Gold: 0', { font: '20px monospace', fill: '#ffff88' });
@@ -232,9 +237,15 @@ function toggleShop(scene) {
   shopOverlay.setVisible(visible);
   shopContainer.setVisible(visible);
   if (visible) {
-    scene.scene.pause();
+    if (hideMeterEvent) {
+      hideMeterEvent.remove(false);
+      hideMeterEvent = null;
+    }
+    swingActive = false;
+    inputEnabled = false;
+    cursor.setVisible(false);
   } else {
-    scene.scene.resume();
+    startSwingMeter(scene);
   }
 }
 
@@ -272,6 +283,24 @@ function savePrisoner(scene) {
     onComplete: () => {
       prisoner.setPosition(400, 460);
       prisonerFace.setText(':(');
+    }
+  });
+}
+
+function beheadPrisoner(scene) {
+  const angle = Phaser.Math.Between(-120, -60);
+  const rad = Phaser.Math.DegToRad(angle);
+  const distance = 150;
+  scene.tweens.add({
+    targets: prisonerHead,
+    x: prisonerHead.x + Math.cos(rad) * distance,
+    y: prisonerHead.y + Math.sin(rad) * distance,
+    rotation: Phaser.Math.DegToRad(Phaser.Math.Between(-720, 720)),
+    duration: 800,
+    ease: 'Power2',
+    onComplete: () => {
+      prisonerHead.setPosition(0, -20);
+      prisonerHead.setRotation(0);
     }
   });
 }
@@ -351,6 +380,7 @@ function endSwing(scene) {
     missStreak = 0;
     killCount++;
     killText.setText(`Kills: ${killCount}`);
+    beheadPrisoner(scene);
   }
   missText.setText(`Misses: ${missStreak}`);
 
