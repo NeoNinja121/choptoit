@@ -43,9 +43,10 @@ let swingBar;
 let bloodPool;
 let bloodEmitter;
 let dripEmitter;
+let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v28';
+const VERSION = 'v29';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -160,6 +161,15 @@ function create() {
   bloodEmitter = particles.createEmitter({
     speed: { min: 150, max: 250 },
     angle: { min: 260, max: 280 }, // shoot upward like a fountain
+    gravityY: 400,
+    lifespan: 800,
+    scale: { start: 1, end: 0 },
+    quantity: 0,
+    on: false
+  });
+  headEmitter = particles.createEmitter({
+    speed: { min: 120, max: 200 },
+    angle: { min: 80, max: 100 }, // downward from flying head
     gravityY: 400,
     lifespan: 800,
     scale: { start: 1, end: 0 },
@@ -290,21 +300,30 @@ function savePrisoner(scene) {
   });
 }
 
-function beheadPrisoner(scene) {
+function beheadPrisoner(scene, bloodAmount) {
   const angle = Phaser.Math.Between(-120, -60);
   const rad = Phaser.Math.DegToRad(angle);
-  const distance = 150;
+  const distance = 1000; // send the head flying off screen
   scene.tweens.add({
     targets: prisonerHead,
     x: prisonerHead.x + Math.cos(rad) * distance,
     y: prisonerHead.y + Math.sin(rad) * distance,
     rotation: Phaser.Math.DegToRad(Phaser.Math.Between(-720, 720)),
-    duration: 800,
+    duration: 2000,
     ease: 'Power2',
     onComplete: () => {
       prisonerHead.setPosition(0, -20);
       prisonerHead.setRotation(0);
     }
+  });
+
+  // Continuous spurting from the flying head
+  headEmitter.startFollow(prisonerHead);
+  headEmitter.on = true;
+  headEmitter.setQuantity(Math.max(5, bloodAmount / 30));
+  scene.time.delayedCall(600, () => {
+    headEmitter.on = false;
+    headEmitter.stopFollow();
   });
 }
 
@@ -369,6 +388,9 @@ function endSwing(scene) {
     missed = true;
   }
 
+  // overall more blood
+  bloodAmount *= 1.5;
+
   if (missed) {
     missStreak++;
     let strikeMsg = `Strike ${missStreak}`;
@@ -383,17 +405,22 @@ function endSwing(scene) {
     missStreak = 0;
     killCount++;
     killText.setText(`Kills: ${killCount}`);
-    beheadPrisoner(scene);
+    beheadPrisoner(scene, bloodAmount);
   }
   missText.setText(`Misses: ${missStreak}`);
 
   gold += payout;
   goldText.setText(`Gold: ${gold}`);
 
-  // Show blood burst and grow the pool
+  // Increase and show blood bursts
   bloodPool.setVisible(true);
   bloodPool.displayWidth = Math.min(bloodPool.displayWidth + bloodAmount / 3, 300);
-  bloodEmitter.explode(bloodAmount, 400, 430);
+  const neckX = prisoner.x;
+  const neckY = prisoner.y - 10;
+  bloodEmitter.explode(bloodAmount, neckX, neckY);
+  const headX = prisoner.x + prisonerHead.x;
+  const headY = prisoner.y + prisonerHead.y;
+  headEmitter.explode(bloodAmount / 2, headX, headY);
 
   // Show popup
   scene.popupText.setText(message);
