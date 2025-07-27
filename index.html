@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v98';
+const VERSION = 'v99';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -146,8 +146,8 @@ function create() {
   scene.add.rectangle(400, 500, 300, 20, 0x553311);
 
   // Executioner, starts off-screen and walks in on first spawn
-  // Use a positive depth so he isn't hidden behind the background
-  executioner = scene.add.container(400, 460).setDepth(2);
+  // Place him behind the prisoner but in front of the background
+  executioner = scene.add.container(400, 460).setDepth(0.5);
   const execBody = scene.add.rectangle(0, 80, 50, 90, 0x555555)
     .setOrigin(0.5, 1);
   const execHead = scene.add.rectangle(0, -10, 40, 40, 0x000000);
