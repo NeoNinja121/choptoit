@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v51';
+const VERSION = 'v54';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -393,11 +393,11 @@ function showAimArrow(scene, bloodAmount, nextSide) {
   pendingBlood = bloodAmount;
   pendingSpawnSide = nextSide;
   // Start the arrow pointing left and sweep over the top to the right
-  aimArrow.setAngle(-180);
+  aimArrow.setAngle(-90);
   aimArrow.setVisible(true);
   arrowTween = scene.tweens.add({
     targets: aimArrow,
-    angle: { from: -180, to: 0 },
+    angle: { from: -90, to: 90 },
     duration: 800,
     yoyo: true,
     repeat: -1
