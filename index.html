@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v92';
+const VERSION = 'v93';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -203,7 +203,11 @@ function create() {
     .setDepth(10)
     .on('pointerdown', () => {
       startContainer.setVisible(false);
-      spawnPrisoner(scene, false);
+      if (executionerIntro) {
+        introExecutioner(scene, () => spawnPrisoner(scene, false));
+      } else {
+        spawnPrisoner(scene, false);
+      }
     });
   startContainer.add([startBg, startText]);
 
@@ -528,6 +532,20 @@ function choosePower(scene) {
     spawnPrisoner(scene, pendingSpawnSide === 'right');
   });
 }
+function introExecutioner(scene, onComplete) {
+  executionerIntro = false;
+  executioner.setPosition(850, 460);
+  executioner.setVisible(true);
+  scene.tweens.add({
+    targets: executioner,
+    x: 400,
+    duration: 1500,
+    ease: "Linear",
+    onComplete: onComplete
+  });
+}
+
+
 
 function spawnPrisoner(scene, fromRight) {
   if (headResetEvent) {
@@ -542,17 +560,6 @@ function spawnPrisoner(scene, fromRight) {
   }
   bloodEmitter.stop();
   bloodEmitter.stopFollow();
-  if (executionerIntro) {
-    executionerIntro = false;
-    executioner.setPosition(850, 460);
-    executioner.setVisible(true);
-    scene.tweens.add({
-      targets: executioner,
-      x: 400,
-      duration: 1500,
-      ease: 'Linear'
-    });
-  }
   prisonerClass = pickClass();
   prisonerBody.fillColor = prisonerClass.color;
   swingSpeed = prisonerClass.speed;
