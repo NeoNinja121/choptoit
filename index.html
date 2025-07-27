@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v58';
+const VERSION = 'v59';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -66,7 +66,10 @@ let prisonerHead;
 let prisonerFace;
 let aimArrow;
 let arrowTween;
+let arrowPowerTween;
 let awaitingAngle = false;
+let awaitingPower = false;
+let selectedAngle = 0;
 let pendingBlood = 0;
 let pendingSpawnSide = null;
 let prisonerClass;
@@ -275,6 +278,8 @@ function create() {
   scene.input.on('pointerdown', () => {
     if (awaitingAngle) {
       chooseAngle(scene);
+    } else if (awaitingPower) {
+      choosePower(scene);
     } else if (swingActive && inputEnabled) {
       endSwing(scene);
     }
@@ -338,7 +343,7 @@ function savePrisoner(scene) {
   });
 }
 
-function beheadPrisoner(scene, bloodAmount, angleDeg) {
+function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   if (headResetEvent) {
     headResetEvent.remove(false);
     headResetEvent = null;
@@ -365,7 +370,7 @@ function beheadPrisoner(scene, bloodAmount, angleDeg) {
   scene.physics.world.enable(prisonerHead);
   const body = prisonerHead.body;
   body.setAllowGravity(true);
-  const speed = 250;
+  const speed = 250 * power;
   body.setVelocity(Math.sin(rad) * speed, -Math.cos(rad) * speed);
   body.setAngularVelocity(Phaser.Math.Between(-200, 200));
   headResetEvent = scene.time.delayedCall(2500, () => {
@@ -393,8 +398,11 @@ function beheadPrisoner(scene, bloodAmount, angleDeg) {
 function showAimArrow(scene, bloodAmount, nextSide) {
   pendingBlood = bloodAmount;
   pendingSpawnSide = nextSide;
+  awaitingPower = false;
+  if (arrowPowerTween) arrowPowerTween.stop();
   // Start the arrow pointing left and sweep over the top to the right
   aimArrow.setAngle(-90);
+  aimArrow.setScale(1);
   aimArrow.setVisible(true);
   arrowTween = scene.tweens.add({
     targets: aimArrow,
@@ -410,9 +418,26 @@ function chooseAngle(scene) {
   if (!awaitingAngle) return;
   awaitingAngle = false;
   if (arrowTween) arrowTween.stop();
+  selectedAngle = aimArrow.angle;
+  // start power selection tween
+  arrowPowerTween = scene.tweens.add({
+    targets: aimArrow,
+    scaleY: { from: 0.5, to: 2 },
+    duration: 800,
+    yoyo: true,
+    repeat: -1
+  });
+  aimArrow.setVisible(true);
+  awaitingPower = true;
+}
+
+function choosePower(scene) {
+  if (!awaitingPower) return;
+  awaitingPower = false;
+  if (arrowPowerTween) arrowPowerTween.stop();
+  const power = aimArrow.scaleY;
   aimArrow.setVisible(false);
-  const deg = aimArrow.angle;
-  beheadPrisoner(scene, pendingBlood, deg);
+  beheadPrisoner(scene, pendingBlood, selectedAngle, power);
   // give the head time to fly off screen before the next prisoner arrives
   scene.time.delayedCall(2600, () => {
     spawnPrisoner(scene, pendingSpawnSide === 'right');
@@ -465,6 +490,11 @@ function startSwingMeter(scene) {
     hideMeterEvent.remove(false);
     hideMeterEvent = null;
   }
+  if (arrowTween) arrowTween.stop();
+  if (arrowPowerTween) arrowPowerTween.stop();
+  aimArrow.setVisible(false);
+  awaitingAngle = false;
+  awaitingPower = false;
   swingActive = true;
   inputEnabled = false;
   scene.time.delayedCall(200, () => { inputEnabled = true; });
@@ -582,7 +612,7 @@ function endSwing(scene) {
     yellowZone.setVisible(false);
     greenZone.setVisible(false);
     scene.time.delayedCall(spawnDelay, () => {
-      if (awaitingAngle) {
+      if (awaitingAngle || awaitingPower) {
         return;
       }
       if (spawnSide) {
