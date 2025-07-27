@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v108';
+const VERSION = 'v109';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -544,7 +544,7 @@ function slashExecutioner(scene, angle, onComplete) {
   if (slashTween) slashTween.stop();
   slashTween = scene.tweens.add({
     targets: executioner,
-    angle: { from: 0, to: angle },
+    angle: { from: 0, to: -angle },
     duration: 150,
     yoyo: true,
     ease: 'Cubic.easeOut',
