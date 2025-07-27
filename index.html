@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v83';
+const VERSION = 'v85';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -572,8 +572,22 @@ function spawnPrisoner(scene, fromRight) {
     duration: 1500,
     ease: 'Linear',
     onComplete: () => {
-      leftEscort.setVisible(false);
-      rightEscort.setVisible(false);
+      // Once the prisoner reaches the center, have the escorts walk off
+      // screen to the left instead of simply disappearing.
+      scene.tweens.add({
+        targets: leftEscort,
+        x: -100,
+        duration: 1500,
+        ease: 'Linear',
+        onComplete: () => leftEscort.setVisible(false)
+      });
+      scene.tweens.add({
+        targets: rightEscort,
+        x: 0,
+        duration: 1500,
+        ease: 'Linear',
+        onComplete: () => rightEscort.setVisible(false)
+      });
       startSwingMeter(scene);
     }
   });
