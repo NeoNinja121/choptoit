@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v87';
+const VERSION = 'v89';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -678,7 +678,7 @@ function endSwing(scene) {
     savePrisoner(scene);
     spawnSide = 'left';
     pendingSpawnSide = 'left';
-    spawnDelay = 1000;
+    spawnDelay = 2000; // wait for the freed prisoner to exit right
   }
   message = `Missed!\n${strikeMsg}`;
   killStreak = 0;
