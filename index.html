@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Idle Executioner</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.js"></script>
+</head>
+<body>
+
+<script>
+const config = {
+  type: Phaser.AUTO,
+  width: 800,
+  height: 600,
+  backgroundColor: '#222',
+  scene: {
+    preload,
+    create,
+    update
+  }
+};
+
+const game = new Phaser.Game(config);
+
+let gold = 0;
+let goldText;
+let swingActive = false;
+let cursor;
+let targetZone;
+let swingBar;
+let splatter;
+let executeButton;
+let lastGoldTime = 0;
+
+function preload() {
+  // Placeholder assets using graphics
+}
+
+function create() {
+  const scene = this;
+
+  // Background
+  scene.add.rectangle(400, 300, 800, 600, 0x2d2d2d);
+
+  // Execution platform (placeholder)
+  scene.add.rectangle(400, 500, 300, 20, 0x553311);
+  scene.add.text(320, 470, 'Execution Block', { font: '16px serif', fill: '#aaa' });
+
+  // Condemned figure (placeholder)
+  scene.add.rectangle(400, 460, 30, 60, 0xaaaaaa);
+
+  // Gold text
+  goldText = scene.add.text(16, 16, 'Gold: 0', { font: '20px monospace', fill: '#ffff88' });
+
+  // Execute button
+  executeButton = scene.add.text(640, 16, '[ Execute ]', { font: '20px monospace', fill: '#ffffff' })
+    .setInteractive()
+    .on('pointerdown', () => {
+      if (!swingActive) startSwingMeter(scene);
+    });
+
+  // Swing meter base
+  swingBar = scene.add.rectangle(400, 350, 300, 20, 0x333333).setVisible(false);
+  targetZone = scene.add.rectangle(400, 350, 60, 20, 0x660000).setVisible(false);
+  cursor = scene.add.rectangle(250, 350, 10, 20, 0xffffff).setVisible(false);
+
+  // Splatter placeholder
+  splatter = scene.add.rectangle(400, 490, 50, 10, 0x000000).setVisible(false);
+
+  // Text popup
+  scene.popupText = scene.add.text(300, 250, '', { font: '24px serif', fill: '#ffffff' }).setVisible(false);
+
+  // Input key for timing
+  scene.input.keyboard.on('keydown-SPACE', () => {
+    if (swingActive) endSwing(scene);
+  });
+}
+
+let swingDirection = 1;
+
+function startSwingMeter(scene) {
+  swingActive = true;
+  cursor.setVisible(true);
+  swingBar.setVisible(true);
+  targetZone.setVisible(true);
+  splatter.setVisible(false);
+  scene.popupText.setVisible(false);
+
+  // Reset positions
+  cursor.x = 250;
+  targetZone.x = Phaser.Math.Between(300, 500);
+}
+
+function endSwing(scene) {
+  swingActive = false;
+  cursor.setVisible(false);
+  swingBar.setVisible(false);
+  targetZone.setVisible(false);
+
+  const accuracy = Math.abs(cursor.x - targetZone.x);
+  let payout = 0;
+  let message = '';
+
+  if (accuracy < 10) {
+    payout = 10;
+    message = 'One Cut!';
+  } else if (accuracy < 40) {
+    payout = 5;
+    message = 'Messy...';
+  } else {
+    payout = 2;
+    message = 'Botched!';
+  }
+
+  gold += payout;
+  goldText.setText(`Gold: ${gold}`);
+
+  // Show splatter
+  splatter.setVisible(true);
+
+  // Show popup
+  scene.popupText.setText(message);
+  scene.popupText.setVisible(true);
+}
+
+function update(time, delta) {
+  // Idle gold every 5 seconds
+  if (time - lastGoldTime > 5000) {
+    gold += 1;
+    goldText.setText(`Gold: ${gold}`);
+    lastGoldTime = time;
+  }
+
+  // Move cursor
+  if (swingActive) {
+    cursor.x += swingDirection * 5;
+    if (cursor.x > 550 || cursor.x < 250) {
+      swingDirection *= -1;
+    }
+  }
+}
+</script>
+
+</body>
+</html>
