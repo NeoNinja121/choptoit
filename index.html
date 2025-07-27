@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v68';
+const VERSION = 'v70';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -209,6 +209,7 @@ function create() {
     angle: { min: 80, max: 100 }, // downward from flying head
     gravityY: 400,
     lifespan: 800,
+    frequency: 60,
     scale: { start: 1, end: 0 },
     quantity: 0,
     on: false
@@ -382,15 +383,15 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
     scene.physics.world.disable(prisonerHead);
     prisoner.add(prisonerHead);
     prisonerHead.setPosition(0, -20);
-    headEmitter.on = false;
+    headEmitter.stop();
     headEmitter.stopFollow();
     headResetEvent = null;
   });
 
   // Continuous spurting from the flying head
   headEmitter.startFollow(prisonerHead, 0, 15);
-  headEmitter.on = true;
   headEmitter.setQuantity(Math.max(5, bloodAmount / 30));
+  headEmitter.start();
 }
 
 function showAimArrow(scene, bloodAmount, nextSide) {
@@ -445,7 +446,7 @@ function choosePower(scene) {
 function spawnPrisoner(scene, fromRight) {
   if (headResetEvent) {
     headResetEvent.remove(false);
-    headEmitter.on = false;
+    headEmitter.stop();
     headEmitter.stopFollow();
     headResetEvent = null;
   }
