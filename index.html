@@ -205,11 +205,11 @@ function create() {
     on: false
   });
   headEmitter = particles.createEmitter({
-    speed: { min: 120, max: 200 },
+    speed: { min: 180, max: 280 },
     angle: { min: 80, max: 100 }, // downward from flying head
     gravityY: 400,
-    lifespan: 800,
-    frequency: 60,
+    lifespan: 1000,
+    frequency: 20,
     scale: { start: 1, end: 0 },
     quantity: 0,
     on: false
@@ -390,6 +390,7 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
 
   // Continuous spurting from the flying head
   headEmitter.startFollow(prisonerHead, 0, 15);
+  headEmitter.setFrequency(20);
   headEmitter.setQuantity(Math.max(5, bloodAmount / 30));
   headEmitter.start();
 }
