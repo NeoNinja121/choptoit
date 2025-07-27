@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v111';
+const VERSION = 'v116';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -271,6 +271,20 @@ function create() {
   bodyGroup = scene.physics.add.group();
   // Enable collisions between bodies so they pile up
   scene.physics.add.collider(bodyGroup, bodyGroup);
+  // Stop corpses after a couple bounces
+  scene.physics.world.on('worldbounds', (body, up, down) => {
+    const obj = body.gameObject;
+    if (!obj || !obj.isCorpse) return;
+    if (down) {
+      obj.bounceCount = (obj.bounceCount || 0) + 1;
+      if (obj.bounceCount >= 2) {
+        body.setBounce(0);
+        body.setVelocity(0, 0);
+        body.setAngularVelocity(0);
+        body.setAllowGravity(false);
+      }
+    }
+  });
 
   scene.time.addEvent({
     delay: 400,
@@ -407,10 +421,13 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
     .setOrigin(0.5, 1)
     .setDepth(0.5);
   bodyGroup.add(corpse);
-  corpse.body.setBounce(0.1);
+  corpse.isCorpse = true;
+  corpse.bounceCount = 0;
+  corpse.body.onWorldBounds = true;
+  corpse.body.setBounce(0.05);
   corpse.body.setCollideWorldBounds(true);
-  corpse.body.setDrag(30, 0);
-  const corpseSpeed = 120 * power;
+  corpse.body.setDrag(50, 0);
+  const corpseSpeed = 80 * power;
   // Throw the body based on the chosen slash angle and power
   corpse.body.setVelocity(Math.sin(rad) * corpseSpeed, Math.cos(rad) * corpseSpeed);
   corpse.body.setAngularVelocity(Phaser.Math.Between(-100, 100));
