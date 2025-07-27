@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v77';
+const VERSION = 'v79';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -152,7 +152,8 @@ function create() {
   prisonerFace = scene.add.text(0, 0, ':(', { font: '16px monospace', fill: '#000' }).setOrigin(0.5);
   prisonerHead.add([headSquare, prisonerFace]);
   // Aim arrow points upward for angle selection
-  aimArrow = scene.add.triangle(0, -25, 0, -20, -6, 0, 6, 0, 0xffff00)
+  // Larger arrow for angle and power selection
+  aimArrow = scene.add.triangle(0, -25, 0, -40, -12, 0, 12, 0, 0xffff00)
     .setOrigin(0.5, 1)
     .setVisible(false);
   prisonerHead.add(aimArrow);
@@ -478,6 +479,7 @@ function chooseAngle(scene) {
   // start power selection tween
   arrowPowerTween = scene.tweens.add({
     targets: aimArrow,
+    scaleX: { from: 0.5, to: 2 },
     scaleY: { from: 0.5, to: 2 },
     duration: 800,
     yoyo: true,
