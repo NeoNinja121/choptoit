@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v39';
+const VERSION = 'v41';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -342,9 +342,8 @@ function beheadPrisoner(scene, bloodAmount) {
     scene.add.existing(prisonerHead);
   }
 
-  if (!prisonerHead.body) {
-    scene.physics.world.enable(prisonerHead);
-  }
+  // Always re-enable physics on the head so it can fly each time
+  scene.physics.world.enable(prisonerHead);
   const body = prisonerHead.body;
   body.setAllowGravity(true);
   body.setVelocity(Math.cos(rad) * 250, Math.sin(rad) * 250);
@@ -526,7 +525,8 @@ function endSwing(scene) {
     redZone.setVisible(false);
     yellowZone.setVisible(false);
     greenZone.setVisible(false);
-    scene.time.delayedCall(500, () => {
+    const delay = spawnSide === 'right' ? 1000 : 500;
+    scene.time.delayedCall(delay, () => {
       if (spawnSide) {
         spawnPrisoner(scene, spawnSide === 'right');
       } else {
