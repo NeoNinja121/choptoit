@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v41';
+const VERSION = 'v43';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -457,6 +457,7 @@ function endSwing(scene) {
   let bloodAmount;
   let missed = false;
   let spawnSide = null;
+  let spawnDelay = 500;
   if (accuracy <= greenZone.displayWidth / 2) {
     payout = 10;
     message = 'Perfect!';
@@ -486,7 +487,8 @@ function endSwing(scene) {
     strikeMsg = 'Strike 3\nSaved!';
     missStreak = 0;
     savePrisoner(scene);
-    spawnSide = 'right';
+    spawnSide = 'left';
+    spawnDelay = 1000;
   }
   message = `Missed!\n${strikeMsg}`;
   killStreak = 0;
@@ -499,6 +501,7 @@ function endSwing(scene) {
   killStreakText.setText(`Streak: ${killStreak}`);
   beheadPrisoner(scene, bloodAmount);
   spawnSide = 'left';
+  spawnDelay = 500;
 }
   missText.setText(`Misses: ${missStreak}`);
 
@@ -507,7 +510,9 @@ function endSwing(scene) {
 
   // Increase and show blood bursts
   bloodPool.setVisible(true);
-  bloodPool.displayWidth = Math.min(bloodPool.displayWidth + bloodAmount / 3, 300);
+  if (!missed) {
+    bloodPool.displayWidth = Math.min(bloodPool.displayWidth + 10, 300);
+  }
   const neckX = prisoner.x;
   const neckY = prisoner.y - 10;
   bloodEmitter.explode(bloodAmount, neckX, neckY);
@@ -525,8 +530,7 @@ function endSwing(scene) {
     redZone.setVisible(false);
     yellowZone.setVisible(false);
     greenZone.setVisible(false);
-    const delay = spawnSide === 'right' ? 1000 : 500;
-    scene.time.delayedCall(delay, () => {
+    scene.time.delayedCall(spawnDelay, () => {
       if (spawnSide) {
         spawnPrisoner(scene, spawnSide === 'right');
       } else {
