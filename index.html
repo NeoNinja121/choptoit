@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v54';
+const VERSION = 'v55';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -365,7 +365,8 @@ function beheadPrisoner(scene, bloodAmount, angleDeg) {
   scene.physics.world.enable(prisonerHead);
   const body = prisonerHead.body;
   body.setAllowGravity(true);
-  body.setVelocity(Math.cos(rad) * 250, Math.sin(rad) * 250);
+  const speed = 250;
+  body.setVelocity(Math.sin(rad) * speed, -Math.cos(rad) * speed);
   body.setAngularVelocity(Phaser.Math.Between(-200, 200));
   headResetEvent = scene.time.delayedCall(2500, () => {
     body.setVelocity(0, 0);
