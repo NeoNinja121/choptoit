@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v63';
+const VERSION = 'v68';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -382,6 +382,8 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
     scene.physics.world.disable(prisonerHead);
     prisoner.add(prisonerHead);
     prisonerHead.setPosition(0, -20);
+    headEmitter.on = false;
+    headEmitter.stopFollow();
     headResetEvent = null;
   });
 
@@ -389,10 +391,6 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   headEmitter.startFollow(prisonerHead, 0, 15);
   headEmitter.on = true;
   headEmitter.setQuantity(Math.max(5, bloodAmount / 30));
-  scene.time.delayedCall(600, () => {
-    headEmitter.on = false;
-    headEmitter.stopFollow();
-  });
 }
 
 function showAimArrow(scene, bloodAmount, nextSide) {
@@ -447,6 +445,8 @@ function choosePower(scene) {
 function spawnPrisoner(scene, fromRight) {
   if (headResetEvent) {
     headResetEvent.remove(false);
+    headEmitter.on = false;
+    headEmitter.stopFollow();
     headResetEvent = null;
   }
   prisonerClass = pickClass();
