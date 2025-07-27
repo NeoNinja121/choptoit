@@ -41,6 +41,8 @@ let yellowZone;
 let greenZone;
 let swingBar;
 let splatter;
+let bloodEmitter;
+let inputEnabled = true;
 let shopButton;
 let shopContainer;
 let shopOverlay;
@@ -121,7 +123,24 @@ function create() {
   cursor = scene.add.rectangle(250, 350, 10, 20, 0xffffff).setVisible(false);
 
   // Splatter placeholder
-  splatter = scene.add.rectangle(400, 490, 50, 10, 0x000000).setVisible(false);
+  splatter = scene.add.rectangle(400, 490, 50, 10, 0xff0000).setVisible(false);
+
+  // Blood particle emitter
+  const g = scene.add.graphics();
+  g.fillStyle(0xff0000, 1);
+  g.fillCircle(2, 2, 2);
+  g.generateTexture('blood', 4, 4);
+  g.destroy();
+  const particles = scene.add.particles('blood');
+  bloodEmitter = particles.createEmitter({
+    speed: { min: 150, max: 300 },
+    angle: { min: -110, max: -70 },
+    gravityY: 400,
+    lifespan: 800,
+    scale: { start: 1, end: 0 },
+    quantity: 0,
+    on: false
+  });
 
   // Shop button
   shopButton = scene.add.text(700, 560, '[ Shop ]', { font: '20px monospace', fill: '#ffffff' })
@@ -159,10 +178,10 @@ function create() {
 
   // Input key for timing
   scene.input.keyboard.on('keydown-SPACE', () => {
-    if (swingActive) endSwing(scene);
+    if (swingActive && inputEnabled) endSwing(scene);
   });
   scene.input.on('pointerdown', () => {
-    if (swingActive) endSwing(scene);
+    if (swingActive && inputEnabled) endSwing(scene);
   });
 }
 
@@ -203,6 +222,8 @@ function startSwingMeter(scene) {
     hideMeterEvent = null;
   }
   swingActive = true;
+  inputEnabled = false;
+  scene.time.delayedCall(200, () => { inputEnabled = true; });
   cursor.setVisible(true);
   swingBar.setVisible(true);
   redZone.setVisible(true);
@@ -256,6 +277,7 @@ function endSwing(scene) {
 
   // Show splatter
   splatter.setVisible(true);
+  bloodEmitter.explode(15, 400, 430);
 
   // Show popup
   scene.popupText.setText(message);
