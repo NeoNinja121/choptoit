@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v49';
+const VERSION = 'v51';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -392,8 +392,8 @@ function beheadPrisoner(scene, bloodAmount, angleDeg) {
 function showAimArrow(scene, bloodAmount, nextSide) {
   pendingBlood = bloodAmount;
   pendingSpawnSide = nextSide;
-  // Start the arrow pointing left and sweep to the right
-  aimArrow.setAngle(-90);
+  // Start the arrow pointing left and sweep over the top to the right
+  aimArrow.setAngle(-180);
   aimArrow.setVisible(true);
   arrowTween = scene.tweens.add({
     targets: aimArrow,
