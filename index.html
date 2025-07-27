@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v95';
+const VERSION = 'v98';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -146,7 +146,8 @@ function create() {
   scene.add.rectangle(400, 500, 300, 20, 0x553311);
 
   // Executioner, starts off-screen and walks in on first spawn
-  executioner = scene.add.container(400, 460).setDepth(-1);
+  // Use a positive depth so he isn't hidden behind the background
+  executioner = scene.add.container(400, 460).setDepth(2);
   const execBody = scene.add.rectangle(0, 80, 50, 90, 0x555555)
     .setOrigin(0.5, 1);
   const execHead = scene.add.rectangle(0, -10, 40, 40, 0x000000);
@@ -535,10 +536,12 @@ function choosePower(scene) {
 function introExecutioner(scene, onComplete) {
   executionerIntro = false;
   executioner.setPosition(850, 460);
+  executioner.setAlpha(0);
   executioner.setVisible(true);
   scene.tweens.add({
     targets: executioner,
     x: 400,
+    alpha: 1,
     duration: 1500,
     ease: "Linear",
     onComplete: onComplete
