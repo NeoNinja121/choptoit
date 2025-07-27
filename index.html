@@ -104,7 +104,7 @@ function create() {
   // Start screen
   startContainer = scene.add.container(0, 0).setDepth(10);
   const startBg = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.7).setDepth(10);
-  const startText = scene.add.text(300, 280, '[ Click To Start ]', { font: '32px monospace', fill: '#ffffff' })
+  const startText = scene.add.text(300, 280, '[ Tap or Click To Start ]', { font: '32px monospace', fill: '#ffffff' })
     .setInteractive()
     .setDepth(10)
     .on('pointerdown', () => {
@@ -159,6 +159,9 @@ function create() {
 
   // Input key for timing
   scene.input.keyboard.on('keydown-SPACE', () => {
+    if (swingActive) endSwing(scene);
+  });
+  scene.input.on('pointerdown', () => {
     if (swingActive) endSwing(scene);
   });
 }
