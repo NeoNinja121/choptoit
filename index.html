@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v116';
+const VERSION = 'v117';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -271,17 +271,17 @@ function create() {
   bodyGroup = scene.physics.add.group();
   // Enable collisions between bodies so they pile up
   scene.physics.add.collider(bodyGroup, bodyGroup);
-  // Stop corpses after a couple bounces
+  // Soften corpse landing after a couple bounces
   scene.physics.world.on('worldbounds', (body, up, down) => {
     const obj = body.gameObject;
     if (!obj || !obj.isCorpse) return;
     if (down) {
       obj.bounceCount = (obj.bounceCount || 0) + 1;
       if (obj.bounceCount >= 2) {
-        body.setBounce(0);
-        body.setVelocity(0, 0);
-        body.setAngularVelocity(0);
-        body.setAllowGravity(false);
+        // Gradually reduce motion rather than abruptly freezing
+        body.setBounce(0.02);
+        body.setDrag(200, 0);
+        body.setAngularVelocity(body.angularVelocity * 0.5);
         // Lay the corpse on its side most of the time
         if (Math.random() < 0.9) {
           const sign = Math.random() < 0.5 ? -1 : 1;
