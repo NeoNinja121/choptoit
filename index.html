@@ -144,8 +144,8 @@ function create() {
   g.destroy();
   const particles = scene.add.particles('blood');
   bloodEmitter = particles.createEmitter({
-    speed: { min: 50, max: 100 },
-    angle: { min: 80, max: 100 },
+    speed: { min: 150, max: 250 },
+    angle: { min: 260, max: 280 }, // shoot upward like a fountain
     gravityY: 400,
     lifespan: 800,
     scale: { start: 1, end: 0 },
@@ -173,7 +173,8 @@ function create() {
   });
 
   // Shop button
-  shopButton = scene.add.text(700, 560, '[ Shop ]', { font: '20px monospace', fill: '#ffffff' })
+  // Move the shop button to the top right corner
+  shopButton = scene.add.text(760, 20, '[ Shop ]', { font: '20px monospace', fill: '#ffffff' })
     .setInteractive()
     .on('pointerdown', () => {
       toggleShop(scene);
@@ -308,18 +309,19 @@ function endSwing(scene) {
     bloodAmount = 20;
   } else {
     payout = -2;
-    message = 'Missed!';
     bloodAmount = 5;
     missed = true;
   }
 
   if (missed) {
     missStreak++;
+    let strikeMsg = `Strike ${missStreak}`;
     if (missStreak >= 3) {
       payout -= 20;
-      message = 'Missed! Penalty!';
+      strikeMsg = 'Strike 3\nSaved!';
       missStreak = 0;
     }
+    message = `Missed!\n${strikeMsg}`;
   } else {
     missStreak = 0;
   }
