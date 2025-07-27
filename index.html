@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v73';
+const VERSION = 'v76';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -143,9 +143,10 @@ function create() {
 
   // Condemned figure with separate head and body
   prisoner = scene.add.container(400, 460);
-  // Position the body so its top aligns with the neck when using a top origin
-  prisonerBody = scene.add.rectangle(0, -10, 30, 60, 0xaaaaaa)
-    .setOrigin(0.5, 0);
+  // Pivot the body around the feet so it can topple realistically
+  // Position it so the top still aligns with the neck
+  prisonerBody = scene.add.rectangle(0, 50, 30, 60, 0xaaaaaa)
+    .setOrigin(0.5, 1);
   prisonerHead = scene.add.container(0, -20);
   const headSquare = scene.add.rectangle(0, 0, 30, 30, 0xdddddd);
   prisonerFace = scene.add.text(0, 0, ':(', { font: '16px monospace', fill: '#000' }).setOrigin(0.5);
@@ -400,9 +401,10 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
     prisonerHead.setPosition(worldX, worldY);
     scene.add.existing(prisonerHead);
   }
+  const bodyFallAngle = angle >= 0 ? 90 : -90;
   scene.tweens.add({
     targets: prisonerBody,
-    angle: 90,
+    angle: bodyFallAngle,
     duration: 400,
     ease: 'Cubic.easeIn'
   });
@@ -530,7 +532,7 @@ function spawnPrisoner(scene, fromRight) {
   prisonerHead.setRotation(0);
   prisonerBody.setAngle(0);
   // Keep body aligned under the head when resetting for a new prisoner
-  prisonerBody.y = -10;
+  prisonerBody.y = 50;
   prisoner.setAngle(0);
 
   const startX = fromRight ? 850 : -50;
