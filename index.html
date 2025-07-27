@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v101';
+const VERSION = 'v103';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -150,7 +150,7 @@ function create() {
   executioner = scene.add.container(400, 460).setDepth(0.5);
   const execBody = scene.add.rectangle(0, 50, 50, 90, 0x555555)
     .setOrigin(0.5, 1);
-  const execHead = scene.add.rectangle(0, -10, 40, 40, 0x000000);
+  const execHead = scene.add.rectangle(0, -30, 40, 40, 0x000000);
   executioner.add([execBody, execHead]);
   executioner.setVisible(false);
 
@@ -223,7 +223,8 @@ function create() {
   // Blood pool
   bloodPool = scene.add.rectangle(400, 500, 40, 10, 0x770000)
     .setOrigin(0.5, 0)
-    .setVisible(false);
+    .setVisible(false)
+    .setDepth(0.6);
 
   // Blood particle emitter
   const g = scene.add.graphics();
