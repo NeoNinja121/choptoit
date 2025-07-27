@@ -41,9 +41,11 @@ let yellowZone;
 let greenZone;
 let swingBar;
 let splatter;
-let executeButton;
 let shopButton;
 let shopContainer;
+let shopOverlay;
+let startContainer;
+let hideMeterEvent;
 
 const baseSizes = { red: 60, yellow: 40, green: 20 };
 let zoneMods = { red: 0, yellow: 0, green: 0 };
@@ -99,12 +101,17 @@ function create() {
   // Gold text
   goldText = scene.add.text(16, 16, 'Gold: 0', { font: '20px monospace', fill: '#ffff88' });
 
-  // Execute button
-  executeButton = scene.add.text(640, 16, '[ Execute ]', { font: '20px monospace', fill: '#ffffff' })
+  // Start screen
+  startContainer = scene.add.container(0, 0).setDepth(10);
+  const startBg = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.7).setDepth(10);
+  const startText = scene.add.text(300, 280, '[ Click To Start ]', { font: '32px monospace', fill: '#ffffff' })
     .setInteractive()
+    .setDepth(10)
     .on('pointerdown', () => {
-      if (!swingActive) startSwingMeter(scene);
+      startContainer.setVisible(false);
+      startSwingMeter(scene);
     });
+  startContainer.add([startBg, startText]);
 
   // Swing meter base
   swingBar = scene.add.rectangle(400, 350, 300, 20, 0x333333).setVisible(false);
@@ -123,15 +130,18 @@ function create() {
       toggleShop(scene);
     });
 
-  // Shop container
-  shopContainer = scene.add.container(100, 100).setVisible(false);
-  const shopBg = scene.add.rectangle(0, 0, 600, 380, 0x000000, 0.9).setOrigin(0, 0);
+  // Shop container and overlay
+  shopOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.6)
+    .setVisible(false)
+    .setDepth(5);
+  shopContainer = scene.add.container(100, 100).setVisible(false).setDepth(6);
+  const shopBg = scene.add.rectangle(0, 0, 600, 380, 0x222222, 1).setOrigin(0, 0);
   shopBg.setStrokeStyle(2, 0xffffff);
   shopContainer.add(shopBg);
   let itemY = 20;
   weapons.forEach((w, idx) => {
     const title = scene.add.text(10, itemY, `${w.name} - ${w.type} - ${w.cost}g`, { font: '18px monospace', fill: '#ffffaa' });
-    const desc = scene.add.text(20, itemY + 20, w.desc, { font: '14px monospace', fill: '#ffffff' });
+    const desc = scene.add.text(20, itemY + 20, w.desc, { font: '14px monospace', fill: '#ffffff', wordWrap: { width: 420 } });
     const buy = scene.add.text(450, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => { buyWeapon(scene, idx); });
@@ -157,6 +167,7 @@ let swingDirection = 1;
 
 function toggleShop(scene) {
   const visible = !shopContainer.visible;
+  shopOverlay.setVisible(visible);
   shopContainer.setVisible(visible);
 }
 
@@ -184,6 +195,10 @@ function updateZones() {
 }
 
 function startSwingMeter(scene) {
+  if (hideMeterEvent) {
+    hideMeterEvent.remove(false);
+    hideMeterEvent = null;
+  }
   swingActive = true;
   cursor.setVisible(true);
   swingBar.setVisible(true);
@@ -207,11 +222,12 @@ function endSwing(scene) {
   swingActive = false;
   cursor.setVisible(false);
   // Leave the meter visible briefly so players can see the result
-  scene.time.delayedCall(1000, () => {
+  hideMeterEvent = scene.time.delayedCall(1000, () => {
     swingBar.setVisible(false);
     redZone.setVisible(false);
     yellowZone.setVisible(false);
     greenZone.setVisible(false);
+    scene.time.delayedCall(500, () => startSwingMeter(scene));
   });
 
   const accuracy = Math.abs(cursor.x - redZone.x);
