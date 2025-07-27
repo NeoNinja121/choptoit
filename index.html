@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v34';
+const VERSION = 'v35';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -158,7 +158,7 @@ function create() {
     .setDepth(10)
     .on('pointerdown', () => {
       startContainer.setVisible(false);
-      startSwingMeter(scene);
+      spawnPrisoner(scene, false);
     });
   startContainer.add([startBg, startText]);
 
@@ -352,6 +352,37 @@ function beheadPrisoner(scene, bloodAmount) {
   });
 }
 
+function spawnPrisoner(scene, fromRight) {
+  prisonerClass = pickClass();
+  prisonerBody.fillColor = prisonerClass.color;
+  swingSpeed = prisonerClass.speed;
+
+  if (prisonerHead.body) {
+    prisonerHead.body.stop();
+    prisonerHead.body.setAllowGravity(false);
+    scene.physics.world.disable(prisonerHead);
+  }
+  prisonerHead.setPosition(0, -20);
+  prisonerHead.setRotation(0);
+
+  const startX = fromRight ? 850 : -50;
+  prisoner.setPosition(startX, 460);
+  cursor.setVisible(false);
+  swingBar.setVisible(false);
+  redZone.setVisible(false);
+  yellowZone.setVisible(false);
+  greenZone.setVisible(false);
+  scene.tweens.add({
+    targets: prisoner,
+    x: 400,
+    duration: 1500,
+    ease: 'Linear',
+    onComplete: () => {
+      startSwingMeter(scene);
+    }
+  });
+}
+
 function startSwingMeter(scene) {
   if (hideMeterEvent) {
     hideMeterEvent.remove(false);
@@ -370,10 +401,6 @@ function startSwingMeter(scene) {
 
   updateZones();
 
-  prisonerClass = pickClass();
-  prisonerBody.fillColor = prisonerClass.color;
-  swingSpeed = prisonerClass.speed;
-
   // Reset positions
   cursor.x = 250;
   const zoneX = Phaser.Math.Between(300, 500);
@@ -390,33 +417,18 @@ function startSwingMeter(scene) {
   prisonerHead.setPosition(0, -20);
   prisonerHead.setRotation(0);
 
-  // Start prisoner off-screen and walk on from the left
-  prisoner.setPosition(-50, 460);
-  scene.tweens.add({
-    targets: prisoner,
-    x: 400,
-    duration: 1500,
-    ease: 'Linear'
-  });
+  // Meter only starts once prisoner is in position
 }
 
 function endSwing(scene) {
   swingActive = false;
   cursor.setVisible(false);
-  // Leave the meter visible briefly so players can see the result
-  hideMeterEvent = scene.time.delayedCall(1000, () => {
-    swingBar.setVisible(false);
-    redZone.setVisible(false);
-    yellowZone.setVisible(false);
-    greenZone.setVisible(false);
-    scene.time.delayedCall(500, () => startSwingMeter(scene));
-  });
-
   const accuracy = Math.abs(cursor.x - redZone.x);
   let payout = 0;
   let message = '';
   let bloodAmount;
   let missed = false;
+  let spawnSide = null;
   if (accuracy <= greenZone.displayWidth / 2) {
     payout = 10;
     message = 'Perfect!';
@@ -442,22 +454,24 @@ function endSwing(scene) {
     missStreak++;
     let strikeMsg = `Strike ${missStreak}`;
     if (missStreak >= 3) {
-      payout -= 20;
-      strikeMsg = 'Strike 3\nSaved!';
-      missStreak = 0;
-      savePrisoner(scene);
-    }
-    message = `Missed!\n${strikeMsg}`;
-    killStreak = 0;
-    killStreakText.setText(`Streak: ${killStreak}`);
-  } else {
+    payout -= 20;
+    strikeMsg = 'Strike 3\nSaved!';
     missStreak = 0;
-    killCount++;
-    killStreak++;
-    killText.setText(`Kills: ${killCount}`);
-    killStreakText.setText(`Streak: ${killStreak}`);
-    beheadPrisoner(scene, bloodAmount);
+    savePrisoner(scene);
+    spawnSide = 'right';
   }
+  message = `Missed!\n${strikeMsg}`;
+  killStreak = 0;
+  killStreakText.setText(`Streak: ${killStreak}`);
+} else {
+  missStreak = 0;
+  killCount++;
+  killStreak++;
+  killText.setText(`Kills: ${killCount}`);
+  killStreakText.setText(`Streak: ${killStreak}`);
+  beheadPrisoner(scene, bloodAmount);
+  spawnSide = 'left';
+}
   missText.setText(`Misses: ${missStreak}`);
 
   gold += payout;
@@ -476,6 +490,21 @@ function endSwing(scene) {
   // Show popup
   scene.popupText.setText(message);
   scene.popupText.setVisible(true);
+
+  // Leave the meter visible briefly so players can see the result
+  hideMeterEvent = scene.time.delayedCall(1000, () => {
+    swingBar.setVisible(false);
+    redZone.setVisible(false);
+    yellowZone.setVisible(false);
+    greenZone.setVisible(false);
+    scene.time.delayedCall(500, () => {
+      if (spawnSide) {
+        spawnPrisoner(scene, spawnSide === 'right');
+      } else {
+        startSwingMeter(scene);
+      }
+    });
+  });
 }
 
 function update(time, delta) {
