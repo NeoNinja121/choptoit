@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v35';
+const VERSION = 'v37';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -327,6 +327,16 @@ function savePrisoner(scene) {
 function beheadPrisoner(scene, bloodAmount) {
   const angle = Phaser.Math.Between(-110, -70);
   const rad = Phaser.Math.DegToRad(angle);
+
+  // Detach head from prisoner container so it can fly freely
+  if (prisonerHead.parentContainer === prisoner) {
+    const worldX = prisoner.x + prisonerHead.x;
+    const worldY = prisoner.y + prisonerHead.y;
+    prisoner.remove(prisonerHead);
+    prisonerHead.setPosition(worldX, worldY);
+    scene.add.existing(prisonerHead);
+  }
+
   if (!prisonerHead.body) {
     scene.physics.world.enable(prisonerHead);
   }
@@ -338,8 +348,11 @@ function beheadPrisoner(scene, bloodAmount) {
     body.setVelocity(0, 0);
     body.setAngularVelocity(0);
     body.setAllowGravity(false);
-    prisonerHead.setPosition(0, -20);
     prisonerHead.setRotation(0);
+    prisonerHead.setPosition(prisoner.x, prisoner.y - 20);
+    scene.physics.world.disable(prisonerHead);
+    prisoner.add(prisonerHead);
+    prisonerHead.setPosition(0, -20);
   });
 
   // Continuous spurting from the flying head
@@ -356,6 +369,12 @@ function spawnPrisoner(scene, fromRight) {
   prisonerClass = pickClass();
   prisonerBody.fillColor = prisonerClass.color;
   swingSpeed = prisonerClass.speed;
+
+  // Ensure the head is reattached to the prisoner container
+  if (prisonerHead.parentContainer !== prisoner) {
+    scene.children.remove(prisonerHead);
+    prisoner.add(prisonerHead);
+  }
 
   if (prisonerHead.body) {
     prisonerHead.body.stop();
