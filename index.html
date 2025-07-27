@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v103';
+const VERSION = 'v105';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -171,6 +171,7 @@ function create() {
     .setVisible(false);
   prisonerHead.add(aimArrow);
   prisoner.add([prisonerBody, prisonerHead]);
+  prisoner.setVisible(false);
 
   // Escort guards
   leftEscort = scene.add.container(0, 0);
@@ -434,6 +435,7 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
     prisoner.remove(prisonerHead);
     prisonerHead.setPosition(worldX, worldY);
     scene.add.existing(prisonerHead);
+    prisonerHead.setDepth(1);
   }
   const bodyFallAngle = angle >= 0 ? 90 : -90;
   scene.tweens.add({
@@ -552,6 +554,7 @@ function introExecutioner(scene, onComplete) {
 
 
 function spawnPrisoner(scene, fromRight) {
+  prisoner.setVisible(true);
   if (headResetEvent) {
     headResetEvent.remove(false);
     headEmitter.stop();
