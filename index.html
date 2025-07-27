@@ -42,6 +42,11 @@ let greenZone;
 let swingBar;
 let bloodPool;
 let bloodEmitter;
+let dripEmitter;
+let missText;
+let missStreak = 0;
+const VERSION = 'v1.0';
+let versionText;
 let inputEnabled = true;
 let shopButton;
 let shopContainer;
@@ -102,6 +107,9 @@ function create() {
 
   // Gold text
   goldText = scene.add.text(16, 16, 'Gold: 0', { font: '20px monospace', fill: '#ffff88' });
+  missText = scene.add.text(16, 40, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
+  versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#888' })
+    .setOrigin(1, 1);
 
   // Start screen
   startContainer = scene.add.container(0, 0).setDepth(10);
@@ -126,7 +134,7 @@ function create() {
   // Blood pool
   bloodPool = scene.add.rectangle(400, 500, 60, 10, 0x770000)
     .setOrigin(0.5, 0)
-    .setVisible(false);
+    .setVisible(true);
 
   // Blood particle emitter
   const g = scene.add.graphics();
@@ -143,6 +151,25 @@ function create() {
     scale: { start: 1, end: 0 },
     quantity: 0,
     on: false
+  });
+  dripEmitter = particles.createEmitter({
+    speed: { min: 20, max: 40 },
+    angle: 90,
+    gravityY: 100,
+    lifespan: 1000,
+    scale: { start: 0.5, end: 0 },
+    quantity: 0,
+    on: false
+  });
+
+  scene.time.addEvent({
+    delay: 400,
+    loop: true,
+    callback: () => {
+      const half = bloodPool.displayWidth / 2;
+      const x = Phaser.Math.Between(bloodPool.x - half, bloodPool.x + half);
+      dripEmitter.emitParticleAt(x, bloodPool.y + bloodPool.displayHeight);
+    }
   });
 
   // Shop button
@@ -265,8 +292,8 @@ function endSwing(scene) {
   const accuracy = Math.abs(cursor.x - redZone.x);
   let payout = 0;
   let message = '';
-
   let bloodAmount;
+  let missed = false;
   if (accuracy <= greenZone.displayWidth / 2) {
     payout = 10;
     message = 'Perfect!';
@@ -283,7 +310,20 @@ function endSwing(scene) {
     payout = -2;
     message = 'Missed!';
     bloodAmount = 5;
+    missed = true;
   }
+
+  if (missed) {
+    missStreak++;
+    if (missStreak >= 3) {
+      payout -= 20;
+      message = 'Missed! Penalty!';
+      missStreak = 0;
+    }
+  } else {
+    missStreak = 0;
+  }
+  missText.setText(`Misses: ${missStreak}`);
 
   gold += payout;
   goldText.setText(`Gold: ${gold}`);
