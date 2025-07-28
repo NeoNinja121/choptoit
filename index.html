@@ -49,7 +49,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v139';
+const VERSION = 'v1.41';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -871,8 +871,8 @@ function spawnFameNpc(scene) {
   const fromRight = Math.random() < 0.5;
   const startX = fromRight ? 850 : -50;
   const speed = 30;
-  const npc = scene.add.container(startX, 500).setDepth(2);
-  const body = scene.add.rectangle(0, 0, 30, 50, 0x888888).setOrigin(0.5, 1);
+  const npc = scene.add.container(startX, 460).setDepth(2);
+  const body = scene.add.rectangle(0, 0, 30, 60, 0x888888).setOrigin(0.5, 1);
   let prop;
   if (Math.random() < 0.5) {
     npc.npcType = 'bucket';
