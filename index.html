@@ -49,7 +49,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.51';
+const VERSION = 'v1.57';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -88,7 +88,7 @@ let executionerIntro = true;
 
 // Group to hold fallen bodies that pile up at the bottom
 let bodyGroup;
-let fameNpcGroup;
+let targetGroup;
 
 const baseSizes = { red: 60, yellow: 40, green: 20 };
 let zoneMods = { red: 0, yellow: 0, green: 0 };
@@ -279,11 +279,11 @@ function create() {
 
   // Physics group to accumulate fallen bodies
   bodyGroup = scene.physics.add.group();
-  fameNpcGroup = scene.physics.add.group();
-  scene.physics.add.overlap(prisonerHead, fameNpcGroup, (head, npc) => {
-    if (npc.collected) return;
-    npc.collected = true;
-    gainFame(scene, npc);
+  targetGroup = scene.physics.add.group();
+  scene.physics.add.overlap(prisonerHead, targetGroup, (head, target) => {
+    if (target.collected) return;
+    target.collected = true;
+    gainFame(scene, target);
   });
   // Enable collisions between bodies so they pile up
   scene.physics.add.collider(bodyGroup, bodyGroup);
@@ -375,8 +375,7 @@ function create() {
     }
   });
 
-  // Fame NPCs now spawn together with each prisoner
-  // scheduleFameSpawn(scene); // disabled
+  // Targets spawn with each prisoner
 }
 
 let swingDirection = 1;
@@ -643,8 +642,8 @@ function spawnPrisoner(scene, fromRight) {
   bloodEmitter.stop();
   bloodEmitter.stopFollow();
   prisonerClass = pickClass();
-  // Spawn the fame NPC from the right side to avoid overlap
-  spawnFameNpc(scene, true, prisonerClass.color);
+  // Spawn a new target each time a prisoner appears
+  spawnTarget(scene);
   prisonerBody.fillColor = prisonerClass.color;
   baseSwingSpeed = prisonerClass.speed;
   swingSpeed = baseSwingSpeed * speedMultiplier;
@@ -870,37 +869,18 @@ function gainFame(scene, npc) {
   npc.destroy();
 }
 
-function spawnFameNpc(scene, fromRight, color) {
-  // Start further off-screen when spawning from the right so we don't
-  // collide with a prisoner entering from that side
-  const startX = fromRight ? 900 : -50;
-  const speed = 30;
-  // Create a container identical to a prisoner so it's easy to see
-  const npc = scene.add.container(startX, 460).setDepth(20);
-  const body = scene.add.rectangle(0, 50, 30, 60, color).setOrigin(0.5, 1);
-  const head = scene.add.container(0, -20);
-  const headSquare = scene.add.rectangle(0, 0, 30, 30, 0xdddddd);
-  const face = scene.add.text(0, 0, ':(', { font: '16px monospace', fill: '#000' })
-    .setOrigin(0.5);
-  head.add([headSquare, face]);
-  npc.add([body, head]);
-  scene.physics.world.enable(npc);
-  npc.body.setAllowGravity(false);
-  npc.body.setVelocityX(fromRight ? -speed : speed);
-  npc.body.setImmovable(true);
-  fameNpcGroup.add(npc);
-}
-
-function scheduleFameSpawn(scene) {
-  // Temporarily spawn an NPC every 0.1 second for testing
-  const delay = 100;
-  scene.time.delayedCall(delay, () => {
-    if (!startContainer.visible) {
-      const fromRight = Math.random() < 0.5;
-      spawnFameNpc(scene, fromRight, 0xaaaaaa);
-    }
-    scheduleFameSpawn(scene);
-  });
+function spawnTarget(scene) {
+  const x = Phaser.Math.Between(100, 700);
+  const y = Phaser.Math.Between(200, 400);
+  const target = scene.add.container(x, y).setDepth(20);
+  const outer = scene.add.circle(0, 0, 20, 0xff0000);
+  const inner = scene.add.circle(0, 0, 8, 0xffffff);
+  target.add([outer, inner]);
+  scene.physics.world.enable(target);
+  target.body.setCircle(20);
+  target.body.setAllowGravity(false);
+  target.body.setImmovable(true);
+  targetGroup.add(target);
 }
 
 function update(time, delta) {
