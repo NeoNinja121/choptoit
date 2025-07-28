@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v127';
+const VERSION = 'v129';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -55,7 +55,6 @@ let killText;
 let killStreak = 0;
 let killStreakText;
 let streakMultiplierText;
-let streakEmitter;
 let baseSwingSpeed = 5;
 let speedMultiplier = 1;
 let shopButton;
@@ -203,24 +202,6 @@ function create() {
   streakMultiplierText = scene.add.text(400, 40, 'x0', { font: '48px monospace', fill: '#ff0000' })
     .setOrigin(0.5)
     .setDepth(2);
-  const streakParticles = scene.add.particles('blood').setDepth(2);
-  streakEmitter = streakParticles.createEmitter({
-    speed: { min: 10, max: 20 },
-    angle: 90,
-    gravityY: 300,
-    lifespan: 1000,
-    scale: { start: 0.4, end: 0 },
-    quantity: 0,
-    on: false
-  });
-  streakEmitter.startFollow(streakMultiplierText, 0, streakMultiplierText.height / 2);
-  scene.time.addEvent({
-    delay: 600,
-    loop: true,
-    callback: () => {
-      streakEmitter.emitParticle(1);
-    }
-  });
   versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#ffffff' })
     .setOrigin(1, 1)
     .setDepth(11);
