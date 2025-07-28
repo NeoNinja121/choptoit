@@ -49,7 +49,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v136';
+const VERSION = 'v137';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -890,7 +890,8 @@ function spawnFameNpc(scene) {
 }
 
 function scheduleFameSpawn(scene) {
-  const delay = Phaser.Math.Between(5000, 15000);
+  // Temporarily spawn an NPC every 0.1 second for testing
+  const delay = 100;
   scene.time.delayedCall(delay, () => {
     if (!startContainer.visible) {
       spawnFameNpc(scene);
