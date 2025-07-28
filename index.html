@@ -49,7 +49,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.43';
+const VERSION = 'v1.45';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -629,6 +629,8 @@ function introExecutioner(scene, onComplete) {
 
 function spawnPrisoner(scene, fromRight) {
   prisoner.setVisible(true);
+  // Spawn a fame NPC each time a prisoner arrives for testing
+  spawnFameNpc(scene);
   if (headResetEvent) {
     headResetEvent.remove(false);
     headEmitter.stop();
