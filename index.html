@@ -49,7 +49,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.45';
+const VERSION = 'v1.47';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -875,7 +875,8 @@ function spawnFameNpc(scene) {
   const speed = 30;
   // Place the fame NPC on a very high depth so it is always visible
   const npc = scene.add.container(startX, 460).setDepth(20);
-  const body = scene.add.rectangle(0, 0, 30, 60, 0x888888).setOrigin(0.5, 1);
+  // Use a bright red body color so the NPC stands out clearly
+  const body = scene.add.rectangle(0, 0, 30, 60, 0xff0000).setOrigin(0.5, 1);
   let prop;
   if (Math.random() < 0.5) {
     npc.npcType = 'bucket';
