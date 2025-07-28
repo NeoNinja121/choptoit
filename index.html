@@ -35,6 +35,8 @@ const game = new Phaser.Game(config);
 
 let gold = 0;
 let goldText;
+let fame = 0;
+let fameText;
 let swingActive = false;
 let cursor;
 let redZone;
@@ -47,7 +49,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v131';
+const VERSION = 'v133';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -86,6 +88,7 @@ let executionerIntro = true;
 
 // Group to hold fallen bodies that pile up at the bottom
 let bodyGroup;
+let fameNpcGroup;
 
 const baseSizes = { red: 60, yellow: 40, green: 20 };
 let zoneMods = { red: 0, yellow: 0, green: 0 };
@@ -196,6 +199,8 @@ function create() {
 
   // Gold text
   goldText = scene.add.text(16, 16, 'Gold: 0', { font: '20px monospace', fill: '#ffff88' });
+  fameText = scene.add.text(784, 16, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' })
+    .setOrigin(1, 0);
   missText = scene.add.text(16, 40, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
   killText = scene.add.text(16, 64, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
   killStreakText = scene.add.text(16, 88, 'Streak: 0', { font: '20px monospace', fill: '#ffffff' });
@@ -275,6 +280,12 @@ function create() {
 
   // Physics group to accumulate fallen bodies
   bodyGroup = scene.physics.add.group();
+  fameNpcGroup = scene.physics.add.group();
+  scene.physics.add.overlap(prisonerHead, fameNpcGroup, (head, npc) => {
+    if (npc.collected) return;
+    npc.collected = true;
+    gainFame(scene, npc);
+  });
   // Enable collisions between bodies so they pile up
   scene.physics.add.collider(bodyGroup, bodyGroup);
   // Stop corpses completely after two bounces
@@ -364,6 +375,8 @@ function create() {
       endSwing(scene);
     }
   });
+
+  scheduleFameSpawn(scene);
 }
 
 let swingDirection = 1;
@@ -835,6 +848,55 @@ function endSwing(scene) {
         startSwingMeter(scene);
       }
     });
+  });
+}
+
+function gainFame(scene, npc) {
+  fame += 1;
+  fameText.setText(`Fame: ${fame}`);
+  const popup = scene.add.text(npc.x, npc.y - 40, '+1 Fame', {
+    font: '20px monospace',
+    fill: '#ffff00'
+  }).setOrigin(0.5);
+  scene.tweens.add({
+    targets: popup,
+    y: popup.y - 20,
+    alpha: 0,
+    duration: 800,
+    onComplete: () => popup.destroy()
+  });
+  npc.destroy();
+}
+
+function spawnFameNpc(scene) {
+  const fromRight = Math.random() < 0.5;
+  const startX = fromRight ? 850 : -50;
+  const speed = 30;
+  const npc = scene.add.container(startX, 500).setDepth(0.5);
+  const body = scene.add.rectangle(0, 0, 30, 50, 0x888888).setOrigin(0.5, 1);
+  let prop;
+  if (Math.random() < 0.5) {
+    npc.npcType = 'bucket';
+    prop = scene.add.rectangle(0, -60, 20, 20, 0x4444ff);
+  } else {
+    npc.npcType = 'target';
+    const offset = fromRight ? -30 : 30;
+    prop = scene.add.rectangle(offset, -30, 20, 20, 0xff4444);
+  }
+  npc.add([body, prop]);
+  scene.physics.world.enable(npc);
+  npc.body.setVelocityX(fromRight ? -speed : speed);
+  npc.body.setImmovable(true);
+  fameNpcGroup.add(npc);
+}
+
+function scheduleFameSpawn(scene) {
+  const delay = Phaser.Math.Between(5000, 15000);
+  scene.time.delayedCall(delay, () => {
+    if (!startContainer.visible) {
+      spawnFameNpc(scene);
+    }
+    scheduleFameSpawn(scene);
   });
 }
 
