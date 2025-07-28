@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.67';
+const VERSION = 'v1.68';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -242,21 +242,27 @@ function create() {
 
   // Start screen
   startContainer = scene.add.container(0, 0).setDepth(12);
-  const startBg = scene.add.rectangle(400, 300, 800, 600, 0x000000, 1).setDepth(10);
+  const startBg = scene.add.rectangle(400, 300, 800, 600, 0x000000, 1)
+    .setDepth(10)
+    .setInteractive();
   const startText = scene.add.text(400, 560, '[ CLICK TO PLAY ]', { font: '32px monospace', fill: '#ffffff' })
     .setOrigin(0.5)
-    .setInteractive()
     .setDepth(10)
     .setVisible(false)
-    .on('pointerdown', () => {
-      startContainer.setVisible(false);
-      logoContainer.setVisible(false);
-      if (executionerIntro) {
-        introExecutioner(scene, () => spawnPrisoner(scene, false));
-      } else {
-        spawnPrisoner(scene, false);
-      }
-    });
+    .setInteractive();
+
+  function beginGame() {
+    startContainer.setVisible(false);
+    logoContainer.setVisible(false);
+    if (executionerIntro) {
+      introExecutioner(scene, () => spawnPrisoner(scene, false));
+    } else {
+      spawnPrisoner(scene, false);
+    }
+  }
+
+  startBg.on('pointerdown', beginGame);
+  startText.on('pointerdown', beginGame);
   startContainer.add([startBg, startText]);
   startContainer.setVisible(true);
 
