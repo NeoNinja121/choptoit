@@ -49,7 +49,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.62';
+const VERSION = 'v1.59';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -631,22 +631,40 @@ function introExecutioner(scene, onComplete) {
   });
 }
 
-
-
-function spawnPrisoner(scene, fromRight) {
-  prisoner.setVisible(true);
+function resetHead(scene) {
   if (headResetEvent) {
     headResetEvent.remove(false);
-    headEmitter.stop();
-    headEmitter.stopFollow();
     headResetEvent = null;
   }
   if (neckPumpEvent) {
     neckPumpEvent.remove(false);
     neckPumpEvent = null;
   }
+  headEmitter.stop();
+  headEmitter.stopFollow();
   bloodEmitter.stop();
   bloodEmitter.stopFollow();
+  if (prisonerHead.body) {
+    prisonerHead.body.stop();
+    prisonerHead.body.setAllowGravity(false);
+    scene.physics.world.disable(prisonerHead);
+  }
+  if (prisonerHead.parentContainer !== prisoner) {
+    scene.children.remove(prisonerHead);
+    prisoner.add(prisonerHead);
+  }
+  prisonerHead.setPosition(0, -20);
+  prisonerHead.setRotation(0);
+  prisonerBody.setAngle(0);
+  prisonerBody.y = 50;
+  prisoner.setAngle(0);
+}
+
+
+
+function spawnPrisoner(scene, fromRight) {
+  prisoner.setVisible(true);
+  resetHead(scene);
   prisonerClass = pickClass();
   // Spawn a new target each time a prisoner appears
   spawnTarget(scene);
@@ -654,25 +672,9 @@ function spawnPrisoner(scene, fromRight) {
   baseSwingSpeed = prisonerClass.speed;
   swingSpeed = baseSwingSpeed * speedMultiplier;
   prisonerFace.setText(':(');
-
-  // Ensure the head is reattached to the prisoner container
-  if (prisonerHead.parentContainer !== prisoner) {
-    scene.children.remove(prisonerHead);
-    prisoner.add(prisonerHead);
-  }
-
-  if (prisonerHead.body) {
-    prisonerHead.body.stop();
-    prisonerHead.body.setAllowGravity(false);
-    scene.physics.world.disable(prisonerHead);
-  }
-  prisonerHead.setPosition(0, -20);
-  prisonerHead.setRotation(0);
-  prisonerBody.setAngle(0);
   // Keep body aligned under the head when resetting for a new prisoner
   prisonerBody.y = 50;
-  prisoner.setAngle(0);
-
+  
   const startX = fromRight ? 850 : -50;
   prisoner.setPosition(startX, 460);
   leftEscort.setPosition(startX - 50, 460);
@@ -744,13 +746,7 @@ function startSwingMeter(scene) {
   greenZone.x = zoneX;
 
   // Ensure head is attached and physics disabled
-  if (prisonerHead.body) {
-    prisonerHead.body.stop();
-    prisonerHead.body.setAllowGravity(false);
-    scene.physics.world.disable(prisonerHead);
-  }
-  prisonerHead.setPosition(0, -20);
-  prisonerHead.setRotation(0);
+  resetHead(scene);
 
   // Meter only starts once prisoner is in position
 }
