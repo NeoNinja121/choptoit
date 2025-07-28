@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.63';
+const VERSION = 'v1.64';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -214,7 +214,8 @@ function create() {
     .setDepth(11);
 
   // Logo drop animation before showing the start screen
-  logoContainer = scene.add.container(400, -200).setDepth(11);
+  // Ensure the logo appears above the start screen background
+  logoContainer = scene.add.container(400, -200).setDepth(13);
   const rope = scene.add.rectangle(0, 0, 6, 125, 0xffffff)
     .setOrigin(0.5, 0);
   const logo = scene.add.image(0, 125, 'logo')
