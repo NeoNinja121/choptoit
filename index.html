@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.76';
+const VERSION = 'v1.77';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -70,6 +70,14 @@ let speedMultiplier = 1;
 let shopButton;
 let shopContainer;
 let shopOverlay;
+let travelButton;
+let travelContainer;
+let travelOverlay;
+let locationText;
+let currentCity = 'York';
+let backgroundRect;
+let stage;
+let travelList;
 let startContainer;
 let logoContainer;
 let hideMeterEvent;
@@ -162,6 +170,16 @@ const marketItems = [
   { name: 'Gemstones', buy: 50, sell: 25, fameReq: 8 }
 ];
 
+// Places the player can visit
+const cities = [
+  { name: 'York', desc: 'Historic northern city.', fameReq: 0, bgColor: 0x2d2d2d },
+  { name: 'Canterbury', desc: 'Seat of the Archbishop.', fameReq: 1, bgColor: 0x2d2d34 },
+  { name: 'London', desc: 'Bustling capital of the realm.', fameReq: 2, bgColor: 0x34342d },
+  { name: 'Bristol', desc: 'Busy trading port.', fameReq: 3, bgColor: 0x2d342d },
+  { name: 'Norwich', desc: 'Town of fine artisans.', fameReq: 4, bgColor: 0x342d2d },
+  { name: 'Winchester', desc: 'Former royal seat.', fameReq: 5, bgColor: 0x2d3434 }
+];
+
 function pickClass() {
   const total = classes.reduce((s, c) => s + c.weight, 0);
   let r = Phaser.Math.Between(1, total);
@@ -181,11 +199,10 @@ function preload() {
 function create() {
   const scene = this;
 
-  // Background
-  scene.add.rectangle(400, 300, 800, 600, 0x2d2d2d);
-
-  // Execution platform
-  scene.add.image(400, 520, 'platform');
+  // Background and stage art
+  const startCity = cities.find(c => c.name === currentCity);
+  backgroundRect = scene.add.rectangle(400, 300, 800, 600, startCity.bgColor);
+  stage = scene.add.image(400, 520, 'platform');
 
   // Executioner, starts off-screen and walks in on first spawn
   // Place him behind the prisoner but in front of the background
@@ -235,6 +252,8 @@ function create() {
   missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
   killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
   killStreakText = scene.add.text(16, 112, 'Streak: 0', { font: '20px monospace', fill: '#ffffff' });
+  locationText = scene.add.text(400, 16, `Current Location: ${currentCity}`, { font: '20px monospace', fill: '#ffffff' })
+    .setOrigin(0.5, 0);
   xpText = scene.add.text(400, 136, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
     .setOrigin(0.5);
   xpBar = scene.add.rectangle(400, 160, 300, 12, 0x444444).setOrigin(0.5, 0);
@@ -415,6 +434,37 @@ function create() {
     .on('pointerdown', () => {
       toggleShop(scene);
     });
+
+  // Travel button
+  travelButton = scene.add.text(660, 10, '[Travel]', { font: '18px monospace', fill: '#ffffff' })
+    .setInteractive()
+    .on('pointerdown', () => { toggleTravel(scene); });
+
+  // Travel container and overlay
+  travelOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.6)
+    .setVisible(false)
+    .setDepth(30);
+  travelContainer = scene.add.container(100, 100).setVisible(false).setDepth(31);
+  const travelBg = scene.add.rectangle(0, 0, 600, 380, 0x222222, 1).setOrigin(0, 0);
+  travelBg.setStrokeStyle(2, 0xffffff);
+  travelContainer.add(travelBg);
+  travelList = scene.add.container(0, 40);
+  travelContainer.add(travelList);
+  let cityY = 0;
+  cities.forEach(city => {
+    const title = scene.add.text(10, cityY, '', { font: '18px monospace', fill: '#ffffaa', wordWrap: { width: 420 } });
+    const btn = scene.add.text(450, cityY, '[Go]', { font: '18px monospace', fill: '#00ff00' })
+      .setInteractive()
+      .on('pointerdown', () => { selectCity(scene, city); });
+    travelList.add([title, btn]);
+    city.ui = { title, btn };
+    cityY += 60;
+  });
+  const travelClose = scene.add.text(560, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
+    .setInteractive()
+    .on('pointerdown', () => { toggleTravel(scene); });
+  travelContainer.add(travelClose);
+  updateTravelUI(scene);
 
   // Shop container and overlay
   shopOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.6)
@@ -644,6 +694,54 @@ function updateMarketUI() {
       : `${m.name} - Buy:${m.currentBuy}g Sell:${m.currentSell}g Qty:${qty}`;
     m.ui.line.setText(text);
   });
+}
+
+function updateTravelUI(scene) {
+  cities.forEach(c => {
+    if (!c.ui) return;
+    const locked = c.fameReq && fame < c.fameReq;
+    const desc = locked ? `Locked (Fame ${c.fameReq})` : c.desc;
+    c.ui.title.setText(`${c.name} - ${desc}`);
+    const label = c.name === currentCity ? '[Here]' : locked ? '[Locked]' : '[Go]';
+    c.ui.btn.setText(label);
+  });
+}
+
+function toggleTravel(scene) {
+  const visible = !travelContainer.visible;
+  travelOverlay.setVisible(visible);
+  travelContainer.setVisible(visible);
+  if (visible) {
+    updateTravelUI(scene);
+    if (hideMeterEvent) {
+      hideMeterEvent.remove(false);
+      hideMeterEvent = null;
+    }
+    swingActive = false;
+    inputEnabled = false;
+    cursor.setVisible(false);
+    scene.physics.world.pause();
+    scene.tweens.pauseAll();
+    scene.time.paused = true;
+  } else {
+    scene.physics.world.resume();
+    scene.tweens.resumeAll();
+    scene.time.paused = false;
+    startSwingMeter(scene);
+  }
+}
+
+function selectCity(scene, city) {
+  if (city.fameReq && fame < city.fameReq) return;
+  if (city.name === currentCity) return;
+  currentCity = city.name;
+  backgroundRect.fillColor = city.bgColor;
+  locationText.setText(`Current Location: ${currentCity}`);
+  scene.cameras.main.fadeOut(250, 0, 0, 0);
+  scene.time.delayedCall(250, () => {
+    scene.cameras.main.fadeIn(250, 0, 0, 0);
+  });
+  toggleTravel(scene);
 }
 
 function savePrisoner(scene) {
