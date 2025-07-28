@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.75';
+const VERSION = 'v1.76';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -99,6 +99,11 @@ let executionerIntro = true;
 let bodyGroup;
 let targetGroup;
 
+// Inventory for trading market items
+let inventory = {};
+// Multiplier applied to fame gains
+let fameMultiplier = 1;
+
 const baseSizes = { red: 60, yellow: 40, green: 20 };
 let zoneMods = { red: 0, yellow: 0, green: 0 };
 
@@ -139,6 +144,22 @@ const weapons = [
     desc: "Famed smith's katana enlarges all zones ensuring flawless beheadings everytime.",
     effects: { red: 10, yellow: 10, green: 10 }
   }
+];
+
+// Upgrades that boost fame gain or provide passive bonuses
+const gameUpgrades = [
+  { name: 'Grand Stage', cost: 150, fameReq: 0, desc: 'Bigger stage draws crowds. Fame x1.1', mult: 1.1 },
+  { name: 'Traveling Caravan', cost: 300, fameReq: 3, desc: 'Musicians and banners. Fame x1.2', mult: 1.2 },
+  { name: 'Royal Horse', cost: 600, fameReq: 6, desc: 'Arrive in style. Fame x1.3', mult: 1.3 }
+];
+
+// Items available in the trading market
+const marketItems = [
+  { name: 'Potatoes', buy: 2, sell: 1, fameReq: 0 },
+  { name: 'Mead', buy: 5, sell: 3, fameReq: 0 },
+  { name: 'Salt', buy: 8, sell: 4, fameReq: 3 },
+  { name: 'Silver Cup', buy: 20, sell: 10, fameReq: 5 },
+  { name: 'Gemstones', buy: 50, sell: 25, fameReq: 8 }
 ];
 
 function pickClass() {
@@ -403,21 +424,81 @@ function create() {
   const shopBg = scene.add.rectangle(0, 0, 600, 380, 0x222222, 1).setOrigin(0, 0);
   shopBg.setStrokeStyle(2, 0xffffff);
   shopContainer.add(shopBg);
-  let itemY = 20;
+
+  // Tab buttons
+  const weaponTab = scene.add.text(20, 10, 'Weapon Upgrades', { font: '18px monospace', fill: '#ffff00' })
+    .setInteractive()
+    .on('pointerdown', () => showShopTab(scene, 'weapons'));
+  const upgradeTab = scene.add.text(240, 10, 'Game Upgrades', { font: '18px monospace', fill: '#ffffff' })
+    .setInteractive()
+    .on('pointerdown', () => showShopTab(scene, 'upgrades'));
+  const marketTab = scene.add.text(420, 10, 'Trading Market', { font: '18px monospace', fill: '#ffffff' })
+    .setInteractive()
+    .on('pointerdown', () => showShopTab(scene, 'market'));
+  shopContainer.add([weaponTab, upgradeTab, marketTab]);
+
+  // Containers for each tab's contents
+  const weaponList = scene.add.container(0, 40);
+  const upgradeList = scene.add.container(0, 40).setVisible(false);
+  const marketList = scene.add.container(0, 40).setVisible(false);
+  shopContainer.add([weaponList, upgradeList, marketList]);
+
+  // Weapon upgrade items
+  let itemY = 0;
   weapons.forEach((w, idx) => {
     const title = scene.add.text(10, itemY, `${w.name} - ${w.type} - ${w.cost}g`, { font: '18px monospace', fill: '#ffffaa' });
     const desc = scene.add.text(20, itemY + 20, w.desc, { font: '14px monospace', fill: '#ffffff', wordWrap: { width: 420 } });
     const buy = scene.add.text(450, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => { buyWeapon(scene, idx); });
-    shopContainer.add([title, desc, buy]);
+    weaponList.add([title, desc, buy]);
     w.ui = { buy };
     itemY += 70;
   });
+
+  // Game upgrade items
+  itemY = 0;
+  gameUpgrades.forEach((g, idx) => {
+    const title = scene.add.text(10, itemY, `${g.name} - ${g.cost}g`, { font: '18px monospace', fill: '#ffffaa' });
+    const desc = scene.add.text(20, itemY + 20, g.desc, { font: '14px monospace', fill: '#ffffff', wordWrap: { width: 420 } });
+    const buy = scene.add.text(450, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
+      .setInteractive()
+      .on('pointerdown', () => { buyUpgrade(scene, idx); });
+    upgradeList.add([title, desc, buy]);
+    g.ui = { buy };
+    itemY += 70;
+  });
+
+  // Market items
+  itemY = 0;
+  marketItems.forEach((m, idx) => {
+    const line = scene.add.text(10, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
+    const buyBtn = scene.add.text(420, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
+      .setInteractive()
+      .on('pointerdown', () => { buyMarketItem(scene, idx); });
+    const sellBtn = scene.add.text(520, itemY, '[Sell]', { font: '18px monospace', fill: '#00ff00' })
+      .setInteractive()
+      .on('pointerdown', () => { sellMarketItem(scene, idx); });
+    marketList.add([line, buyBtn, sellBtn]);
+    m.ui = { line };
+    itemY += 30;
+  });
+
   const closeBtn = scene.add.text(560, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
     .on('pointerdown', () => { toggleShop(scene); });
   shopContainer.add(closeBtn);
+
+  // Store references for later use
+  scene.weaponTab = weaponTab;
+  scene.upgradeTab = upgradeTab;
+  scene.marketTab = marketTab;
+  scene.weaponList = weaponList;
+  scene.upgradeList = upgradeList;
+  scene.marketList = marketList;
+
+  // Default to weapon tab
+  showShopTab(scene, 'weapons');
 
   // Text popup
   scene.popupText = scene.add.text(400, 250, '', { font: '24px serif', fill: '#ffffff' })
@@ -448,6 +529,7 @@ function toggleShop(scene) {
   shopOverlay.setVisible(visible);
   shopContainer.setVisible(visible);
   if (visible) {
+    showShopTab(scene, scene.activeTab || 'weapons');
     if (hideMeterEvent) {
       hideMeterEvent.remove(false);
       hideMeterEvent = null;
@@ -487,6 +569,81 @@ function updateZones() {
   redZone.displayWidth = baseSizes.red + zoneMods.red;
   yellowZone.displayWidth = baseSizes.yellow + zoneMods.yellow;
   greenZone.displayWidth = baseSizes.green + zoneMods.green;
+}
+
+// Switch between shop tabs and update highlights
+function showShopTab(scene, tab) {
+  scene.activeTab = tab;
+  scene.weaponList.setVisible(tab === 'weapons');
+  scene.upgradeList.setVisible(tab === 'upgrades');
+  scene.marketList.setVisible(tab === 'market');
+  scene.weaponTab.setFill(tab === 'weapons' ? '#ffff00' : '#ffffff');
+  scene.upgradeTab.setFill(tab === 'upgrades' ? '#ffff00' : '#ffffff');
+  scene.marketTab.setFill(tab === 'market' ? '#ffff00' : '#ffffff');
+  if (tab === 'market') {
+    refreshMarketPrices();
+    updateMarketUI();
+  }
+}
+
+// Purchase a fame boosting upgrade
+function buyUpgrade(scene, index) {
+  const u = gameUpgrades[index];
+  if (u.purchased || fame < u.fameReq) return;
+  if (gold >= u.cost) {
+    gold -= u.cost;
+    goldText.setText(`Gold: ${gold}`);
+    fameMultiplier = u.mult;
+    u.purchased = true;
+    if (u.ui && u.ui.buy) {
+      u.ui.buy.setText('Bought').disableInteractive();
+    }
+  }
+}
+
+// Buying from the trading market
+function buyMarketItem(scene, index) {
+  const item = marketItems[index];
+  if (fame < item.fameReq) return;
+  if (gold >= item.currentBuy) {
+    gold -= item.currentBuy;
+    goldText.setText(`Gold: ${gold}`);
+    inventory[item.name] = (inventory[item.name] || 0) + 1;
+    updateMarketUI();
+  }
+}
+
+// Selling items the player owns
+function sellMarketItem(scene, index) {
+  const item = marketItems[index];
+  if ((inventory[item.name] || 0) > 0) {
+    inventory[item.name] -= 1;
+    gold += item.currentSell;
+    goldText.setText(`Gold: ${gold}`);
+    updateMarketUI();
+  }
+}
+
+// Randomise prices slightly each visit
+function refreshMarketPrices() {
+  marketItems.forEach(m => {
+    const mult = Phaser.Math.FloatBetween(0.9, 1.1);
+    m.currentBuy = Math.round(m.buy * mult);
+    m.currentSell = Math.round(m.sell * mult);
+  });
+}
+
+// Update market text lines with prices and inventory
+function updateMarketUI() {
+  marketItems.forEach(m => {
+    if (!m.ui) return;
+    const qty = inventory[m.name] || 0;
+    const locked = fame < m.fameReq;
+    const text = locked
+      ? `${m.name} - Locked (Fame ${m.fameReq})`
+      : `${m.name} - Buy:${m.currentBuy}g Sell:${m.currentSell}g Qty:${qty}`;
+    m.ui.line.setText(text);
+  });
 }
 
 function savePrisoner(scene) {
@@ -919,8 +1076,8 @@ function endSwing(scene) {
 }
 
 function gainFame(scene, npc) {
-  fame += 1;
-  fameText.setText(`Fame: ${fame}`);
+  fame += 1 * fameMultiplier;
+  fameText.setText(`Fame: ${Math.floor(fame)}`);
   addXP(scene, 5);
   const popup = scene.add.text(npc.x, npc.y - 40, '+1 Fame', {
     font: '20px monospace',
