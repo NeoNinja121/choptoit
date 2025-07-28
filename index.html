@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8">
   <title>Chop To It!</title>
+  <link rel="icon" type="image/png" href="favicon256.png">
   <style>
     body {
       margin: 0;
-      background: #111;
+      background: #000;
     }
     canvas {
       display: block;
@@ -22,7 +23,7 @@ const config = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
-  backgroundColor: '#222',
+  backgroundColor: '#000',
   physics: { default: 'arcade', arcade: { gravity: { y: 400 } } },
   scene: {
     preload,
@@ -49,7 +50,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.60';
+const VERSION = 'v1.61';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -212,7 +213,7 @@ function create() {
     .setDepth(11);
 
   // Logo drop animation before showing the start screen
-  logoContainer = scene.add.container(500, -200).setDepth(10);
+  logoContainer = scene.add.container(400, -200).setDepth(10);
   const rope = scene.add.line(0, 0, 0, 0, 0, 125, 0xffffff).setOrigin(0);
   const logo = scene.add.image(0, 125, 'logo')
     .setOrigin(500 / 1024, 125 / 1024)
@@ -222,7 +223,7 @@ function create() {
     targets: logoContainer,
     y: 0,
     ease: 'Bounce',
-    duration: 400,
+    duration: 600,
     onComplete: () => {
       scene.tweens.add({
         targets: logoContainer,
@@ -237,13 +238,15 @@ function create() {
 
   // Start screen
   startContainer = scene.add.container(0, 0).setDepth(10);
-  const startBg = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.7).setDepth(10);
-  const startText = scene.add.text(400, 300, '[ Tap or Click To Start ]', { font: '32px monospace', fill: '#ffffff' })
+  const startBg = scene.add.rectangle(400, 300, 800, 600, 0x000000, 1).setDepth(10);
+  const startText = scene.add.text(400, 360, '[ CLICK TO PLAY ]', { font: '32px monospace', fill: '#ffffff' })
     .setOrigin(0.5)
     .setInteractive()
     .setDepth(10)
+    .setVisible(false)
     .on('pointerdown', () => {
       startContainer.setVisible(false);
+      logoContainer.setVisible(false);
       if (executionerIntro) {
         introExecutioner(scene, () => spawnPrisoner(scene, false));
       } else {
@@ -251,11 +254,10 @@ function create() {
       }
     });
   startContainer.add([startBg, startText]);
-  startContainer.setVisible(false);
+  startContainer.setVisible(true);
 
-  scene.time.delayedCall(2000, () => {
-    logoContainer.setVisible(false);
-    startContainer.setVisible(true);
+  scene.time.delayedCall(3000, () => {
+    startText.setVisible(true);
   });
 
   // Swing meter base
