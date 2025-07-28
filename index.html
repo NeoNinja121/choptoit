@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.66';
+const VERSION = 'v1.67';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -228,13 +228,14 @@ function create() {
     ease: 'Bounce',
     duration: 600,
     onComplete: () => {
-      scene.tweens.add({
+      scene.tweens.timeline({
         targets: logoContainer,
-        angle: { from: -15, to: 15 },
-        duration: 300,
-        ease: 'Sine.easeInOut',
-        yoyo: true,
-        repeat: 3
+        tweens: [
+          { angle: { from: -15, to: 15 }, duration: 300, yoyo: true, ease: 'Sine.easeInOut' },
+          { angle: { from: -10, to: 10 }, duration: 400, yoyo: true, ease: 'Sine.easeInOut' },
+          { angle: { from: -5, to: 5 }, duration: 500, yoyo: true, ease: 'Sine.easeInOut' },
+          { angle: 0, duration: 600, ease: 'Sine.easeInOut' }
+        ]
       });
     }
   });
@@ -377,8 +378,8 @@ function create() {
   // Shop container and overlay
   shopOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.6)
     .setVisible(false)
-    .setDepth(5);
-  shopContainer = scene.add.container(100, 100).setVisible(false).setDepth(6);
+    .setDepth(30);
+  shopContainer = scene.add.container(100, 100).setVisible(false).setDepth(31);
   const shopBg = scene.add.rectangle(0, 0, 600, 380, 0x222222, 1).setOrigin(0, 0);
   shopBg.setStrokeStyle(2, 0xffffff);
   shopContainer.add(shopBg);
@@ -434,7 +435,13 @@ function toggleShop(scene) {
     swingActive = false;
     inputEnabled = false;
     cursor.setVisible(false);
+    scene.physics.world.pause();
+    scene.tweens.pauseAll();
+    scene.time.paused = true;
   } else {
+    scene.physics.world.resume();
+    scene.tweens.resumeAll();
+    scene.time.paused = false;
     startSwingMeter(scene);
   }
 }
