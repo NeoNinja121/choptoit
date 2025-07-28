@@ -49,7 +49,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.56';
+const VERSION = 'v1.62';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -279,7 +279,11 @@ function create() {
 
   // Physics group to accumulate fallen bodies
   bodyGroup = scene.physics.add.group();
-  targetGroup = scene.physics.add.group();
+  // Targets should remain stationary until hit
+  targetGroup = scene.physics.add.group({
+    allowGravity: false,
+    immovable: true
+  });
   scene.physics.add.overlap(prisonerHead, targetGroup, (head, target) => {
     if (target.collected) return;
     target.collected = true;
