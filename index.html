@@ -49,7 +49,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.57';
+const VERSION = 'v1.56';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -284,6 +284,8 @@ function create() {
     if (target.collected) return;
     target.collected = true;
     gainFame(scene, target);
+    target.body.setAllowGravity(true);
+    target.body.setImmovable(false);
   });
   // Enable collisions between bodies so they pile up
   scene.physics.add.collider(bodyGroup, bodyGroup);
@@ -866,7 +868,7 @@ function gainFame(scene, npc) {
     duration: 800,
     onComplete: () => popup.destroy()
   });
-  npc.destroy();
+  scene.time.delayedCall(2000, () => npc.destroy());
 }
 
 function spawnTarget(scene) {
@@ -880,6 +882,7 @@ function spawnTarget(scene) {
   target.body.setCircle(20);
   target.body.setAllowGravity(false);
   target.body.setImmovable(true);
+  target.collected = false;
   targetGroup.add(target);
 }
 
