@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.71';
+const VERSION = 'v1.72';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -375,7 +375,7 @@ function create() {
 
   // Shop button
   // Move the shop button to the top right corner
-  shopButton = scene.add.image(780, 20, 'shop')
+  shopButton = scene.add.image(780, 0, 'shop')
     .setOrigin(1, 0)
     .setDisplaySize(107, 71)
     .setInteractive()
