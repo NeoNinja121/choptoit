@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.68';
+const VERSION = 'v1.71';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -147,6 +147,7 @@ function pickClass() {
 
 function preload() {
   this.load.image('logo', 'logo.png');
+  this.load.image('shop', 'shop.png');
 }
 
 function create() {
@@ -374,8 +375,9 @@ function create() {
 
   // Shop button
   // Move the shop button to the top right corner
-  shopButton = scene.add.text(780, 20, '[ Shop ]', { font: '20px monospace', fill: '#ffffff' })
+  shopButton = scene.add.image(780, 20, 'shop')
     .setOrigin(1, 0)
+    .setDisplaySize(107, 71)
     .setInteractive()
     .on('pointerdown', () => {
       toggleShop(scene);
