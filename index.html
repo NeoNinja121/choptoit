@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v125';
+const VERSION = 'v127';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -205,15 +205,22 @@ function create() {
     .setDepth(2);
   const streakParticles = scene.add.particles('blood').setDepth(2);
   streakEmitter = streakParticles.createEmitter({
-    speed: { min: 20, max: 50 },
+    speed: { min: 10, max: 20 },
     angle: 90,
     gravityY: 300,
     lifespan: 1000,
-    scale: { start: 0.5, end: 0 },
-    quantity: 1,
-    frequency: 200
+    scale: { start: 0.4, end: 0 },
+    quantity: 0,
+    on: false
   });
   streakEmitter.startFollow(streakMultiplierText, 0, streakMultiplierText.height / 2);
+  scene.time.addEvent({
+    delay: 600,
+    loop: true,
+    callback: () => {
+      streakEmitter.emitParticle(1);
+    }
+  });
   versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#ffffff' })
     .setOrigin(1, 1)
     .setDepth(11);
