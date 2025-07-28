@@ -47,13 +47,17 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v123';
+const VERSION = 'v125';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
 let killText;
 let killStreak = 0;
 let killStreakText;
+let streakMultiplierText;
+let streakEmitter;
+let baseSwingSpeed = 5;
+let speedMultiplier = 1;
 let shopButton;
 let shopContainer;
 let shopOverlay;
@@ -196,6 +200,20 @@ function create() {
   missText = scene.add.text(16, 40, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
   killText = scene.add.text(16, 64, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
   killStreakText = scene.add.text(16, 88, 'Streak: 0', { font: '20px monospace', fill: '#ffffff' });
+  streakMultiplierText = scene.add.text(400, 40, 'x0', { font: '48px monospace', fill: '#ff0000' })
+    .setOrigin(0.5)
+    .setDepth(2);
+  const streakParticles = scene.add.particles('blood').setDepth(2);
+  streakEmitter = streakParticles.createEmitter({
+    speed: { min: 20, max: 50 },
+    angle: 90,
+    gravityY: 300,
+    lifespan: 1000,
+    scale: { start: 0.5, end: 0 },
+    quantity: 1,
+    frequency: 200
+  });
+  streakEmitter.startFollow(streakMultiplierText, 0, streakMultiplierText.height / 2);
   versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#ffffff' })
     .setOrigin(1, 1)
     .setDepth(11);
@@ -625,7 +643,8 @@ function spawnPrisoner(scene, fromRight) {
   bloodEmitter.stopFollow();
   prisonerClass = pickClass();
   prisonerBody.fillColor = prisonerClass.color;
-  swingSpeed = prisonerClass.speed;
+  baseSwingSpeed = prisonerClass.speed;
+  swingSpeed = baseSwingSpeed * speedMultiplier;
   prisonerFace.setText(':(');
 
   // Ensure the head is reattached to the prisoner container
@@ -763,30 +782,39 @@ function endSwing(scene) {
     missStreak++;
     let strikeMsg = `Strike ${missStreak}`;
     if (missStreak >= 3) {
-    payout -= 20;
-    strikeMsg = 'Strike 3\nSaved!';
+      payout -= 20;
+      strikeMsg = 'Strike 3\nSaved!';
+      missStreak = 0;
+      savePrisoner(scene);
+      spawnSide = 'left';
+      pendingSpawnSide = 'left';
+      spawnDelay = 2000; // wait for the freed prisoner to exit right
+    }
+    message = `Missed!\n${strikeMsg}`;
+    killStreak = 0;
+    speedMultiplier = 1;
+    swingSpeed = baseSwingSpeed * speedMultiplier;
+    killStreakText.setText(`Streak: ${killStreak}`);
+    streakMultiplierText.setText(`x${killStreak}`);
+  } else {
     missStreak = 0;
-    savePrisoner(scene);
-    spawnSide = 'left';
-    pendingSpawnSide = 'left';
-    spawnDelay = 2000; // wait for the freed prisoner to exit right
+    killCount++;
+    killStreak++;
+    if (killStreak % 5 === 0) {
+      speedMultiplier *= 1.05;
+    }
+    swingSpeed = baseSwingSpeed * speedMultiplier;
+    killText.setText(`Kills: ${killCount}`);
+    killStreakText.setText(`Streak: ${killStreak}`);
+    streakMultiplierText.setText(`x${killStreak}`);
+    showAimArrow(scene, bloodAmount, 'left');
+    spawnSide = null;
+    spawnDelay = 0;
   }
-  message = `Missed!\n${strikeMsg}`;
-  killStreak = 0;
-  killStreakText.setText(`Streak: ${killStreak}`);
-} else {
-  missStreak = 0;
-  killCount++;
-  killStreak++;
-  killText.setText(`Kills: ${killCount}`);
-  killStreakText.setText(`Streak: ${killStreak}`);
-  showAimArrow(scene, bloodAmount, 'left');
-  spawnSide = null;
-  spawnDelay = 0;
-}
   missText.setText(`Misses: ${missStreak}`);
 
-  gold += payout;
+  const goldGain = missed ? payout : payout * killStreak;
+  gold += goldGain;
   goldText.setText(`Gold: ${gold}`);
 
   // Increase and show blood bursts
