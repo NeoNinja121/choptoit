@@ -49,7 +49,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v133';
+const VERSION = 'v136';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -199,11 +199,10 @@ function create() {
 
   // Gold text
   goldText = scene.add.text(16, 16, 'Gold: 0', { font: '20px monospace', fill: '#ffff88' });
-  fameText = scene.add.text(784, 16, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' })
-    .setOrigin(1, 0);
-  missText = scene.add.text(16, 40, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
-  killText = scene.add.text(16, 64, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
-  killStreakText = scene.add.text(16, 88, 'Streak: 0', { font: '20px monospace', fill: '#ffffff' });
+  fameText = scene.add.text(16, 40, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' });
+  missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
+  killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
+  killStreakText = scene.add.text(16, 112, 'Streak: 0', { font: '20px monospace', fill: '#ffffff' });
   streakMultiplierText = scene.add.text(400, 40, 'x0', { font: '48px monospace', fill: '#ff0000' })
     .setOrigin(0.5)
     .setDepth(2);
@@ -872,7 +871,7 @@ function spawnFameNpc(scene) {
   const fromRight = Math.random() < 0.5;
   const startX = fromRight ? 850 : -50;
   const speed = 30;
-  const npc = scene.add.container(startX, 500).setDepth(0.5);
+  const npc = scene.add.container(startX, 500).setDepth(2);
   const body = scene.add.rectangle(0, 0, 30, 50, 0x888888).setOrigin(0.5, 1);
   let prop;
   if (Math.random() < 0.5) {
