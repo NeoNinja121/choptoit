@@ -5,13 +5,14 @@
   <title>Chop To It!</title>
   <link rel="icon" type="image/png" href="favicon256.png">
   <style>
-    body {
+    html, body {
       margin: 0;
       background: #000;
     }
     canvas {
       display: block;
       margin: auto;
+      background: #000;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
@@ -50,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.61';
+const VERSION = 'v1.62';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -213,7 +214,7 @@ function create() {
     .setDepth(11);
 
   // Logo drop animation before showing the start screen
-  logoContainer = scene.add.container(400, -200).setDepth(10);
+  logoContainer = scene.add.container(400, -200).setDepth(11);
   const rope = scene.add.line(0, 0, 0, 0, 0, 125, 0xffffff).setOrigin(0);
   const logo = scene.add.image(0, 125, 'logo')
     .setOrigin(500 / 1024, 125 / 1024)
@@ -239,7 +240,7 @@ function create() {
   // Start screen
   startContainer = scene.add.container(0, 0).setDepth(10);
   const startBg = scene.add.rectangle(400, 300, 800, 600, 0x000000, 1).setDepth(10);
-  const startText = scene.add.text(400, 360, '[ CLICK TO PLAY ]', { font: '32px monospace', fill: '#ffffff' })
+  const startText = scene.add.text(400, 520, '[ CLICK TO PLAY ]', { font: '32px monospace', fill: '#ffffff' })
     .setOrigin(0.5)
     .setInteractive()
     .setDepth(10)
