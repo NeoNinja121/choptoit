@@ -59,6 +59,12 @@ let killText;
 let killStreak = 0;
 let killStreakText;
 let streakMultiplierText;
+let xp = 0;
+let level = 1;
+let xpThreshold = 10;
+let xpText;
+let xpBar;
+let xpBarFill;
 let baseSwingSpeed = 5;
 let speedMultiplier = 1;
 let shopButton;
@@ -208,6 +214,11 @@ function create() {
   missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
   killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
   killStreakText = scene.add.text(16, 112, 'Streak: 0', { font: '20px monospace', fill: '#ffffff' });
+  xpText = scene.add.text(400, 136, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
+    .setOrigin(0.5);
+  xpBar = scene.add.rectangle(400, 160, 300, 12, 0x444444).setOrigin(0.5, 0);
+  xpBarFill = scene.add.rectangle(250, 160, 0, 12, 0x00ff00).setOrigin(0, 0);
+  updateXPUI();
   streakMultiplierText = scene.add.text(400, 40, 'x0', { font: '48px monospace', fill: '#ff0000' })
     .setOrigin(0.5)
     .setDepth(2);
@@ -863,6 +874,7 @@ function endSwing(scene) {
     killText.setText(`Kills: ${killCount}`);
     killStreakText.setText(`Streak: ${killStreak}`);
     streakMultiplierText.setText(`x${killStreak}`);
+    addXP(scene, 1);
     showAimArrow(scene, bloodAmount, 'left');
     spawnSide = null;
     spawnDelay = 0;
@@ -909,6 +921,7 @@ function endSwing(scene) {
 function gainFame(scene, npc) {
   fame += 1;
   fameText.setText(`Fame: ${fame}`);
+  addXP(scene, 5);
   const popup = scene.add.text(npc.x, npc.y - 40, '+1 Fame', {
     font: '20px monospace',
     fill: '#ffff00'
@@ -936,6 +949,37 @@ function spawnTarget(scene) {
   target.body.setImmovable(true);
   target.collected = false;
   targetGroup.add(target);
+}
+
+function addXP(scene, amount) {
+  xp += amount;
+  if (xp >= xpThreshold) {
+    xp -= xpThreshold;
+    level++;
+    xpThreshold = Math.floor(xpThreshold * 1.15);
+    onLevelUp(scene);
+  }
+  updateXPUI();
+}
+
+function updateXPUI() {
+  xpText.setText(`Level ${level} - ${xp}/${xpThreshold} XP`);
+  const maxWidth = 300;
+  xpBarFill.displayWidth = maxWidth * (xp / xpThreshold);
+}
+
+function onLevelUp(scene) {
+  const msg = scene.add.text(400, 300, 'LEVEL UP!', { font: '48px monospace', fill: '#ffff00' })
+    .setOrigin(0.5)
+    .setDepth(25);
+  scene.cameras.main.flash(250, 255, 255, 255);
+  scene.tweens.add({
+    targets: msg,
+    y: 250,
+    alpha: 0,
+    duration: 1000,
+    onComplete: () => msg.destroy()
+  });
 }
 
 function update(time, delta) {
