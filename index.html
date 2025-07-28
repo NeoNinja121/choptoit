@@ -49,7 +49,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v137';
+const VERSION = 'v139';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -884,6 +884,7 @@ function spawnFameNpc(scene) {
   }
   npc.add([body, prop]);
   scene.physics.world.enable(npc);
+  npc.body.setAllowGravity(false);
   npc.body.setVelocityX(fromRight ? -speed : speed);
   npc.body.setImmovable(true);
   fameNpcGroup.add(npc);
