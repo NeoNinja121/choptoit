@@ -47,7 +47,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v129';
+const VERSION = 'v131';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -788,7 +788,7 @@ function endSwing(scene) {
     missStreak = 0;
     killCount++;
     killStreak++;
-    if (killStreak % 5 === 0) {
+    if (killStreak > 1) {
       speedMultiplier *= 1.05;
     }
     swingSpeed = baseSwingSpeed * speedMultiplier;
