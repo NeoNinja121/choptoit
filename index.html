@@ -49,7 +49,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.59';
+const VERSION = 'v1.60';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -63,6 +63,7 @@ let shopButton;
 let shopContainer;
 let shopOverlay;
 let startContainer;
+let logoContainer;
 let hideMeterEvent;
 let headResetEvent;
 let neckPumpEvent;
@@ -143,7 +144,7 @@ function pickClass() {
 }
 
 function preload() {
-  // Placeholder assets using graphics
+  this.load.image('logo', 'logo.png');
 }
 
 function create() {
@@ -210,6 +211,30 @@ function create() {
     .setOrigin(1, 1)
     .setDepth(11);
 
+  // Logo drop animation before showing the start screen
+  logoContainer = scene.add.container(500, -200).setDepth(10);
+  const rope = scene.add.line(0, 0, 0, 0, 0, 125, 0xffffff).setOrigin(0);
+  const logo = scene.add.image(0, 125, 'logo')
+    .setOrigin(500 / 1024, 125 / 1024)
+    .setScale(0.5);
+  logoContainer.add([rope, logo]);
+  scene.tweens.add({
+    targets: logoContainer,
+    y: 0,
+    ease: 'Bounce',
+    duration: 400,
+    onComplete: () => {
+      scene.tweens.add({
+        targets: logoContainer,
+        angle: { from: -15, to: 15 },
+        duration: 300,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: 3
+      });
+    }
+  });
+
   // Start screen
   startContainer = scene.add.container(0, 0).setDepth(10);
   const startBg = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.7).setDepth(10);
@@ -226,6 +251,12 @@ function create() {
       }
     });
   startContainer.add([startBg, startText]);
+  startContainer.setVisible(false);
+
+  scene.time.delayedCall(2000, () => {
+    logoContainer.setVisible(false);
+    startContainer.setVisible(true);
+  });
 
   // Swing meter base
   const meterY = 550;
