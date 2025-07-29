@@ -58,13 +58,11 @@ let inputEnabled = true;
 let killCount = 0;
 let killText;
 let killStreak = 0;
-let killStreakText;
 let streakMultiplierText;
 let xp = 0;
 let level = 1;
 let xpThreshold = 10;
 let xpText;
-let xpBar;
 let xpBarFill;
 let baseSwingSpeed = 5;
 let speedMultiplier = 1;
@@ -365,17 +363,15 @@ function create() {
   fameText = scene.add.text(16, 40, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' });
   missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
   killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
-  killStreakText = scene.add.text(16, 112, 'Streak: 0', { font: '20px monospace', fill: '#ffffff' });
-  locationText = scene.add.text(400, 16, `Current Location: ${currentCity}`, { font: '20px monospace', fill: '#ffffff' })
+  locationText = scene.add.text(400, 16, currentCity, { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0);
   dateText = scene.add.text(400, 112, getDateString(), { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0);
-  xpText = scene.add.text(400, 136, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
+  xpText = scene.add.text(400, 146, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
     .setOrigin(0.5);
-  xpBar = scene.add.rectangle(400, 160, 300, 12, 0x444444).setOrigin(0.5, 0);
   xpBarFill = scene.add.rectangle(250, 160, 0, 12, 0x00ff00).setOrigin(0, 0);
   updateXPUI();
-  streakMultiplierText = scene.add.text(400, 40, 'x0', { font: '48px monospace', fill: '#ff0000' })
+  streakMultiplierText = scene.add.text(400, 70, 'x0', { font: '48px monospace', fill: '#ff0000' })
     .setOrigin(0.5)
     .setDepth(2);
   versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#ffffff' })
@@ -456,7 +452,7 @@ function create() {
   cursor = scene.add.rectangle(250, meterY, 10, 20, 0xffffff).setVisible(false);
 
   // Blood pool
-  bloodPool = scene.add.rectangle(400, 500, 40, 10, 0x770000)
+  bloodPool = scene.add.rectangle(400, 520, 40, 10, 0x770000)
     .setOrigin(0.5, 0)
     .setVisible(false)
     .setDepth(0.6);
@@ -991,7 +987,6 @@ function hideTradeMenu(scene) {
 
 function resetForNewCity(scene) {
   killStreak = 0;
-  killStreakText.setText(`Streak: ${killStreak}`);
   streakMultiplierText.setText(`x${killStreak}`);
   missStreak = 0;
   missText.setText(`Misses: ${missStreak}`);
@@ -1015,7 +1010,7 @@ function selectCity(scene, city) {
   if (city.name === currentCity) return;
   currentCity = city.name;
   backgroundRect.setTint(city.bgColor);
-  locationText.setText(`Current Location: ${currentCity}`);
+  locationText.setText(currentCity);
   advanceDay();
   scene.cameras.main.fadeOut(250, 0, 0, 0);
   scene.time.delayedCall(250, () => {
@@ -1420,7 +1415,6 @@ function endSwing(scene) {
     killStreak = 0;
     speedMultiplier = 1;
     swingSpeed = baseSwingSpeed * speedMultiplier;
-    killStreakText.setText(`Streak: ${killStreak}`);
     streakMultiplierText.setText(`x${killStreak}`);
   } else {
     missStreak = 0;
@@ -1431,7 +1425,6 @@ function endSwing(scene) {
     }
     swingSpeed = baseSwingSpeed * speedMultiplier;
     killText.setText(`Kills: ${killCount}`);
-    killStreakText.setText(`Streak: ${killStreak}`);
     streakMultiplierText.setText(`x${killStreak}`);
     addXP(scene, 1);
     showAimArrow(scene, bloodAmount, 'left');
