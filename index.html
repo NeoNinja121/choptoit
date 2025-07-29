@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.79';
+const VERSION = 'v1.82';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -276,6 +276,8 @@ function preload() {
   this.load.image('platform', 'platform.png');
   this.load.image('executionerHead', 'executionerhead.png');
   this.load.image('executionerBody', 'executionerbody.png');
+  this.load.image('escortHead', 'escorthead.png');
+  this.load.image('escortBody', 'escortbody.png');
   this.load.image('signTravel', 'sign_travel.png');
 }
 
@@ -318,14 +320,16 @@ function create() {
 
   // Escort guards
   leftEscort = scene.add.container(0, 0);
-  const leftBody = scene.add.rectangle(0, 50, 40, 70, 0x555555)
+  const leftBody = scene.add.image(0, 50, 'escortBody')
     .setOrigin(0.5, 1);
-  const leftHead = scene.add.rectangle(0, -20, 30, 30, 0x777777);
+  const leftHead = scene.add.image(0, -20, 'escortHead')
+    .setOrigin(0.5, 0.5);
   leftEscort.add([leftBody, leftHead]);
   rightEscort = scene.add.container(0, 0);
-  const rightBody = scene.add.rectangle(0, 50, 40, 70, 0x555555)
+  const rightBody = scene.add.image(0, 50, 'escortBody')
     .setOrigin(0.5, 1);
-  const rightHead = scene.add.rectangle(0, -20, 30, 30, 0x777777);
+  const rightHead = scene.add.image(0, -20, 'escortHead')
+    .setOrigin(0.5, 0.5);
   rightEscort.add([rightBody, rightHead]);
   leftEscort.setVisible(false);
   rightEscort.setVisible(false);
