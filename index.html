@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.18';
+const VERSION = 'v2.19';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -81,6 +81,7 @@ let travelButton;
 let travelContainer;
 let travelOverlay;
 let backOverlay;
+let backOverlayWasVisible = false;
 let locationText;
 let currentCity = 'York';
 let backgroundRect;
@@ -815,10 +816,13 @@ function toggleShop(scene) {
     swingActive = false;
     inputEnabled = false;
     cursor.setVisible(false);
+    backOverlayWasVisible = backOverlay.visible;
+    backOverlay.setVisible(false);
     scene.physics.world.pause();
     scene.tweens.pauseAll();
     scene.time.paused = true;
   } else {
+    backOverlay.setVisible(backOverlayWasVisible);
     scene.physics.world.resume();
     scene.tweens.resumeAll();
     scene.time.paused = false;
@@ -947,10 +951,13 @@ function toggleTravel(scene, resume = true) {
     swingActive = false;
     inputEnabled = false;
     cursor.setVisible(false);
+    backOverlayWasVisible = backOverlay.visible;
+    backOverlay.setVisible(false);
     scene.physics.world.pause();
     scene.tweens.pauseAll();
     scene.time.paused = true;
   } else {
+    backOverlay.setVisible(backOverlayWasVisible);
     scene.physics.world.resume();
     scene.tweens.resumeAll();
     scene.time.paused = false;
@@ -974,6 +981,8 @@ function showTradeMenu(scene, index, mode = 'buy') {
   swingActive = false;
   inputEnabled = false;
   cursor.setVisible(false);
+  backOverlayWasVisible = backOverlay.visible;
+  backOverlay.setVisible(false);
   scene.physics.world.pause();
   scene.tweens.pauseAll();
   scene.time.paused = true;
@@ -982,6 +991,7 @@ function showTradeMenu(scene, index, mode = 'buy') {
 function hideTradeMenu(scene) {
   tradeOverlay.setVisible(false);
   tradeContainer.setVisible(false);
+  backOverlay.setVisible(backOverlayWasVisible);
   scene.physics.world.resume();
   scene.tweens.resumeAll();
   scene.time.paused = false;
