@@ -49,9 +49,10 @@ let bloodPool;
 let bloodEmitter;
 let dripEmitter;
 let headEmitter;
+let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.94';
+const VERSION = 'v1.95';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -488,6 +489,15 @@ function create() {
     quantity: 0,
     on: false
   });
+  splatEmitter = particles.createEmitter({
+    speed: { min: 100, max: 200 },
+    angle: { min: 240, max: 300 },
+    gravityY: 400,
+    lifespan: 800,
+    scale: { start: 1, end: 0 },
+    quantity: 0,
+    on: false
+  });
 
   // Physics group to accumulate fallen bodies
   bodyGroup = scene.physics.add.group();
@@ -496,17 +506,8 @@ function create() {
     allowGravity: false,
     immovable: true
   });
-  scene.physics.add.overlap(prisonerHead, targetGroup, (head, target) => {
-    if (target.collected) return;
-    target.collected = true;
-    gainFame(scene, target);
-    targetGroup.remove(target);
-    bodyGroup.add(target);
-    target.body.setAllowGravity(true);
-    target.body.setImmovable(false);
-    target.body.onWorldBounds = true;
-    target.body.setCollideWorldBounds(true);
-    target.isCorpse = true;
+  scene.physics.add.overlap(prisonerHead, targetGroup, (_, target) => {
+    handleTargetHit(scene, target);
   });
   // Enable collisions between bodies so they pile up
   scene.physics.add.collider(bodyGroup, bodyGroup);
@@ -554,6 +555,20 @@ function create() {
       const half = bloodPool.displayWidth / 2;
       const x = Phaser.Math.Between(bloodPool.x - half, bloodPool.x + half);
       dripEmitter.emitParticleAt(x, bloodPool.y + bloodPool.displayHeight, 1);
+    }
+  });
+
+  scene.time.addEvent({
+    delay: 2000,
+    loop: true,
+    callback: () => {
+      bodyGroup.getChildren().forEach(obj => {
+        if (obj.isCorpse && (!obj.body || !obj.body.enable)) {
+          if (Phaser.Math.Between(0, 100) < 5) {
+            splatEmitter.explode(5, obj.x, obj.y);
+          }
+        }
+      });
     }
   });
 
@@ -1013,22 +1028,16 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   flyingHead.isCorpse = true;
   flyingHead.bounceCount = 0;
   const hBody = flyingHead.body;
-  scene.physics.add.overlap(flyingHead, targetGroup, (head, target) => {
-    if (target.collected) return;
-    target.collected = true;
-    gainFame(scene, target);
-    targetGroup.remove(target);
-    bodyGroup.add(target);
-    target.body.setAllowGravity(true);
-    target.body.setImmovable(false);
-    target.body.onWorldBounds = true;
-    target.body.setCollideWorldBounds(true);
-    target.isCorpse = true;
+  scene.physics.add.collider(flyingHead, targetGroup, (head, target) => {
+    handleTargetHit(scene, target);
   });
   hBody.setAllowGravity(true);
   hBody.onWorldBounds = true;
   hBody.setCollideWorldBounds(true);
-  hBody.setBounce(0.05);
+  hBody.checkCollision.left = false;
+  hBody.checkCollision.right = false;
+  hBody.checkCollision.up = false;
+  hBody.setBounce(0.6);
   hBody.setDrag(50, 0);
   const speed = 250 * power;
   hBody.setVelocity(Math.sin(rad) * speed, -Math.cos(rad) * speed);
@@ -1395,6 +1404,40 @@ function gainFame(scene, npc) {
     onComplete: () => popup.destroy()
   });
   // Jester will run off when the target hits the ground
+}
+
+function handleTargetHit(scene, target) {
+  if (target.collected) return;
+  target.collected = true;
+  const jester = target.jester;
+  gainFame(scene, target);
+  targetGroup.remove(target);
+  // blood spray at impact
+  splatEmitter.explode(15, jester.x + target.x, jester.y + target.y);
+  target.body.setVelocity(0, 0);
+  target.body.setAllowGravity(false);
+  target.body.setImmovable(true);
+  target.body.setCollideWorldBounds(false);
+  target.body.enable = false;
+  scene.tweens.add({
+    targets: target,
+    y: 50,
+    duration: 300,
+    ease: 'Linear',
+    onComplete: () => {
+      if (jester && !jester.running) {
+        jester.running = true;
+        const offX = jester.startFromRight ? 900 : -100;
+        scene.tweens.add({
+          targets: jester,
+          x: offX,
+          duration: 1500,
+          ease: 'Linear',
+          onComplete: () => jester.destroy()
+        });
+      }
+    }
+  });
 }
 
 function spawnTarget(scene) {
