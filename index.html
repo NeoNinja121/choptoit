@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.8';
+const VERSION = 'v2.9';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -452,7 +452,7 @@ function create() {
   cursor = scene.add.rectangle(250, meterY, 10, 20, 0xffffff).setVisible(false);
 
   // Blood pool
-  bloodPool = scene.add.rectangle(400, 520, 40, 10, 0x770000)
+  bloodPool = scene.add.rectangle(400, 510, 40, 10, 0x770000)
     .setOrigin(0.5, 0)
     .setVisible(false)
     .setDepth(0.6);
