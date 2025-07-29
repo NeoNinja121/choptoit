@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.84';
+const VERSION = 'v1.88';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -122,6 +122,7 @@ const marketQuotes = [
 ];
 let currentQuote = '';
 let marketChatterText;
+let marketPrisoner;
 
 // Group to hold fallen bodies that pile up at the bottom
 let bodyGroup;
@@ -233,6 +234,13 @@ function refreshMarketPrices() {
 function updateMarketChatter() {
   if (marketChatterText) {
     marketChatterText.setText(`"${currentQuote}"`);
+    if (marketPrisoner) {
+      const color = Phaser.Utils.Array.GetRandom(classes).color;
+      marketPrisoner.list[0].setTint(color);
+      const txt = marketChatterText;
+      marketPrisoner.x = txt.x + txt.width + 10;
+      marketPrisoner.y = txt.y + txt.height;
+    }
   }
 }
 
@@ -618,20 +626,29 @@ function create() {
     const line = scene.add.text(10, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
     const buyBtn = scene.add.text(420, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
-      .on('pointerdown', () => { buyMarketItem(scene, idx); });
-    const sellBtn = scene.add.text(520, itemY, '[Sell]', { font: '18px monospace', fill: '#00ff00' })
+      .on('pointerdown', () => { buyMarketItem(scene, idx, 1); });
+    const buy10Btn = scene.add.text(470, itemY, '[Buy10]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
-      .on('pointerdown', () => { sellMarketItem(scene, idx); });
-    marketList.add([line, buyBtn, sellBtn]);
-    m.ui = { line };
+      .on('pointerdown', () => { buyMarketItem(scene, idx, 10); });
+    const sellBtn = scene.add.text(540, itemY, '[Sell]', { font: '18px monospace', fill: '#00ff00' })
+      .setInteractive()
+      .on('pointerdown', () => { sellMarketItem(scene, idx, 1); });
+    const sell10Btn = scene.add.text(600, itemY, '[Sell10]', { font: '18px monospace', fill: '#00ff00' })
+      .setInteractive()
+      .on('pointerdown', () => { sellMarketItem(scene, idx, 10); });
+    marketList.add([line, buyBtn, buy10Btn, sellBtn, sell10Btn]);
+    m.ui = { line, buyBtn, buy10Btn, sellBtn, sell10Btn };
     itemY += 30;
   });
-  marketChatterText = scene.add.text(10, itemY + 10, '', {
+  marketChatterText = scene.add.text(10, itemY + 40, '', {
     font: '16px monospace',
     fill: '#ffaaaa',
     wordWrap: { width: 580 }
   });
-  marketList.add(marketChatterText);
+  const body = scene.add.image(0, 0, 'prisonerBodyImg').setOrigin(0.5, 1).setScale(0.5);
+  const head = scene.add.image(0, -40, 'prisonerHeadImg').setOrigin(0.5).setScale(0.5);
+  marketPrisoner = scene.add.container(0, 0, [body, head]);
+  marketList.add([marketChatterText, marketPrisoner]);
 
   const closeBtn = scene.add.text(560, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
@@ -754,23 +771,24 @@ function buyUpgrade(scene, index) {
 }
 
 // Buying from the trading market
-function buyMarketItem(scene, index) {
+function buyMarketItem(scene, index, qty = 1) {
   const item = marketItems[index];
   if (fame < item.fameReq) return;
-  if (gold >= item.currentBuy) {
-    gold -= item.currentBuy;
+  const cost = item.currentBuy * qty;
+  if (gold >= cost) {
+    gold -= cost;
     goldText.setText(`Gold: ${gold}`);
-    inventory[item.name] = (inventory[item.name] || 0) + 1;
+    inventory[item.name] = (inventory[item.name] || 0) + qty;
     updateMarketUI();
   }
 }
 
 // Selling items the player owns
-function sellMarketItem(scene, index) {
+function sellMarketItem(scene, index, qty = 1) {
   const item = marketItems[index];
-  if ((inventory[item.name] || 0) > 0) {
-    inventory[item.name] -= 1;
-    gold += item.currentSell;
+  if ((inventory[item.name] || 0) >= qty) {
+    inventory[item.name] -= qty;
+    gold += item.currentSell * qty;
     goldText.setText(`Gold: ${gold}`);
     updateMarketUI();
   }
@@ -787,6 +805,22 @@ function updateMarketUI() {
       ? `${m.name} - Locked (Fame ${m.fameReq})`
       : `${m.name} - Buy:${m.currentBuy}g Sell:${m.currentSell}g Qty:${qty}`;
     m.ui.line.setText(text);
+    if (m.ui.buyBtn) {
+      const canBuy = !locked && gold >= m.currentBuy;
+      m.ui.buyBtn.setFill(canBuy ? '#00ff00' : '#777777');
+    }
+    if (m.ui.buy10Btn) {
+      const canBuy10 = !locked && gold >= m.currentBuy * 10;
+      m.ui.buy10Btn.setFill(canBuy10 ? '#00ff00' : '#777777');
+    }
+    if (m.ui.sellBtn) {
+      const canSell = qty >= 1;
+      m.ui.sellBtn.setFill(canSell ? '#00ff00' : '#777777');
+    }
+    if (m.ui.sell10Btn) {
+      const canSell10 = qty >= 10;
+      m.ui.sell10Btn.setFill(canSell10 ? '#00ff00' : '#777777');
+    }
   });
 }
 
@@ -801,7 +835,7 @@ function updateTravelUI(scene) {
   });
 }
 
-function toggleTravel(scene) {
+function toggleTravel(scene, resume = true) {
   const visible = !travelContainer.visible;
   travelOverlay.setVisible(visible);
   travelContainer.setVisible(visible);
@@ -821,8 +855,27 @@ function toggleTravel(scene) {
     scene.physics.world.resume();
     scene.tweens.resumeAll();
     scene.time.paused = false;
-    startSwingMeter(scene);
+    if (resume) startSwingMeter(scene);
   }
+}
+
+function resetForNewCity(scene) {
+  killStreak = 0;
+  killStreakText.setText(`Streak: ${killStreak}`);
+  streakMultiplierText.setText(`x${killStreak}`);
+  missStreak = 0;
+  missText.setText(`Misses: ${missStreak}`);
+  speedMultiplier = 1;
+  swingSpeed = baseSwingSpeed;
+  bloodPool.displayWidth = 40;
+  bloodPool.setVisible(false);
+  bodyGroup.clear(true, true);
+  resetHead(scene);
+  executioner.setVisible(false);
+  prisoner.setVisible(false);
+  leftEscort.setVisible(false);
+  rightEscort.setVisible(false);
+  introExecutioner(scene, () => spawnPrisoner(scene, false));
 }
 
 function selectCity(scene, city) {
@@ -835,8 +888,9 @@ function selectCity(scene, city) {
   scene.cameras.main.fadeOut(250, 0, 0, 0);
   scene.time.delayedCall(250, () => {
     scene.cameras.main.fadeIn(250, 0, 0, 0);
+    resetForNewCity(scene);
   });
-  toggleTravel(scene);
+  toggleTravel(scene, false);
 }
 
 function savePrisoner(scene) {
