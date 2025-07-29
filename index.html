@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.19';
+const VERSION = 'v2.20';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1394,6 +1394,16 @@ function startSwingMeter(scene) {
 
   // Ensure head is attached and physics disabled
   resetHead(scene);
+
+  // Fade out the darkness overlay once the prisoner is ready
+  if (backOverlay.visible && backOverlay.alpha > 0) {
+    scene.tweens.add({
+      targets: backOverlay,
+      alpha: 0,
+      duration: 500,
+      onComplete: () => backOverlay.setVisible(false)
+    });
+  }
 
   // Meter only starts once prisoner is in position
 }
