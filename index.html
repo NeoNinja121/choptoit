@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.2';
+const VERSION = 'v2.7';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -71,6 +71,10 @@ let speedMultiplier = 1;
 let shopButton;
 let shopContainer;
 let shopOverlay;
+let tradeOverlay;
+let tradeContainer;
+let tradeTitle;
+let tradeItemIndex = null;
 let travelButton;
 let travelContainer;
 let travelOverlay;
@@ -676,9 +680,7 @@ function create() {
     sell: 300,
     qty: 370,
     buyBtn: 440,
-    buy10Btn: 520,
-    sellBtn: 600,
-    sell10Btn: 680
+    sellBtn: 520
   };
   // Header row
   const headItem = scene.add.text(cols.name, itemY, 'Item', { font: '18px monospace', fill: '#ffffaa' });
@@ -695,18 +697,12 @@ function create() {
     const qtyText = scene.add.text(cols.qty, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
     const buyBtn = scene.add.text(cols.buyBtn, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
-      .on('pointerdown', () => { buyMarketItem(scene, idx, 1); });
-    const buy10Btn = scene.add.text(cols.buy10Btn, itemY, '[Buy10]', { font: '18px monospace', fill: '#00ff00' })
-      .setInteractive()
-      .on('pointerdown', () => { buyMarketItem(scene, idx, 10); });
+      .on('pointerdown', () => { showTradeMenu(scene, idx); });
     const sellBtn = scene.add.text(cols.sellBtn, itemY, '[Sell]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
-      .on('pointerdown', () => { sellMarketItem(scene, idx, 1); });
-    const sell10Btn = scene.add.text(cols.sell10Btn, itemY, '[Sell10]', { font: '18px monospace', fill: '#00ff00' })
-      .setInteractive()
-      .on('pointerdown', () => { sellMarketItem(scene, idx, 10); });
-    marketList.add([name, buyPrice, sellPrice, qtyText, buyBtn, buy10Btn, sellBtn, sell10Btn]);
-    m.ui = { name, buyPrice, sellPrice, qtyText, buyBtn, buy10Btn, sellBtn, sell10Btn };
+      .on('pointerdown', () => { showTradeMenu(scene, idx); });
+    marketList.add([name, buyPrice, sellPrice, qtyText, buyBtn, sellBtn]);
+    m.ui = { name, buyPrice, sellPrice, qtyText, buyBtn, sellBtn };
     itemY += 25;
   });
   marketChatterText = scene.add.text(350, 400, '', {
@@ -723,6 +719,48 @@ function create() {
     .setInteractive()
     .on('pointerdown', () => { toggleShop(scene); });
   shopContainer.add(closeBtn);
+
+  // Trade menu overlay for buying and selling quantities
+  tradeOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.6)
+    .setVisible(false)
+    .setDepth(40);
+  tradeContainer = scene.add.container(210, 200).setVisible(false).setDepth(41);
+  const tradeBg = scene.add.rectangle(0, 0, 380, 140, 0x222222, 1).setOrigin(0, 0);
+  tradeBg.setStrokeStyle(2, 0xffffff);
+  tradeTitle = scene.add.text(190, 10, '', { font: '18px monospace', fill: '#ffffaa' })
+    .setOrigin(0.5, 0);
+  const b1 = scene.add.text(20, 50, '[Buy 1]', { font: '18px monospace', fill: '#00ff00' })
+    .setInteractive()
+    .on('pointerdown', () => { buyMarketItem(scene, tradeItemIndex, 1); hideTradeMenu(scene); });
+  const b10 = scene.add.text(140, 50, '[Buy 10]', { font: '18px monospace', fill: '#00ff00' })
+    .setInteractive()
+    .on('pointerdown', () => { buyMarketItem(scene, tradeItemIndex, 10); hideTradeMenu(scene); });
+  const bMax = scene.add.text(260, 50, '[Buy Max]', { font: '18px monospace', fill: '#00ff00' })
+    .setInteractive()
+    .on('pointerdown', () => {
+      const item = marketItems[tradeItemIndex];
+      const max = Math.floor(gold / item.currentBuy);
+      if (max > 0) buyMarketItem(scene, tradeItemIndex, max);
+      hideTradeMenu(scene);
+    });
+  const s1 = scene.add.text(20, 90, '[Sell 1]', { font: '18px monospace', fill: '#00ff00' })
+    .setInteractive()
+    .on('pointerdown', () => { sellMarketItem(scene, tradeItemIndex, 1); hideTradeMenu(scene); });
+  const s10 = scene.add.text(140, 90, '[Sell 10]', { font: '18px monospace', fill: '#00ff00' })
+    .setInteractive()
+    .on('pointerdown', () => { sellMarketItem(scene, tradeItemIndex, 10); hideTradeMenu(scene); });
+  const sMax = scene.add.text(260, 90, '[Sell Max]', { font: '18px monospace', fill: '#00ff00' })
+    .setInteractive()
+    .on('pointerdown', () => {
+      const item = marketItems[tradeItemIndex];
+      const max = inventory[item.name] || 0;
+      if (max > 0) sellMarketItem(scene, tradeItemIndex, max);
+      hideTradeMenu(scene);
+    });
+  const tradeClose = scene.add.text(350, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
+    .setInteractive()
+    .on('pointerdown', () => { hideTradeMenu(scene); });
+  tradeContainer.add([tradeBg, tradeTitle, b1, b10, bMax, s1, s10, sMax, tradeClose]);
 
   // Store references for later use
   scene.weaponTab = weaponTab;
@@ -875,13 +913,9 @@ function updateMarketUI() {
     m.ui.sellPrice.setText(locked ? '-' : `${m.currentSell}g`);
     m.ui.qtyText.setText(qty);
     const canBuy = !locked && gold >= m.currentBuy;
-    const canBuy10 = !locked && gold >= m.currentBuy * 10;
     const canSell = qty >= 1;
-    const canSell10 = qty >= 10;
     m.ui.buyBtn.setFill(canBuy ? '#00ff00' : '#777777');
-    m.ui.buy10Btn.setFill(canBuy10 ? '#00ff00' : '#777777');
     m.ui.sellBtn.setFill(canSell ? '#00ff00' : '#777777');
-    m.ui.sell10Btn.setFill(canSell10 ? '#00ff00' : '#777777');
   });
 }
 
@@ -918,6 +952,32 @@ function toggleTravel(scene, resume = true) {
     scene.time.paused = false;
     if (resume) startSwingMeter(scene);
   }
+}
+
+function showTradeMenu(scene, index) {
+  tradeItemIndex = index;
+  tradeTitle.setText(marketItems[index].name);
+  tradeOverlay.setVisible(true);
+  tradeContainer.setVisible(true);
+  if (hideMeterEvent) {
+    hideMeterEvent.remove(false);
+    hideMeterEvent = null;
+  }
+  swingActive = false;
+  inputEnabled = false;
+  cursor.setVisible(false);
+  scene.physics.world.pause();
+  scene.tweens.pauseAll();
+  scene.time.paused = true;
+}
+
+function hideTradeMenu(scene) {
+  tradeOverlay.setVisible(false);
+  tradeContainer.setVisible(false);
+  scene.physics.world.resume();
+  scene.tweens.resumeAll();
+  scene.time.paused = false;
+  startSwingMeter(scene);
 }
 
 function resetForNewCity(scene) {
