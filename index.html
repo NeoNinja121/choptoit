@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.91';
+const VERSION = 'v1.92';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1107,7 +1107,12 @@ function introExecutioner(scene, onComplete) {
   executioner.setVisible(true);
   backOverlay.setAlpha(0);
   backOverlay.setVisible(true);
-  scene.tweens.add({ targets: backOverlay, alpha: 0.6, duration: 1500, ease: 'Linear' });
+  scene.tweens.add({
+    targets: backOverlay,
+    alpha: 0.5,
+    duration: 2000,
+    ease: 'Linear'
+  });
   scene.tweens.add({
     targets: executioner,
     x: 400,
@@ -1155,7 +1160,12 @@ function spawnPrisoner(scene, fromRight) {
   if (backOverlay.alpha === 0) {
     backOverlay.setAlpha(0);
     backOverlay.setVisible(true);
-    scene.tweens.add({ targets: backOverlay, alpha: 0.6, duration: 1500, ease: 'Linear' });
+    scene.tweens.add({
+      targets: backOverlay,
+      alpha: 0.5,
+      duration: 2000,
+      ease: 'Linear'
+    });
   }
   prisoner.setVisible(true);
   resetHead(scene);
@@ -1201,12 +1211,7 @@ function spawnPrisoner(scene, fromRight) {
         ease: 'Linear',
         onComplete: () => rightEscort.setVisible(false)
       });
-      scene.tweens.add({
-        targets: backOverlay,
-        alpha: 0,
-        duration: 500,
-        onComplete: () => backOverlay.setVisible(false)
-      });
+      // Keep the scene dimmed while the prisoner takes the stage
       startSwingMeter(scene);
     }
   });
