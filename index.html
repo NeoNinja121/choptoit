@@ -39,6 +39,7 @@ let gold = 0;
 let goldText;
 let fame = 0;
 let fameText;
+let lastGoldGain = 0;
 let swingActive = false;
 let cursor;
 let redZone;
@@ -52,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.15';
+const VERSION = 'v2.16';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1050,6 +1051,11 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   const headY0 = prisoner.y + prisonerHead.y;
   headEmitter.explode(bloodAmount / 2, headX0, headY0);
 
+  if (lastGoldGain > 0) {
+    showGoldGain(scene, lastGoldGain);
+    lastGoldGain = 0;
+  }
+
   // Create a physics body using the prisoner sprite for the falling corpse
   const corpse = scene.add.image(prisoner.x, prisoner.y + 50, 'prisonerBodyImg')
     .setOrigin(0.5, 1)
@@ -1444,6 +1450,9 @@ function endSwing(scene) {
   const goldGain = missed ? payout : payout * killStreak;
   gold += goldGain;
   goldText.setText(`Gold: ${gold}`);
+  if (!missed && goldGain > 0) {
+    lastGoldGain = goldGain;
+  }
 
   // Increase and show blood bursts
   if (missed) {
@@ -1494,6 +1503,20 @@ function gainFame(scene, npc) {
     onComplete: () => popup.destroy()
   });
   // Jester will run off when the target hits the ground
+}
+
+function showGoldGain(scene, amount) {
+  const popup = scene.add.text(prisoner.x, prisoner.y - 40, `+${amount} Gold`, {
+    font: '20px monospace',
+    fill: '#ffff88'
+  }).setOrigin(0.5);
+  scene.tweens.add({
+    targets: popup,
+    y: popup.y - 20,
+    alpha: 0,
+    duration: 800,
+    onComplete: () => popup.destroy()
+  });
 }
 
 function handleTargetHit(scene, target) {
