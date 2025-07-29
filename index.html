@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.16';
+const VERSION = 'v2.17';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -929,6 +929,8 @@ function updateTravelUI(scene) {
     c.ui.title.setText(`${c.name} - ${desc}`);
     const label = c.name === currentCity ? '[Here]' : locked ? '[Locked]' : '[Go]';
     c.ui.btn.setText(label);
+    const color = c.name === currentCity ? '#777777' : '#00ff00';
+    c.ui.btn.setFill(color);
   });
 }
 
