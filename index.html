@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.1';
+const VERSION = 'v2.2';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -639,7 +639,7 @@ function create() {
   // Containers for each tab's contents
   const weaponList = scene.add.container(0, 40);
   const upgradeList = scene.add.container(0, 40).setVisible(false);
-  const marketList = scene.add.container(0, 40).setVisible(false);
+  const marketList = scene.add.container(0, 60).setVisible(false);
   shopContainer.add([weaponList, upgradeList, marketList]);
 
   // Weapon upgrade items
@@ -672,19 +672,20 @@ function create() {
   itemY = 0;
   const cols = {
     name: 10,
-    buy: 210,
-    sell: 270,
-    qty: 330,
-    buyBtn: 390,
-    buy10Btn: 450,
-    sellBtn: 520,
-    sell10Btn: 590
+    buy: 220,
+    sell: 300,
+    qty: 370,
+    buyBtn: 440,
+    buy10Btn: 520,
+    sellBtn: 600,
+    sell10Btn: 680
   };
   // Header row
-  scene.add.text(cols.name, itemY, 'Item', { font: '18px monospace', fill: '#ffffaa' });
-  scene.add.text(cols.buy, itemY, 'Buy', { font: '18px monospace', fill: '#ffffaa' });
-  scene.add.text(cols.sell, itemY, 'Sell', { font: '18px monospace', fill: '#ffffaa' });
-  scene.add.text(cols.qty, itemY, 'Qty', { font: '18px monospace', fill: '#ffffaa' });
+  const headItem = scene.add.text(cols.name, itemY, 'Item', { font: '18px monospace', fill: '#ffffaa' });
+  const headBuy = scene.add.text(cols.buy, itemY, 'Buy', { font: '18px monospace', fill: '#ffffaa' });
+  const headSell = scene.add.text(cols.sell, itemY, 'Sell', { font: '18px monospace', fill: '#ffffaa' });
+  const headQty = scene.add.text(cols.qty, itemY, 'Qty', { font: '18px monospace', fill: '#ffffaa' });
+  marketList.add([headItem, headBuy, headSell, headQty]);
   itemY += 25;
 
   marketItems.forEach((m, idx) => {
@@ -708,7 +709,7 @@ function create() {
     m.ui = { name, buyPrice, sellPrice, qtyText, buyBtn, buy10Btn, sellBtn, sell10Btn };
     itemY += 25;
   });
-  marketChatterText = scene.add.text(350, 440, '', {
+  marketChatterText = scene.add.text(350, 400, '', {
     font: '20px monospace',
     fill: '#ffaaaa',
     wordWrap: { width: 640 }
@@ -718,7 +719,7 @@ function create() {
   marketPrisoner = scene.add.container(0, 0, [body, head]);
   marketList.add([marketChatterText, marketPrisoner]);
 
-  const closeBtn = scene.add.text(660, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
+  const closeBtn = scene.add.text(680, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
     .on('pointerdown', () => { toggleShop(scene); });
   shopContainer.add(closeBtn);
