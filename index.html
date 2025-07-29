@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.95';
+const VERSION = 'v1.96';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1413,7 +1413,7 @@ function handleTargetHit(scene, target) {
   gainFame(scene, target);
   targetGroup.remove(target);
   // blood spray at impact
-  splatEmitter.explode(15, jester.x + target.x, jester.y + target.y);
+  splatEmitter.explode(15, target.x, target.y);
   target.body.setVelocity(0, 0);
   target.body.setAllowGravity(false);
   target.body.setImmovable(true);
@@ -1454,11 +1454,10 @@ function spawnTarget(scene) {
   const head = scene.add.image(0, -20, 'jesterHeadImg').setOrigin(0.5);
   jester.add([body, pole, head]);
 
-  const target = scene.add.container(0, -20 - poleHeight).setDepth(20);
+  const target = scene.add.container(startX, 460 - 20 - poleHeight).setDepth(20);
   const outer = scene.add.circle(0, 0, 20, 0xff0000);
   const inner = scene.add.circle(0, 0, 8, 0xffffff);
   target.add([outer, inner]);
-  jester.add(target);
 
   scene.physics.world.enable(target);
   target.body.setCircle(20);
@@ -1469,7 +1468,7 @@ function spawnTarget(scene) {
   targetGroup.add(target);
 
   scene.tweens.add({
-    targets: jester,
+    targets: [jester, target],
     x: targetX,
     duration: 1500,
     ease: 'Linear'
