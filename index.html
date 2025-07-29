@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.82';
+const VERSION = 'v1.83';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -279,6 +279,9 @@ function preload() {
   this.load.image('escortHead', 'escorthead.png');
   this.load.image('escortBody', 'escortbody.png');
   this.load.image('signTravel', 'sign_travel.png');
+  this.load.image('background', 'background.png');
+  this.load.image('prisonerHeadImg', 'prisonerhead.png');
+  this.load.image('prisonerBodyImg', 'prisonerbody.png');
 }
 
 function create() {
@@ -286,7 +289,9 @@ function create() {
 
   // Background and stage art
   const startCity = cities.find(c => c.name === currentCity);
-  backgroundRect = scene.add.rectangle(400, 300, 800, 600, startCity.bgColor);
+  backgroundRect = scene.add.image(400, 300, 'background');
+  backgroundRect.setDisplaySize(800, 600);
+  backgroundRect.setTint(startCity.bgColor);
   stage = scene.add.image(400, 520, 'platform');
 
   // Executioner, starts off-screen and walks in on first spawn
@@ -303,12 +308,12 @@ function create() {
   prisoner = scene.add.container(400, 460).setDepth(1);
   // Pivot the body around the feet so it can topple realistically
   // Position it so the top still aligns with the neck
-  prisonerBody = scene.add.rectangle(0, 50, 30, 60, 0xaaaaaa)
+  prisonerBody = scene.add.image(0, 50, 'prisonerBodyImg')
     .setOrigin(0.5, 1);
   prisonerHead = scene.add.container(0, -20);
-  const headSquare = scene.add.rectangle(0, 0, 30, 30, 0xdddddd);
+  const headSprite = scene.add.image(0, 0, 'prisonerHeadImg').setOrigin(0.5);
   prisonerFace = scene.add.text(0, 0, ':(', { font: '16px monospace', fill: '#000' }).setOrigin(0.5);
-  prisonerHead.add([headSquare, prisonerFace]);
+  prisonerHead.add([headSprite, prisonerFace]);
   // Aim arrow points upward for angle selection
   // Larger arrow for angle and power selection
   aimArrow = scene.add.triangle(0, -25, 0, -40, -12, 0, 12, 0, 0xffff00)
@@ -828,7 +833,7 @@ function selectCity(scene, city) {
   if (city.fameReq && fame < city.fameReq) return;
   if (city.name === currentCity) return;
   currentCity = city.name;
-  backgroundRect.fillColor = city.bgColor;
+  backgroundRect.setTint(city.bgColor);
   locationText.setText(`Current Location: ${currentCity}`);
   advanceDay();
   scene.cameras.main.fadeOut(250, 0, 0, 0);
@@ -1080,7 +1085,7 @@ function spawnPrisoner(scene, fromRight) {
   prisonerClass = pickClass();
   // Spawn a new target each time a prisoner appears
   spawnTarget(scene);
-  prisonerBody.fillColor = prisonerClass.color;
+  prisonerBody.setTint(prisonerClass.color);
   baseSwingSpeed = prisonerClass.speed;
   swingSpeed = baseSwingSpeed * speedMultiplier;
   prisonerFace.setText(':(');
