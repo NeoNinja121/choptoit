@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.89';
+const VERSION = 'v1.90';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1102,6 +1102,9 @@ function introExecutioner(scene, onComplete) {
   executioner.setPosition(850, 460);
   executioner.setAlpha(0);
   executioner.setVisible(true);
+  backOverlay.setAlpha(0);
+  backOverlay.setVisible(true);
+  scene.tweens.add({ targets: backOverlay, alpha: 0.6, duration: 1500, ease: 'Linear' });
   scene.tweens.add({
     targets: executioner,
     x: 400,
@@ -1146,9 +1149,11 @@ function resetHead(scene) {
 function spawnPrisoner(scene, fromRight) {
   const city = cities.find(c => c.name === currentCity);
   if (city) backgroundRect.setTint(city.bgColor);
-  backOverlay.setAlpha(0);
-  backOverlay.setVisible(true);
-  scene.tweens.add({ targets: backOverlay, alpha: 0.6, duration: 1500, ease: 'Linear' });
+  if (backOverlay.alpha === 0) {
+    backOverlay.setAlpha(0);
+    backOverlay.setVisible(true);
+    scene.tweens.add({ targets: backOverlay, alpha: 0.6, duration: 1500, ease: 'Linear' });
+  }
   prisoner.setVisible(true);
   resetHead(scene);
   prisonerClass = pickClass();
@@ -1361,22 +1366,45 @@ function gainFame(scene, npc) {
     duration: 800,
     onComplete: () => popup.destroy()
   });
-  scene.time.delayedCall(2000, () => npc.destroy());
+  scene.time.delayedCall(2000, () => {
+    if (npc.jester) npc.jester.destroy();
+    npc.destroy();
+  });
 }
 
 function spawnTarget(scene) {
-  const x = Phaser.Math.Between(100, 700);
-  const y = Phaser.Math.Between(200, 400);
-  const target = scene.add.container(x, y).setDepth(20);
+  const fromRight = Phaser.Math.Between(0, 1) === 1;
+  const startX = fromRight ? 850 : -50;
+  const targetX = Phaser.Math.Between(100, 700);
+  const poleHeight = Phaser.Math.Between(80, 180);
+
+  const jester = scene.add.container(startX, 460).setDepth(1);
+  const body = scene.add.image(0, 50, 'prisonerBodyImg').setOrigin(0.5, 1);
+  const head = scene.add.image(0, -20, 'prisonerHeadImg').setOrigin(0.5);
+  const pole = scene.add.rectangle(0, -20, 6, poleHeight, 0x8b4513)
+    .setOrigin(0.5, 1);
+  jester.add([body, head, pole]);
+
+  const target = scene.add.container(0, -20 - poleHeight).setDepth(20);
   const outer = scene.add.circle(0, 0, 20, 0xff0000);
   const inner = scene.add.circle(0, 0, 8, 0xffffff);
   target.add([outer, inner]);
+  jester.add(target);
+
   scene.physics.world.enable(target);
   target.body.setCircle(20);
   target.body.setAllowGravity(false);
   target.body.setImmovable(true);
   target.collected = false;
+  target.jester = jester;
   targetGroup.add(target);
+
+  scene.tweens.add({
+    targets: jester,
+    x: targetX,
+    duration: 1500,
+    ease: 'Linear'
+  });
 }
 
 function addXP(scene, amount) {
