@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.0';
+const VERSION = 'v2.1';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -937,7 +937,7 @@ function resetForNewCity(scene) {
   prisoner.setVisible(false);
   leftEscort.setVisible(false);
   rightEscort.setVisible(false);
-  introExecutioner(scene, () => spawnPrisoner(scene, false));
+  introExecutioner(scene, () => spawnPrisoner(scene, false, false));
 }
 
 function selectCity(scene, city) {
@@ -1200,7 +1200,7 @@ function resetHead(scene) {
 
 
 
-function spawnPrisoner(scene, fromRight) {
+function spawnPrisoner(scene, fromRight, withTarget = true) {
   const city = cities.find(c => c.name === currentCity);
   if (city) backgroundRect.setTint(city.bgColor);
   if (backOverlay.alpha === 0) {
@@ -1216,8 +1216,10 @@ function spawnPrisoner(scene, fromRight) {
   prisoner.setVisible(true);
   resetHead(scene);
   prisonerClass = pickClass();
-  // Spawn a new target each time a prisoner appears
-  spawnTarget(scene);
+  // Spawn a new target each time a prisoner appears if requested
+  if (withTarget) {
+    spawnTarget(scene);
+  }
   prisonerBody.setTint(prisonerClass.color);
   baseSwingSpeed = prisonerClass.speed;
   swingSpeed = baseSwingSpeed * speedMultiplier;
