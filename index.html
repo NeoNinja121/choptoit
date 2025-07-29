@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.98';
+const VERSION = 'v1.99';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -601,7 +601,7 @@ function create() {
   travelContainer.add(travelList);
   let cityY = 0;
   cities.forEach(city => {
-    const title = scene.add.text(10, cityY, '', { font: '18px monospace', fill: '#ffffaa', wordWrap: { width: 420 } });
+    const title = scene.add.text(10, cityY, '', { font: '18px monospace', fill: '#ffffaa', wordWrap: { width: 520 } });
     const btn = scene.add.text(450, cityY, '[Go]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => { selectCity(scene, city); });
@@ -619,8 +619,8 @@ function create() {
   shopOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.6)
     .setVisible(false)
     .setDepth(30);
-  shopContainer = scene.add.container(100, 100).setVisible(false).setDepth(31);
-  const shopBg = scene.add.rectangle(0, 0, 600, 380, 0x222222, 1).setOrigin(0, 0);
+  shopContainer = scene.add.container(50, 50).setVisible(false).setDepth(31);
+  const shopBg = scene.add.rectangle(0, 0, 700, 500, 0x222222, 1).setOrigin(0, 0);
   shopBg.setStrokeStyle(2, 0xffffff);
   shopContainer.add(shopBg);
 
@@ -628,10 +628,10 @@ function create() {
   const weaponTab = scene.add.text(20, 10, 'Weapon Upgrades', { font: '18px monospace', fill: '#ffff00' })
     .setInteractive()
     .on('pointerdown', () => showShopTab(scene, 'weapons'));
-  const upgradeTab = scene.add.text(240, 10, 'Game Upgrades', { font: '18px monospace', fill: '#ffffff' })
+  const upgradeTab = scene.add.text(300, 10, 'Game Upgrades', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
     .on('pointerdown', () => showShopTab(scene, 'upgrades'));
-  const marketTab = scene.add.text(420, 10, 'Trading Market', { font: '18px monospace', fill: '#ffffff' })
+  const marketTab = scene.add.text(520, 10, 'Trading Market', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
     .on('pointerdown', () => showShopTab(scene, 'market'));
   shopContainer.add([weaponTab, upgradeTab, marketTab]);
@@ -646,8 +646,8 @@ function create() {
   let itemY = 0;
   weapons.forEach((w, idx) => {
     const title = scene.add.text(10, itemY, `${w.name} - ${w.type} - ${w.cost}g`, { font: '18px monospace', fill: '#ffffaa' });
-    const desc = scene.add.text(20, itemY + 20, w.desc, { font: '14px monospace', fill: '#ffffff', wordWrap: { width: 420 } });
-    const buy = scene.add.text(450, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
+    const desc = scene.add.text(20, itemY + 20, w.desc, { font: '14px monospace', fill: '#ffffff', wordWrap: { width: 520 } });
+    const buy = scene.add.text(550, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => { buyWeapon(scene, idx); });
     weaponList.add([title, desc, buy]);
@@ -659,8 +659,8 @@ function create() {
   itemY = 0;
   gameUpgrades.forEach((g, idx) => {
     const title = scene.add.text(10, itemY, `${g.name} - ${g.cost}g`, { font: '18px monospace', fill: '#ffffaa' });
-    const desc = scene.add.text(20, itemY + 20, g.desc, { font: '14px monospace', fill: '#ffffff', wordWrap: { width: 420 } });
-    const buy = scene.add.text(450, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
+    const desc = scene.add.text(20, itemY + 20, g.desc, { font: '14px monospace', fill: '#ffffff', wordWrap: { width: 520 } });
+    const buy = scene.add.text(550, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => { buyUpgrade(scene, idx); });
     upgradeList.add([title, desc, buy]);
@@ -672,16 +672,16 @@ function create() {
   itemY = 0;
   marketItems.forEach((m, idx) => {
     const line = scene.add.text(10, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
-    const buyBtn = scene.add.text(420, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
+    const buyBtn = scene.add.text(520, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => { buyMarketItem(scene, idx, 1); });
-    const buy10Btn = scene.add.text(470, itemY, '[Buy10]', { font: '18px monospace', fill: '#00ff00' })
+    const buy10Btn = scene.add.text(570, itemY, '[Buy10]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => { buyMarketItem(scene, idx, 10); });
-    const sellBtn = scene.add.text(540, itemY, '[Sell]', { font: '18px monospace', fill: '#00ff00' })
+    const sellBtn = scene.add.text(640, itemY, '[Sell]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => { sellMarketItem(scene, idx, 1); });
-    const sell10Btn = scene.add.text(600, itemY, '[Sell10]', { font: '18px monospace', fill: '#00ff00' })
+    const sell10Btn = scene.add.text(700, itemY, '[Sell10]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => { sellMarketItem(scene, idx, 10); });
     marketList.add([line, buyBtn, buy10Btn, sellBtn, sell10Btn]);
@@ -691,14 +691,14 @@ function create() {
   marketChatterText = scene.add.text(10, itemY + 40, '', {
     font: '16px monospace',
     fill: '#ffaaaa',
-    wordWrap: { width: 580 }
+    wordWrap: { width: 680 }
   });
   const body = scene.add.image(0, 0, 'prisonerBodyImg').setOrigin(0.5, 1).setScale(0.5);
   const head = scene.add.image(0, -40, 'prisonerHeadImg').setOrigin(0.5).setScale(0.5);
   marketPrisoner = scene.add.container(0, 0, [body, head]);
   marketList.add([marketChatterText, marketPrisoner]);
 
-  const closeBtn = scene.add.text(560, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
+  const closeBtn = scene.add.text(660, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
     .on('pointerdown', () => { toggleShop(scene); });
   shopContainer.add(closeBtn);
