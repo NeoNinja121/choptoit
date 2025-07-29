@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.88';
+const VERSION = 'v1.89';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -73,6 +73,7 @@ let shopOverlay;
 let travelButton;
 let travelContainer;
 let travelOverlay;
+let backOverlay;
 let locationText;
 let currentCity = 'York';
 let backgroundRect;
@@ -299,6 +300,10 @@ function create() {
   backgroundRect.setDisplaySize(800, 600);
   stage = scene.add.image(400, 520, 'platform');
 
+  backOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
+    .setDepth(0.4)
+    .setVisible(false);
+
   // Executioner, starts off-screen and walks in on first spawn
   // Place him behind the prisoner but in front of the background
   executioner = scene.add.container(400, 460).setDepth(0.5);
@@ -404,13 +409,21 @@ function create() {
     .setInteractive();
 
   function beginGame() {
-    startContainer.setVisible(false);
-    logoContainer.setVisible(false);
-    if (executionerIntro) {
-      introExecutioner(scene, () => spawnPrisoner(scene, false));
-    } else {
-      spawnPrisoner(scene, false);
-    }
+    scene.tweens.add({
+      targets: startContainer,
+      alpha: 0,
+      duration: 500,
+      onComplete: () => {
+        startContainer.setVisible(false);
+        startContainer.setAlpha(1);
+        logoContainer.setVisible(false);
+        if (executionerIntro) {
+          introExecutioner(scene, () => spawnPrisoner(scene, false));
+        } else {
+          spawnPrisoner(scene, false);
+        }
+      }
+    });
   }
 
   startBg.on('pointerdown', beginGame);
@@ -1133,6 +1146,9 @@ function resetHead(scene) {
 function spawnPrisoner(scene, fromRight) {
   const city = cities.find(c => c.name === currentCity);
   if (city) backgroundRect.setTint(city.bgColor);
+  backOverlay.setAlpha(0);
+  backOverlay.setVisible(true);
+  scene.tweens.add({ targets: backOverlay, alpha: 0.6, duration: 1500, ease: 'Linear' });
   prisoner.setVisible(true);
   resetHead(scene);
   prisonerClass = pickClass();
@@ -1176,6 +1192,12 @@ function spawnPrisoner(scene, fromRight) {
         duration: 1500,
         ease: 'Linear',
         onComplete: () => rightEscort.setVisible(false)
+      });
+      scene.tweens.add({
+        targets: backOverlay,
+        alpha: 0,
+        duration: 500,
+        onComplete: () => backOverlay.setVisible(false)
       });
       startSwingMeter(scene);
     }
