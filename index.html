@@ -1031,16 +1031,9 @@ function selectCity(scene, city) {
   // Force-close the travel menu in case it somehow remained visible.
   travelOverlay.setVisible(false);
   travelContainer.setVisible(false);
-  // Reset the darkness overlay to match a fresh start.
-  backOverlay.setAlpha(0);
-  backOverlay.setVisible(false);
-  scene.cameras.main.fadeOut(250, 0, 0, 0);
-  scene.time.delayedCall(250, () => {
-    scene.cameras.main.once('camerafadeincomplete', () => {
-      resetForNewCity(scene);
-    });
-    scene.cameras.main.fadeIn(250, 0, 0, 0);
-  });
+  // Directly reset for the new city without fading the camera or
+  // manipulating the darkness overlay.
+  resetForNewCity(scene);
 }
 
 function savePrisoner(scene) {
@@ -1395,15 +1388,7 @@ function startSwingMeter(scene) {
   // Ensure head is attached and physics disabled
   resetHead(scene);
 
-  // Fade out the darkness overlay once the prisoner is ready
-  if (backOverlay.visible && backOverlay.alpha > 0) {
-    scene.tweens.add({
-      targets: backOverlay,
-      alpha: 0,
-      duration: 500,
-      onComplete: () => backOverlay.setVisible(false)
-    });
-  }
+
 
   // Meter only starts once prisoner is in position
 }
