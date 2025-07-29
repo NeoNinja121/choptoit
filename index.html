@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.7';
+const VERSION = 'v2.8';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -75,6 +75,9 @@ let tradeOverlay;
 let tradeContainer;
 let tradeTitle;
 let tradeItemIndex = null;
+let tradeMode = 'buy';
+let tradeBuyBtns = [];
+let tradeSellBtns = [];
 let travelButton;
 let travelContainer;
 let travelOverlay;
@@ -697,10 +700,10 @@ function create() {
     const qtyText = scene.add.text(cols.qty, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
     const buyBtn = scene.add.text(cols.buyBtn, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
-      .on('pointerdown', () => { showTradeMenu(scene, idx); });
+      .on('pointerdown', () => { showTradeMenu(scene, idx, 'buy'); });
     const sellBtn = scene.add.text(cols.sellBtn, itemY, '[Sell]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
-      .on('pointerdown', () => { showTradeMenu(scene, idx); });
+      .on('pointerdown', () => { showTradeMenu(scene, idx, 'sell'); });
     marketList.add([name, buyPrice, sellPrice, qtyText, buyBtn, sellBtn]);
     m.ui = { name, buyPrice, sellPrice, qtyText, buyBtn, sellBtn };
     itemY += 25;
@@ -761,6 +764,8 @@ function create() {
     .setInteractive()
     .on('pointerdown', () => { hideTradeMenu(scene); });
   tradeContainer.add([tradeBg, tradeTitle, b1, b10, bMax, s1, s10, sMax, tradeClose]);
+  tradeBuyBtns = [b1, b10, bMax];
+  tradeSellBtns = [s1, s10, sMax];
 
   // Store references for later use
   scene.weaponTab = weaponTab;
@@ -954,9 +959,13 @@ function toggleTravel(scene, resume = true) {
   }
 }
 
-function showTradeMenu(scene, index) {
+function showTradeMenu(scene, index, mode = 'buy') {
   tradeItemIndex = index;
+  tradeMode = mode;
   tradeTitle.setText(marketItems[index].name);
+  const showBuy = mode === 'buy';
+  tradeBuyBtns.forEach(btn => btn.setVisible(showBuy));
+  tradeSellBtns.forEach(btn => btn.setVisible(!showBuy));
   tradeOverlay.setVisible(true);
   tradeContainer.setVisible(true);
   if (hideMeterEvent) {
