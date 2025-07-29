@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.13';
+const VERSION = 'v2.15';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1012,6 +1012,11 @@ function selectCity(scene, city) {
   backgroundRect.setTint(city.bgColor);
   locationText.setText(currentCity);
   advanceDay();
+  // Hide the travel UI immediately so its overlay doesn't stack with
+  // the background dim when transitioning cities.
+  toggleTravel(scene, false);
+  // Reset the darkness overlay to match a fresh start.
+  backOverlay.setAlpha(0);
   scene.cameras.main.fadeOut(250, 0, 0, 0);
   scene.time.delayedCall(250, () => {
     scene.cameras.main.once('camerafadeincomplete', () => {
@@ -1019,7 +1024,6 @@ function selectCity(scene, city) {
     });
     scene.cameras.main.fadeIn(250, 0, 0, 0);
   });
-  toggleTravel(scene, false);
 }
 
 function savePrisoner(scene) {
