@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.97';
+const VERSION = 'v1.98';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -913,6 +913,11 @@ function resetForNewCity(scene) {
   streakMultiplierText.setText(`x${killStreak}`);
   missStreak = 0;
   missText.setText(`Misses: ${missStreak}`);
+  bodyGroup.clear(true, true);
+  targetGroup.getChildren().forEach(t => {
+    if (t.jester) t.jester.destroy();
+    t.destroy();
+  });
   speedMultiplier = 1;
   swingSpeed = baseSwingSpeed;
   resetHead(scene);
@@ -1028,7 +1033,7 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   flyingHead.isCorpse = true;
   flyingHead.bounceCount = 0;
   const hBody = flyingHead.body;
-  scene.physics.add.collider(flyingHead, targetGroup, (head, target) => {
+  scene.physics.add.overlap(flyingHead, targetGroup, (head, target) => {
     handleTargetHit(scene, target);
   });
   hBody.setAllowGravity(true);
@@ -1430,11 +1435,14 @@ function handleTargetHit(scene, target) {
         jester.running = true;
         const offX = jester.startFromRight ? 900 : -100;
         scene.tweens.add({
-          targets: jester,
+          targets: [jester, target],
           x: offX,
           duration: 1500,
           ease: 'Linear',
-          onComplete: () => jester.destroy()
+          onComplete: () => {
+            jester.destroy();
+            target.destroy();
+          }
         });
       }
     }
