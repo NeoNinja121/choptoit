@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.78';
+const VERSION = 'v1.79';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -274,6 +274,9 @@ function preload() {
   this.load.image('logo', 'logo.png');
   this.load.image('shop', 'shop.png');
   this.load.image('platform', 'platform.png');
+  this.load.image('executionerHead', 'executionerhead.png');
+  this.load.image('executionerBody', 'executionerbody.png');
+  this.load.image('signTravel', 'sign_travel.png');
 }
 
 function create() {
@@ -287,9 +290,10 @@ function create() {
   // Executioner, starts off-screen and walks in on first spawn
   // Place him behind the prisoner but in front of the background
   executioner = scene.add.container(400, 460).setDepth(0.5);
-  const execBody = scene.add.rectangle(0, 50, 50, 90, 0x555555)
+  const execBody = scene.add.image(0, 50, 'executionerBody')
     .setOrigin(0.5, 1);
-  const execHead = scene.add.rectangle(0, -30, 40, 40, 0x000000);
+  const execHead = scene.add.image(0, -30, 'executionerHead')
+    .setOrigin(0.5, 0.5);
   executioner.add([execBody, execHead]);
   executioner.setVisible(false);
 
@@ -508,8 +512,8 @@ function create() {
   });
 
   // Shop button
-  // Move the shop button to the top right corner
-  shopButton = scene.add.image(780, 0, 'shop')
+  // Move the shop button slightly right to make room for the travel sign
+  shopButton = scene.add.image(800, 0, 'shop')
     .setOrigin(1, 0)
     .setDisplaySize(107, 71)
     .setInteractive()
@@ -518,7 +522,9 @@ function create() {
     });
 
   // Travel button
-  travelButton = scene.add.text(660, 10, '[Travel]', { font: '18px monospace', fill: '#ffffff' })
+  travelButton = scene.add.image(680, 0, 'signTravel')
+    .setOrigin(1, 0)
+    .setDisplaySize(107, 71)
     .setInteractive()
     .on('pointerdown', () => { toggleTravel(scene); });
 
