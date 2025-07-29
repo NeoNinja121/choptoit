@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.11';
+const VERSION = 'v2.12';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1220,7 +1220,7 @@ function introExecutioner(scene, onComplete) {
   backOverlay.setVisible(true);
   scene.tweens.add({
     targets: backOverlay,
-    alpha: 0.6,
+    alpha: 0.72,
     duration: 1000,
     ease: 'Linear'
   });
@@ -1275,7 +1275,7 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
     backOverlay.setVisible(true);
     scene.tweens.add({
       targets: backOverlay,
-      alpha: 0.6,
+      alpha: 0.72,
       duration: 1000,
       ease: 'Linear'
     });
