@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.93';
+const VERSION = 'v1.94';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1013,6 +1013,18 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   flyingHead.isCorpse = true;
   flyingHead.bounceCount = 0;
   const hBody = flyingHead.body;
+  scene.physics.add.overlap(flyingHead, targetGroup, (head, target) => {
+    if (target.collected) return;
+    target.collected = true;
+    gainFame(scene, target);
+    targetGroup.remove(target);
+    bodyGroup.add(target);
+    target.body.setAllowGravity(true);
+    target.body.setImmovable(false);
+    target.body.onWorldBounds = true;
+    target.body.setCollideWorldBounds(true);
+    target.isCorpse = true;
+  });
   hBody.setAllowGravity(true);
   hBody.onWorldBounds = true;
   hBody.setCollideWorldBounds(true);
@@ -1118,7 +1130,7 @@ function introExecutioner(scene, onComplete) {
   scene.tweens.add({
     targets: backOverlay,
     alpha: 0.5,
-    duration: 800,
+    duration: 1000,
     ease: 'Linear'
   });
   scene.tweens.add({
@@ -1171,7 +1183,7 @@ function spawnPrisoner(scene, fromRight) {
     scene.tweens.add({
       targets: backOverlay,
       alpha: 0.5,
-      duration: 800,
+      duration: 1000,
       ease: 'Linear'
     });
   }
