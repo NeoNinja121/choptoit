@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.9';
+const VERSION = 'v2.10';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1267,7 +1267,9 @@ function resetHead(scene) {
 
 function spawnPrisoner(scene, fromRight, withTarget = true) {
   const city = cities.find(c => c.name === currentCity);
-  if (city) backgroundRect.setTint(city.bgColor);
+  // Temporarily disable background tinting when prisoners spawn
+  // so we can determine if it is causing issues.
+  // if (city) backgroundRect.setTint(city.bgColor);
   if (backOverlay.alpha === 0) {
     backOverlay.setAlpha(0);
     backOverlay.setVisible(true);
