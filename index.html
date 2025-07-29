@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.77';
+const VERSION = 'v1.78';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -102,6 +102,27 @@ let prisonerClass;
 let swingSpeed = 5;
 let executioner;
 let executionerIntro = true;
+
+// Medieval calendar variables
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+let currentDay = 1;
+let currentMonth = 0;
+let dateText;
+
+// Daily trading modifiers
+let dailyBuySpecial = null;
+let dailySellSpecial = null;
+
+// Market chatter
+const marketQuotes = [
+  "Oooh I'm desperate for turnips to help with me piles!",
+  "A pox upon high prices, I say!",
+  "Bring forth more mead, my throat be parched!",
+  "Rumour says the plague's back, stock up on salt!",
+  "I swapped me cow for beans once, ne'er again!"
+];
+let currentQuote = '';
+let marketChatterText;
 
 // Group to hold fallen bodies that pile up at the bottom
 let bodyGroup;
@@ -172,13 +193,72 @@ const marketItems = [
 
 // Places the player can visit
 const cities = [
-  { name: 'York', desc: 'Historic northern city.', fameReq: 0, bgColor: 0x2d2d2d },
-  { name: 'Canterbury', desc: 'Seat of the Archbishop.', fameReq: 1, bgColor: 0x2d2d34 },
-  { name: 'London', desc: 'Bustling capital of the realm.', fameReq: 2, bgColor: 0x34342d },
-  { name: 'Bristol', desc: 'Busy trading port.', fameReq: 3, bgColor: 0x2d342d },
-  { name: 'Norwich', desc: 'Town of fine artisans.', fameReq: 4, bgColor: 0x342d2d },
-  { name: 'Winchester', desc: 'Former royal seat.', fameReq: 5, bgColor: 0x2d3434 }
+  { name: 'York', desc: 'Historic northern city.', fameReq: 0, bgColor: 0x2d2d2d,
+    modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } },
+  { name: 'Canterbury', desc: 'Seat of the Archbishop.', fameReq: 1, bgColor: 0x2d2d34,
+    modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
+  { name: 'London', desc: 'Bustling capital of the realm.', fameReq: 2, bgColor: 0x34342d,
+    modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
+  { name: 'Bristol', desc: 'Busy trading port.', fameReq: 3, bgColor: 0x2d342d,
+    modifiers: { 'Silver Cup': { buy: 0.85, sell: 1.15 } } },
+  { name: 'Norwich', desc: 'Town of fine artisans.', fameReq: 4, bgColor: 0x342d2d,
+    modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
+  { name: 'Winchester', desc: 'Former royal seat.', fameReq: 5, bgColor: 0x2d3434,
+    modifiers: { Mead: { buy: 0.9, sell: 1.1 } } }
 ];
+
+// Format the current calendar date
+function getDateString() {
+  return `${currentDay} ${months[currentMonth]}`;
+}
+
+// Apply random price changes, city modifiers and daily specials
+function refreshMarketPrices() {
+  const city = cities.find(c => c.name === currentCity);
+  marketItems.forEach(m => {
+    let buyMult = Phaser.Math.FloatBetween(0.9, 1.1);
+    let sellMult = Phaser.Math.FloatBetween(0.9, 1.1);
+    if (city && city.modifiers && city.modifiers[m.name]) {
+      const mod = city.modifiers[m.name];
+      if (mod.buy) buyMult *= mod.buy;
+      if (mod.sell) sellMult *= mod.sell;
+    }
+    if (m.name === dailyBuySpecial) buyMult *= 0.75;
+    if (m.name === dailySellSpecial) sellMult *= 1.25;
+    m.currentBuy = Math.max(1, Math.round(m.buy * buyMult));
+    m.currentSell = Math.max(1, Math.round(m.sell * sellMult));
+  });
+}
+
+// Display the day's market chatter
+function updateMarketChatter() {
+  if (marketChatterText) {
+    marketChatterText.setText(`"${currentQuote}"`);
+  }
+}
+
+// Refresh prices, specials and chatter at the start of a new day
+function dailyMarketUpdate() {
+  dailyBuySpecial = Phaser.Utils.Array.GetRandom(marketItems).name;
+  do {
+    dailySellSpecial = Phaser.Utils.Array.GetRandom(marketItems).name;
+  } while (dailySellSpecial === dailyBuySpecial);
+  currentQuote = Phaser.Utils.Array.GetRandom(marketQuotes);
+  refreshMarketPrices();
+  updateMarketUI();
+  updateMarketChatter();
+}
+
+// Advance the calendar when travelling to a new city
+function advanceDay() {
+  currentDay++;
+  if (currentDay > 30) {
+    currentDay = 1;
+    currentMonth = (currentMonth + 1) % months.length;
+  }
+  if (dateText) dateText.setText(getDateString());
+  dailyMarketUpdate();
+}
 
 function pickClass() {
   const total = classes.reduce((s, c) => s + c.weight, 0);
@@ -253,6 +333,8 @@ function create() {
   killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
   killStreakText = scene.add.text(16, 112, 'Streak: 0', { font: '20px monospace', fill: '#ffffff' });
   locationText = scene.add.text(400, 16, `Current Location: ${currentCity}`, { font: '20px monospace', fill: '#ffffff' })
+    .setOrigin(0.5, 0);
+  dateText = scene.add.text(400, 112, getDateString(), { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0);
   xpText = scene.add.text(400, 136, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
     .setOrigin(0.5);
@@ -533,6 +615,12 @@ function create() {
     m.ui = { line };
     itemY += 30;
   });
+  marketChatterText = scene.add.text(10, itemY + 10, '', {
+    font: '16px monospace',
+    fill: '#ffaaaa',
+    wordWrap: { width: 580 }
+  });
+  marketList.add(marketChatterText);
 
   const closeBtn = scene.add.text(560, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
@@ -546,6 +634,9 @@ function create() {
   scene.weaponList = weaponList;
   scene.upgradeList = upgradeList;
   scene.marketList = marketList;
+
+  // Set up first day's prices and gossip
+  dailyMarketUpdate();
 
   // Default to weapon tab
   showShopTab(scene, 'weapons');
@@ -631,8 +722,8 @@ function showShopTab(scene, tab) {
   scene.upgradeTab.setFill(tab === 'upgrades' ? '#ffff00' : '#ffffff');
   scene.marketTab.setFill(tab === 'market' ? '#ffff00' : '#ffffff');
   if (tab === 'market') {
-    refreshMarketPrices();
     updateMarketUI();
+    updateMarketChatter();
   }
 }
 
@@ -674,14 +765,6 @@ function sellMarketItem(scene, index) {
   }
 }
 
-// Randomise prices slightly each visit
-function refreshMarketPrices() {
-  marketItems.forEach(m => {
-    const mult = Phaser.Math.FloatBetween(0.9, 1.1);
-    m.currentBuy = Math.round(m.buy * mult);
-    m.currentSell = Math.round(m.sell * mult);
-  });
-}
 
 // Update market text lines with prices and inventory
 function updateMarketUI() {
@@ -737,6 +820,7 @@ function selectCity(scene, city) {
   currentCity = city.name;
   backgroundRect.fillColor = city.bgColor;
   locationText.setText(`Current Location: ${currentCity}`);
+  advanceDay();
   scene.cameras.main.fadeOut(250, 0, 0, 0);
   scene.time.delayedCall(250, () => {
     scene.cameras.main.fadeIn(250, 0, 0, 0);
