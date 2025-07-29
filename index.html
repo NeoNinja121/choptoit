@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.96';
+const VERSION = 'v1.97';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1421,7 +1421,8 @@ function handleTargetHit(scene, target) {
   target.body.enable = false;
   scene.tweens.add({
     targets: target,
-    y: 50,
+    // Drop the target down near the jester's feet
+    y: jester.y + 30,
     duration: 300,
     ease: 'Linear',
     onComplete: () => {
