@@ -52,7 +52,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.12';
+const VERSION = 'v2.13';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1014,8 +1014,10 @@ function selectCity(scene, city) {
   advanceDay();
   scene.cameras.main.fadeOut(250, 0, 0, 0);
   scene.time.delayedCall(250, () => {
+    scene.cameras.main.once('camerafadeincomplete', () => {
+      resetForNewCity(scene);
+    });
     scene.cameras.main.fadeIn(250, 0, 0, 0);
-    resetForNewCity(scene);
   });
   toggleTravel(scene, false);
 }
