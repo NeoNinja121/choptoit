@@ -51,7 +51,7 @@ let dripEmitter;
 let headEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v1.90';
+const VERSION = 'v1.91';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -300,7 +300,8 @@ function create() {
   backgroundRect.setDisplaySize(800, 600);
   stage = scene.add.image(400, 520, 'platform');
 
-  backOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
+  backOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000)
+    .setAlpha(0)
     .setDepth(0.4)
     .setVisible(false);
 
@@ -496,8 +497,13 @@ function create() {
     if (target.collected) return;
     target.collected = true;
     gainFame(scene, target);
+    targetGroup.remove(target);
+    bodyGroup.add(target);
     target.body.setAllowGravity(true);
     target.body.setImmovable(false);
+    target.body.onWorldBounds = true;
+    target.body.setCollideWorldBounds(true);
+    target.isCorpse = true;
   });
   // Enable collisions between bodies so they pile up
   scene.physics.add.collider(bodyGroup, bodyGroup);
@@ -880,9 +886,6 @@ function resetForNewCity(scene) {
   missText.setText(`Misses: ${missStreak}`);
   speedMultiplier = 1;
   swingSpeed = baseSwingSpeed;
-  bloodPool.displayWidth = 40;
-  bloodPool.setVisible(false);
-  bodyGroup.clear(true, true);
   resetHead(scene);
   executioner.setVisible(false);
   prisoner.setVisible(false);
@@ -1366,10 +1369,16 @@ function gainFame(scene, npc) {
     duration: 800,
     onComplete: () => popup.destroy()
   });
-  scene.time.delayedCall(2000, () => {
-    if (npc.jester) npc.jester.destroy();
-    npc.destroy();
-  });
+  if (npc.jester) {
+    const offX = npc.jester.startFromRight ? 900 : -100;
+    scene.tweens.add({
+      targets: npc.jester,
+      x: offX,
+      duration: 1500,
+      ease: 'Linear',
+      onComplete: () => npc.jester.destroy()
+    });
+  }
 }
 
 function spawnTarget(scene) {
@@ -1379,11 +1388,12 @@ function spawnTarget(scene) {
   const poleHeight = Phaser.Math.Between(80, 180);
 
   const jester = scene.add.container(startX, 460).setDepth(1);
+  jester.startFromRight = fromRight;
   const body = scene.add.image(0, 50, 'prisonerBodyImg').setOrigin(0.5, 1);
-  const head = scene.add.image(0, -20, 'prisonerHeadImg').setOrigin(0.5);
   const pole = scene.add.rectangle(0, -20, 6, poleHeight, 0x8b4513)
     .setOrigin(0.5, 1);
-  jester.add([body, head, pole]);
+  const head = scene.add.image(0, -20, 'prisonerHeadImg').setOrigin(0.5);
+  jester.add([body, pole, head]);
 
   const target = scene.add.container(0, -20 - poleHeight).setDepth(20);
   const outer = scene.add.circle(0, 0, 20, 0xff0000);
