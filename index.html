@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.24';
+const VERSION = 'v2.25';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -613,7 +613,10 @@ function create() {
     const title = scene.add.text(10, cityY, '', { font: '18px monospace', fill: '#ffffaa', wordWrap: { width: 520 } });
     const btn = scene.add.text(450, cityY, '[Go]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
-      .on('pointerdown', () => { selectCity(scene, city); });
+      .on('pointerdown', () => {
+        toggleTravel(scene, false); // Close menu so the overlay disappears
+        selectCity(scene, city);
+      });
     travelList.add([title, btn]);
     city.ui = { title, btn };
     cityY += 60;
@@ -1037,9 +1040,7 @@ function selectCity(scene, city) {
   backgroundRect.setTint(city.bgColor);
   locationText.setText(currentCity);
   advanceDay();
-  // Hide the travel UI immediately so its overlay doesn't stack with
-  // the background dim when transitioning cities.
-  toggleTravel(scene, false);
+  // Ensure the travel UI overlay is hidden before starting the transition.
   // Force-close the travel menu in case it somehow remained visible
   // and ensure the dimming overlay disappears when travelling.
   travelOverlay.setVisible(false);
