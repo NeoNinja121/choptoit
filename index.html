@@ -526,9 +526,11 @@ function create() {
   missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
   killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
   weatherText = scene.add.text(400, 96, '', { font: '20px monospace', fill: '#ffffff' })
-    .setOrigin(0.5, 0);
+    .setOrigin(0.5, 0)
+    .setDepth(50);
   weatherIndicator = scene.add.text(10, 590, '', { font: '20px monospace', fill: '#ffffff' })
-    .setOrigin(0, 1);
+    .setOrigin(0, 1)
+    .setDepth(50);
   locationText = scene.add.text(400, 16, currentCity, { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0);
   dateText = scene.add.text(400, 112, getDateString(), { font: '20px monospace', fill: '#ffffff' })
@@ -1436,7 +1438,7 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
 
   // Reveal and grow the blood pool once the head is off
   bloodPool.setVisible(true);
-  bloodPool.displayHeight = Math.min(bloodPool.displayHeight + 1, 600);
+  bloodPool.displayHeight = Math.min(bloodPool.displayHeight + 1, 100);
 
   // Hide the template prisoner while the physics body takes over
   prisoner.setVisible(false);
@@ -1444,10 +1446,11 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   // Spawn a new flying head sprite
   const flyingHead = scene.add.image(headX0, headY0, 'prisonerHeadImg')
     .setOrigin(0.5)
-    .setDepth(1);
+    .setDepth(0.8);
   scene.physics.world.enable(flyingHead);
   bodyGroup.add(flyingHead);
   flyingHead.isCorpse = true;
+  flyingHead.isHead = true;
   flyingHead.bounceCount = 0;
   flyingHead.power = power;
   const hBody = flyingHead.body;
@@ -2131,6 +2134,24 @@ function update(time, delta) {
   if (FEATURES.birds && birdGroup) {
     birdGroup.getChildren().forEach(b => {
       if (b.x < -60 || b.x > 860) b.destroy();
+    });
+  }
+
+  // Splash when heads hit the blood pool
+  if (bloodPool && bloodEmitter && bodyGroup) {
+    const surfaceY = bloodPool.y - bloodPool.displayHeight;
+    bodyGroup.getChildren().forEach(obj => {
+      if (obj.isHead && !obj.hasSplashed && obj.y + obj.displayHeight / 2 >= surfaceY) {
+        obj.hasSplashed = true;
+        const depth = Math.min(bloodPool.displayHeight, 100);
+        const ratio = depth / 100;
+        const qty = Math.floor(10 + 40 * ratio);
+        const minSpeed = 150 + 50 * ratio;
+        const maxSpeed = 250 + 50 * ratio;
+        bloodEmitter.setSpeed({ min: minSpeed, max: maxSpeed });
+        bloodEmitter.explode(qty, obj.x, surfaceY);
+        bloodEmitter.setSpeed({ min: 150, max: 250 });
+      }
     });
   }
 }
