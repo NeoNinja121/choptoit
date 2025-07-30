@@ -59,9 +59,10 @@ let bloodEmitter;
 let dripEmitter;
 let headEmitter;
 let splatEmitter;
+let fireworkEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.47';
+const VERSION = 'v2.48';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -643,6 +644,22 @@ function create() {
     gravityY: 400,
     lifespan: 800,
     scale: { start: 1, end: 0 },
+    quantity: 0,
+    on: false
+  });
+  const gSpark = scene.add.graphics();
+  gSpark.fillStyle(0xffcc00, 1);
+  gSpark.fillCircle(2, 2, 2);
+  gSpark.generateTexture('spark', 4, 4);
+  gSpark.destroy();
+  const fwParts = scene.add.particles('spark').setDepth(5);
+  fireworkEmitter = fwParts.createEmitter({
+    speed: { min: 150, max: 250 },
+    angle: { min: 250, max: 290 },
+    gravityY: 200,
+    lifespan: 1000,
+    scale: { start: 1, end: 0 },
+    blendMode: 'ADD',
     quantity: 0,
     on: false
   });
@@ -1855,6 +1872,21 @@ function handleTargetHit(scene, target, head) {
         handleTargetHit(scene, t, head);
       }
     });
+    targetGroup.remove(target);
+    fireworkEmitter.explode(25, target.x, target.y);
+    if (jester && !jester.running) {
+      jester.running = true;
+      const offX = jester.startFromRight ? 900 : -100;
+      scene.tweens.add({
+        targets: jester,
+        x: offX,
+        duration: 1500,
+        ease: 'Linear',
+        onComplete: () => jester.destroy()
+      });
+    }
+    target.destroy();
+    return;
   }
   targetGroup.remove(target);
   // blood spray at impact
