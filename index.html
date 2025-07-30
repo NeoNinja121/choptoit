@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.20';
+const VERSION = 'v2.21';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1291,16 +1291,19 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
   // Temporarily disable background tinting when prisoners spawn
   // so we can determine if it is causing issues.
   // if (city) backgroundRect.setTint(city.bgColor);
-  if (backOverlay.alpha === 0) {
-    backOverlay.setAlpha(0);
-    backOverlay.setVisible(true);
-    scene.tweens.add({
-      targets: backOverlay,
-      alpha: 0.72,
-      duration: 1000,
-      ease: 'Linear'
-    });
-  }
+  // Disable automatic dimming when a new prisoner spawns. Previously this
+  // block would fade in the backOverlay to darken the scene whenever the
+  // overlay's alpha was 0. This is temporarily removed as requested.
+  // if (backOverlay.alpha === 0) {
+  //   backOverlay.setAlpha(0);
+  //   backOverlay.setVisible(true);
+  //   scene.tweens.add({
+  //     targets: backOverlay,
+  //     alpha: 0.72,
+  //     duration: 1000,
+  //     ease: 'Linear'
+  //   });
+  // }
   prisoner.setVisible(true);
   resetHead(scene);
   prisonerClass = pickClass();
