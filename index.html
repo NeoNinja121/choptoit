@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.28';
+const VERSION = 'v2.29';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -70,6 +70,9 @@ let speedMultiplier = 1;
 let shopButton;
 let shopContainer;
 let shopOverlay;
+// Global overlay that darkens the game when menus are open or during
+// transitions. We'll fade this in/out at specific moments.
+let backgroundWindowFade;
 let tradeOverlay;
 let tradeContainer;
 let tradeTitle;
@@ -317,6 +320,13 @@ function create() {
   backgroundRect.setDisplaySize(800, 600);
   backgroundRect.setDepth(-2);
   stage = scene.add.image(400, 520, 'platform').setDepth(0);
+
+  // Overlay used for fading the entire scene. This stays hidden until
+  // a menu opens or we perform a transition.
+  backgroundWindowFade = scene.add.rectangle(400, 300, 800, 600, 0x000000, 1)
+    .setDepth(29)
+    .setAlpha(0)
+    .setVisible(false);
 
 
 
@@ -614,8 +624,8 @@ function create() {
     const btn = scene.add.text(450, cityY, '[Go]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => {
-        toggleTravel(scene, false); // Close menu so the overlay disappears
-        selectCity(scene, city);
+        // Fade to black, switch city, then reveal the new backdrop
+        travelToCity(scene, city);
       });
     travelList.add([title, btn]);
     city.ui = { title, btn };
@@ -810,11 +820,35 @@ function create() {
 
 let swingDirection = 1;
 
+// Helper to fade our background window overlay in or out. This drives the
+// dimming effects requested for menus and transitions.
+let bgFadeTween = null;
+function fadeBackgroundWindow(scene, alpha, duration = 300, onComplete) {
+  if (bgFadeTween) {
+    bgFadeTween.stop();
+  }
+  backgroundWindowFade.setVisible(true);
+  bgFadeTween = scene.tweens.add({
+    targets: backgroundWindowFade,
+    alpha,
+    duration,
+    onComplete: () => {
+      bgFadeTween = null;
+      if (alpha === 0) {
+        backgroundWindowFade.setVisible(false);
+      }
+      if (onComplete) onComplete();
+    }
+  });
+}
+
 function toggleShop(scene) {
   const visible = !shopContainer.visible;
   shopOverlay.setVisible(visible);
   shopContainer.setVisible(visible);
   if (visible) {
+    // Fade the game behind the shop so it appears paused and dimmed
+    fadeBackgroundWindow(scene, 0.5);
     showShopTab(scene, scene.activeTab || 'weapons');
     if (hideMeterEvent) {
       hideMeterEvent.remove(false);
@@ -830,6 +864,8 @@ function toggleShop(scene) {
     scene.time.paused = true;
   } else {
     // backOverlay.setVisible(backOverlayWasVisible);
+    // Remove the dim when closing the shop
+    fadeBackgroundWindow(scene, 0);
     scene.physics.world.resume();
     scene.tweens.resumeAll();
     scene.time.paused = false;
@@ -950,6 +986,8 @@ function toggleTravel(scene, resume = true) {
   travelOverlay.setVisible(visible);
   travelContainer.setVisible(visible);
   if (visible) {
+    // Dim the background while the travel menu is open
+    fadeBackgroundWindow(scene, 0.5);
     updateTravelUI(scene);
     if (hideMeterEvent) {
       hideMeterEvent.remove(false);
@@ -965,11 +1003,23 @@ function toggleTravel(scene, resume = true) {
     scene.time.paused = true;
   } else {
     // backOverlay.setVisible(backOverlayWasVisible);
+    // Clear the dim when returning to gameplay
+    fadeBackgroundWindow(scene, 0);
     scene.physics.world.resume();
     scene.tweens.resumeAll();
     scene.time.paused = false;
     if (resume) startSwingMeter(scene);
   }
+}
+
+// Fade completely to black, change cities, then reveal the new scene.
+function travelToCity(scene, city) {
+  fadeBackgroundWindow(scene, 1, 500, () => {
+    toggleTravel(scene, false);
+    selectCity(scene, city);
+    // After the new city is ready, fade back to gameplay
+    fadeBackgroundWindow(scene, 0, 500);
+  });
 }
 
 function showTradeMenu(scene, index, mode = 'buy') {
@@ -1259,6 +1309,8 @@ function introExecutioner(scene, onComplete) {
   executionerIntro = false;
   // Ensure previous background tweens don't conflict
   // scene.tweens.killTweensOf(backOverlay);
+  // Darken the scene as the executioner arrives for dramatic effect
+  fadeBackgroundWindow(scene, 0.35, 800);
   executioner.setPosition(850, 460);
   executioner.setAlpha(0);
   executioner.setVisible(true);
