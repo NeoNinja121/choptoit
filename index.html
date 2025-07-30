@@ -62,7 +62,7 @@ let splatEmitter;
 let fireworkEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.51';
+const VERSION = 'v2.52';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -623,7 +623,8 @@ function create() {
   bloodPool = scene.add.rectangle(400, 600, 800, 1, 0x770000)
     .setOrigin(0.5, 1)
     .setVisible(false)
-    .setDepth(0.6);
+    // Render in front of heads so they appear to sink into the pool
+    .setDepth(0.9);
 
   // Blood particle emitter
   const g = scene.add.graphics();
