@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.25';
+const VERSION = 'v2.27';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -599,7 +599,7 @@ function create() {
     .on('pointerdown', () => { toggleTravel(scene); });
 
   // Travel container and overlay
-  travelOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.6)
+  travelOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
     .setVisible(false)
     .setDepth(30);
   travelContainer = scene.add.container(100, 100).setVisible(false).setDepth(31);
@@ -628,7 +628,7 @@ function create() {
   updateTravelUI(scene);
 
   // Shop container and overlay
-  shopOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.6)
+  shopOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
     .setVisible(false)
     .setDepth(30);
   shopContainer = scene.add.container(50, 50).setVisible(false).setDepth(31);
@@ -729,7 +729,7 @@ function create() {
   shopContainer.add(closeBtn);
 
   // Trade menu overlay for buying and selling quantities
-  tradeOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.6)
+  tradeOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
     .setVisible(false)
     .setDepth(40);
   tradeContainer = scene.add.container(210, 200).setVisible(false).setDepth(41);
