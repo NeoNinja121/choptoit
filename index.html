@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.30';
+const VERSION = 'v2.31';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1336,7 +1336,7 @@ function introExecutioner(scene, onComplete) {
   // Ensure previous background tweens don't conflict
   // scene.tweens.killTweensOf(backOverlay);
   // Darken the scene as the executioner arrives for dramatic effect
-  fadeBackgroundOverlay(scene, 0.35, 800);
+  fadeBackgroundOverlay(scene, 0.6, 800);
   executioner.setPosition(850, 460);
   executioner.setAlpha(0);
   executioner.setVisible(true);
