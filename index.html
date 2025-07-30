@@ -61,7 +61,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.43';
+const VERSION = 'v2.47';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -285,9 +285,9 @@ function refreshMarketPrices() {
 function chooseTargetType() {
   if (!FEATURES.specialTargets) return 'standard';
   const r = Phaser.Math.Between(1, 100);
-  if (r <= 5) return 'royal';
+  if (r <= 5) return killStreak >= 10 ? 'royal' : 'standard';
   if (r <= 15) return 'holyMonk';
-  if (r <= 35) return 'explodingBarrel';
+  if (r <= 35) return killStreak >= 8 ? 'explodingBarrel' : 'standard';
   if (r <= 65) return 'woodenShield';
   return 'standard';
 }
@@ -314,8 +314,9 @@ function createTargetAppearance(scene, target, type) {
     }
     case 'royal': {
       const o = scene.add.circle(0, 0, 20, 0xffff00);
-      const i = scene.add.circle(0, 0, 6, 0xffffff);
-      target.add([o, i]);
+      const txt = scene.add.text(0, 0, 'R', { font: '16px monospace', fill: '#000' })
+        .setOrigin(0.5);
+      target.add([o, txt]);
       break;
     }
     default: {
@@ -329,11 +330,11 @@ function createTargetAppearance(scene, target, type) {
 function spawnBird(scene) {
   const fromRight = Phaser.Math.Between(0, 1) === 1;
   const startX = fromRight ? -50 : 850;
-  const y = Phaser.Math.Between(40, 120);
+  const y = Phaser.Math.Between(120, 200);
   const texture = Phaser.Math.Between(0, 1) ? 'crow' : 'dove';
   const bird = scene.physics.add.image(startX, y, texture).setDepth(5);
   bird.type = texture === 'dove' ? 'dove' : 'crow';
-  bird.setVelocityX(fromRight ? 100 : -100);
+  bird.setVelocityX(fromRight ? 150 : -150);
   bird.setImmovable(true);
   bird.body.allowGravity = false;
   birdGroup.add(bird);
@@ -670,7 +671,7 @@ function create() {
     });
     birdGroup = scene.physics.add.group({ allowGravity: false });
     scene.time.addEvent({
-      delay: 2000,
+      delay: 1000,
       loop: true,
       callback: () => { if (FEATURES.birds) spawnBird(scene); }
     });
@@ -1850,7 +1851,7 @@ function handleTargetHit(scene, target, head) {
   gainFame(scene, target, fameGain);
   if (target.targetType === 'explodingBarrel') {
     targetGroup.getChildren().forEach(t => {
-      if (!t.collected && Phaser.Math.Distance.Between(t.x, t.y, target.x, target.y) < 60) {
+      if (!t.collected && Phaser.Math.Distance.Between(t.x, t.y, target.x, target.y) < 300) {
         handleTargetHit(scene, t, head);
       }
     });
@@ -1863,10 +1864,11 @@ function handleTargetHit(scene, target, head) {
   target.body.setImmovable(true);
   target.body.setCollideWorldBounds(false);
   target.body.enable = false;
+  const dropY = jester ? jester.y + 30 : target.y + 30;
   scene.tweens.add({
     targets: target,
     // Drop the target down near the jester's feet
-    y: jester.y + 30,
+    y: dropY,
     duration: 300,
     ease: 'Linear',
     onComplete: () => {
@@ -1888,7 +1890,89 @@ function handleTargetHit(scene, target, head) {
   });
 }
 
+function spawnHolyMonk(scene) {
+  const fromRight = Phaser.Math.Between(0, 1) === 1;
+  const startX = fromRight ? 850 : -50;
+  const monk = scene.add.container(startX, 460).setDepth(20);
+  monk.targetType = 'holyMonk';
+  createTargetAppearance(scene, monk, 'holyMonk');
+  scene.physics.world.enable(monk);
+  monk.body.setAllowGravity(false);
+  monk.body.setImmovable(true);
+  monk.body.setVelocityX(fromRight ? -30 : 30);
+  monk.collected = false;
+  monk.jester = null;
+  targetGroup.add(monk);
+  const changes = Phaser.Math.Between(1, 2);
+  let done = 0;
+  const changeEvent = scene.time.addEvent({
+    delay: 1000,
+    loop: true,
+    callback: () => {
+      if (Phaser.Math.Between(0, 1) === 1 && done < changes) {
+        monk.body.setVelocityX(-monk.body.velocity.x);
+        done++;
+      }
+    }
+  });
+  scene.time.delayedCall(Phaser.Math.Between(2000, 5000), () => {
+    changeEvent.remove();
+    scene.tweens.add({
+      targets: monk,
+      x: fromRight ? 850 : -50,
+      duration: 1500,
+      ease: 'Linear',
+      onComplete: () => {
+        monk.destroy();
+      }
+    });
+  });
+}
+
+function spawnRoyal(scene) {
+  const fromRight = Phaser.Math.Between(0, 1) === 1;
+  const startX = fromRight ? 850 : -50;
+  const stopX = fromRight ? 500 : 300;
+  const royal = scene.add.container(startX, 460).setDepth(20);
+  royal.targetType = 'royal';
+  createTargetAppearance(scene, royal, 'royal');
+  scene.physics.world.enable(royal);
+  royal.body.setAllowGravity(false);
+  royal.body.setImmovable(true);
+  royal.body.setVelocityX(fromRight ? -40 : 40);
+  royal.collected = false;
+  royal.jester = null;
+  targetGroup.add(royal);
+  scene.tweens.add({
+    targets: royal,
+    x: stopX,
+    duration: 1500,
+    ease: 'Linear',
+    onComplete: () => {
+      royal.body.setVelocityX(0);
+      scene.time.delayedCall(Phaser.Math.Between(2000, 5000), () => {
+        scene.tweens.add({
+          targets: royal,
+          x: fromRight ? 850 : -50,
+          duration: 1500,
+          ease: 'Linear',
+          onComplete: () => royal.destroy()
+        });
+      });
+    }
+  });
+}
+
 function spawnTarget(scene) {
+  const type = chooseTargetType();
+  if (type === 'holyMonk') {
+    spawnHolyMonk(scene);
+    return;
+  }
+  if (type === 'royal') {
+    spawnRoyal(scene);
+    return;
+  }
   const fromRight = Phaser.Math.Between(0, 1) === 1;
   const startX = fromRight ? 850 : -50;
   const targetX = Phaser.Math.Between(100, 700);
@@ -1903,11 +1987,16 @@ function spawnTarget(scene) {
   jester.add([body, pole, head]);
 
   const target = scene.add.container(startX, 460 - 20 - poleHeight).setDepth(20);
-  const type = chooseTargetType();
   target.targetType = type;
   createTargetAppearance(scene, target, type);
 
-  if (FEATURES.movingTargets && Phaser.Math.Between(0, 1) === 1) {
+  if (type === 'woodenShield') {
+    if (killStreak >= 3) {
+      target.isMoving = true;
+      const dur = killStreak >= 10 ? 400 : 800;
+      scene.tweens.add({ targets: target, y: target.y - 20, duration: dur, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
+  } else if (FEATURES.movingTargets && Phaser.Math.Between(0, 1) === 1) {
     target.isMoving = true;
     scene.tweens.add({ targets: target, y: target.y - 20, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
   }
