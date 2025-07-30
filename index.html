@@ -61,7 +61,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.42';
+const VERSION = 'v2.43';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1912,10 +1912,6 @@ function spawnTarget(scene) {
     scene.tweens.add({ targets: target, y: target.y - 20, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
   }
 
-  scene.physics.world.enable(target);
-  target.body.setCircle(20);
-  target.body.setAllowGravity(false);
-  target.body.setImmovable(true);
   target.collected = false;
   target.jester = jester;
   targetGroup.add(target);
@@ -1924,7 +1920,24 @@ function spawnTarget(scene) {
     targets: [jester, target],
     x: targetX,
     duration: 1500,
-    ease: 'Linear'
+    ease: 'Linear',
+    onComplete: () => {
+      scene.physics.world.enable(target);
+      if (type === 'explodingBarrel') {
+        target.body.setSize(30, 40);
+        target.body.setOffset(-15, -20);
+      } else {
+        target.body.setCircle(20, -20, -20);
+      }
+      target.body.setAllowGravity(false);
+      target.body.setImmovable(true);
+    },
+    onUpdate: () => {
+      if (target.body) {
+        target.body.x = target.x - target.body.halfWidth;
+        target.body.y = target.y - target.body.halfHeight;
+      }
+    }
   });
 }
 
