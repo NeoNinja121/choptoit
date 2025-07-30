@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.23';
+const VERSION = 'v2.24';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1044,6 +1044,11 @@ function selectCity(scene, city) {
   // and ensure the dimming overlay disappears when travelling.
   travelOverlay.setVisible(false);
   travelContainer.setVisible(false);
+  // Also hide other overlays in case they were inadvertently left open.
+  shopOverlay.setVisible(false);
+  shopContainer.setVisible(false);
+  tradeOverlay.setVisible(false);
+  tradeContainer.setVisible(false);
   // Reset the darkness overlay and begin the new city's intro fresh.
   resetBackOverlay(scene);
   // Directly reset for the new city without fading the camera first.
