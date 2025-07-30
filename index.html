@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.27';
+const VERSION = 'v2.28';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -209,17 +209,17 @@ const marketItems = [
 
 // Places the player can visit
 const cities = [
-  { name: 'York', desc: 'Historic northern city.', fameReq: 0, bgColor: 0x2d2d2d,
+  { name: 'York', desc: 'Historic northern city.', fameReq: 0, /* bgColor: 0x2d2d2d, */
     modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Canterbury', desc: 'Seat of the Archbishop.', fameReq: 1, bgColor: 0x2d2d34,
+  { name: 'Canterbury', desc: 'Seat of the Archbishop.', fameReq: 1, /* bgColor: 0x2d2d34, */
     modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
-  { name: 'London', desc: 'Bustling capital of the realm.', fameReq: 2, bgColor: 0x34342d,
+  { name: 'London', desc: 'Bustling capital of the realm.', fameReq: 2, /* bgColor: 0x34342d, */
     modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Bristol', desc: 'Busy trading port.', fameReq: 3, bgColor: 0x2d342d,
+  { name: 'Bristol', desc: 'Busy trading port.', fameReq: 3, /* bgColor: 0x2d342d, */
     modifiers: { 'Silver Cup': { buy: 0.85, sell: 1.15 } } },
-  { name: 'Norwich', desc: 'Town of fine artisans.', fameReq: 4, bgColor: 0x342d2d,
+  { name: 'Norwich', desc: 'Town of fine artisans.', fameReq: 4, /* bgColor: 0x342d2d, */
     modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
-  { name: 'Winchester', desc: 'Former royal seat.', fameReq: 5, bgColor: 0x2d3434,
+  { name: 'Winchester', desc: 'Former royal seat.', fameReq: 5, /* bgColor: 0x2d3434, */
     modifiers: { Mead: { buy: 0.9, sell: 1.1 } } }
 ];
 
@@ -1037,7 +1037,7 @@ function selectCity(scene, city) {
   if (city.fameReq && fame < city.fameReq) return;
   if (city.name === currentCity) return;
   currentCity = city.name;
-  backgroundRect.setTint(city.bgColor);
+  // backgroundRect.setTint(city.bgColor); // disabled per request
   locationText.setText(currentCity);
   advanceDay();
   // Ensure the travel UI overlay is hidden before starting the transition.
