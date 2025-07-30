@@ -60,9 +60,11 @@ let dripEmitter;
 let headEmitter;
 let splatEmitter;
 let fireworkEmitter;
+let rainEmitter;
+let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.52';
+const VERSION = 'v2.55';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -361,6 +363,8 @@ function applyRandomWeather(scene) {
   currentWeather = FEATURES.weather ? Phaser.Utils.Array.GetRandom(choices) : 'none';
   windForce = { x: 0, y: 0 };
   weatherText.setText(currentWeather === 'none' ? '' : currentWeather.toUpperCase());
+  if (rainEmitter) rainEmitter.stop();
+  if (fogEmitter) fogEmitter.stop();
   let letter = '';
   let arrow = '';
   targetGroup.getChildren().forEach(t => {
@@ -377,8 +381,10 @@ function applyRandomWeather(scene) {
     targetGroup.getChildren().forEach(t => {
       t.fogTween = scene.tweens.add({ targets: t, alpha: 0.3, yoyo: true, repeat: -1, duration: 800 });
     });
+    if (fogEmitter) fogEmitter.start();
   } else if (currentWeather === 'rain') {
     letter = 'R';
+    if (rainEmitter) rainEmitter.start();
   }
   weatherIndicator.setText(letter + arrow);
 }
@@ -684,6 +690,38 @@ function create() {
     scale: { start: 1, end: 0 },
     blendMode: 'ADD',
     quantity: 0,
+    on: false
+  });
+
+  // Weather particle textures
+  const gWeather = scene.add.graphics();
+  gWeather.fillStyle(0x99ccff, 1);
+  gWeather.fillRect(0, 0, 2, 10);
+  gWeather.generateTexture('raindrop', 2, 10);
+  gWeather.clear();
+  gWeather.fillStyle(0xffffff, 0.3);
+  gWeather.fillRect(0, 0, 20, 8);
+  gWeather.generateTexture('fog', 20, 8);
+  gWeather.destroy();
+  const rainParts = scene.add.particles('raindrop').setDepth(4);
+  rainEmitter = rainParts.createEmitter({
+    x: { min: 0, max: 800 },
+    y: 0,
+    lifespan: 800,
+    speedY: { min: 400, max: 600 },
+    quantity: 15,
+    frequency: 100,
+    on: false
+  });
+  const fogParts = scene.add.particles('fog').setDepth(4);
+  fogEmitter = fogParts.createEmitter({
+    x: { min: -50, max: 850 },
+    y: { min: 300, max: 580 },
+    lifespan: 4000,
+    speedX: { min: -20, max: 20 },
+    speedY: { min: -5, max: 5 },
+    quantity: 2,
+    alpha: { start: 0.3, end: 0 },
     on: false
   });
 
@@ -1322,6 +1360,8 @@ function resetForNewCity(scene) {
     if (t.jester) t.jester.destroy();
     t.destroy();
   });
+  bloodPool.setVisible(false);
+  bloodPool.displayHeight = 1;
   speedMultiplier = 1;
   swingSpeed = baseSwingSpeed;
   resetHead(scene);
