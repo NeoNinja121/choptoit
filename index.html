@@ -213,35 +213,35 @@ const marketItems = [
 
 // Places the player can visit
 const cities = [
-  { name: 'York', desc: 'Historic northern city.', fameReq: 0, /* bgColor: 0x2d2d2d, */
+  { name: 'York', desc: 'Historic northern city.', fameReq: 0, region: 'north', /* bgColor: 0x2d2d2d, */
     modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Canterbury', desc: 'Seat of the Archbishop.', fameReq: 1, /* bgColor: 0x2d2d34, */
+  { name: 'Canterbury', desc: 'Seat of the Archbishop.', fameReq: 1, region: 'south', /* bgColor: 0x2d2d34, */
     modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
-  { name: 'London', desc: 'Bustling capital of the realm.', fameReq: 2, /* bgColor: 0x34342d, */
+  { name: 'London', desc: 'Bustling capital of the realm.', fameReq: 2, region: 'south', /* bgColor: 0x34342d, */
     modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Dover', desc: 'Channel crossing hub.', fameReq: 3, /* bgColor: 0x2d342d, */
+  { name: 'Dover', desc: 'Channel crossing hub.', fameReq: 3, region: 'south', /* bgColor: 0x2d342d, */
     modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Durham', desc: 'Northern cathedral city.', fameReq: 4, /* bgColor: 0x34342d, */
+  { name: 'Durham', desc: 'Northern cathedral city.', fameReq: 4, region: 'north', /* bgColor: 0x34342d, */
     modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Norwich', desc: 'Town of fine artisans.', fameReq: 5, /* bgColor: 0x342d2d, */
+  { name: 'Norwich', desc: 'Town of fine artisans.', fameReq: 5, region: 'south', /* bgColor: 0x342d2d, */
     modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
-  { name: 'Winchester', desc: 'Former royal seat.', fameReq: 6, /* bgColor: 0x2d3434, */
+  { name: 'Winchester', desc: 'Former royal seat.', fameReq: 6, region: 'south', /* bgColor: 0x2d3434, */
     modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Chester', desc: 'Fortified Roman town.', fameReq: 7, /* bgColor: 0x342d34, */
+  { name: 'Chester', desc: 'Fortified Roman town.', fameReq: 7, region: 'north', /* bgColor: 0x342d34, */
     modifiers: { 'Silver Cup': { buy: 0.85, sell: 1.15 } } },
-  { name: 'Hull', desc: 'North Sea trading port.', fameReq: 8, /* bgColor: 0x2d342d, */
+  { name: 'Hull', desc: 'North Sea trading port.', fameReq: 8, region: 'north', /* bgColor: 0x2d342d, */
     modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
-  { name: 'Newcastle', desc: 'City on the Tyne.', fameReq: 9, /* bgColor: 0x2d2d34, */
+  { name: 'Newcastle', desc: 'City on the Tyne.', fameReq: 9, region: 'north', /* bgColor: 0x2d2d34, */
     modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Colchester', desc: 'Ancient Roman city.', fameReq: 10, /* bgColor: 0x34342d, */
+  { name: 'Colchester', desc: 'Ancient Roman city.', fameReq: 10, region: 'south', /* bgColor: 0x34342d, */
     modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Lincoln', desc: 'Cathedral and castle city.', fameReq: 11, /* bgColor: 0x342d2d, */
+  { name: 'Lincoln', desc: 'Cathedral and castle city.', fameReq: 11, region: 'north', /* bgColor: 0x342d2d, */
     modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Oxford', desc: 'Home of great learning.', fameReq: 12, /* bgColor: 0x2d3434, */
+  { name: 'Oxford', desc: 'Home of great learning.', fameReq: 12, region: 'south', /* bgColor: 0x2d3434, */
     modifiers: { 'Silver Cup': { buy: 0.85, sell: 1.15 } } },
-  { name: 'Southampton', desc: 'Southern port city.', fameReq: 13, /* bgColor: 0x2d2d34, */
+  { name: 'Southampton', desc: 'Southern port city.', fameReq: 13, region: 'south', /* bgColor: 0x2d2d34, */
     modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
-  { name: 'Gloucester', desc: 'Historic Roman city.', fameReq: 14, /* bgColor: 0x34342d, */
+  { name: 'Gloucester', desc: 'Historic Roman city.', fameReq: 14, region: 'south', /* bgColor: 0x34342d, */
     modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } }
 ];
 
@@ -641,19 +641,7 @@ function create() {
   travelContainer.add(travelBg);
   travelList = scene.add.container(0, 40);
   travelContainer.add(travelList);
-  let cityY = 0;
-  cities.forEach(city => {
-    const title = scene.add.text(10, cityY, '', { font: '18px monospace', fill: '#ffffaa', wordWrap: { width: 520 } });
-    const btn = scene.add.text(450, cityY, '[Go]', { font: '18px monospace', fill: '#00ff00' })
-      .setInteractive()
-      .on('pointerdown', () => {
-        // Fade to black, switch city, then reveal the new backdrop
-        travelToCity(scene, city);
-      });
-    travelList.add([title, btn]);
-    city.ui = { title, btn };
-    cityY += 60;
-  });
+  showTravelRegions(scene);
   const travelClose = scene.add.text(560, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
     .on('pointerdown', () => { toggleTravel(scene); });
@@ -1025,6 +1013,38 @@ function updateTravelUI(scene) {
   });
 }
 
+function showTravelRegions(scene) {
+  travelList.removeAll(true);
+  const northBtn = scene.add.text(10, 0, 'Cities in the North', { font: '18px monospace', fill: '#00ff00' })
+    .setInteractive()
+    .on('pointerdown', () => showCityList(scene, 'north'));
+  const southBtn = scene.add.text(10, 40, 'Cities in the South', { font: '18px monospace', fill: '#00ff00' })
+    .setInteractive()
+    .on('pointerdown', () => showCityList(scene, 'south'));
+  travelList.add([northBtn, southBtn]);
+}
+
+function showCityList(scene, region) {
+  travelList.removeAll(true);
+  const backBtn = scene.add.text(10, 0, '[Back]', { font: '18px monospace', fill: '#ffffff' })
+    .setInteractive()
+    .on('pointerdown', () => showTravelRegions(scene));
+  travelList.add(backBtn);
+  let cityY = 40;
+  cities.filter(c => c.region === region).forEach(city => {
+    const title = scene.add.text(10, cityY, '', { font: '18px monospace', fill: '#ffffaa', wordWrap: { width: 520 } });
+    const btn = scene.add.text(450, cityY, '[Go]', { font: '18px monospace', fill: '#00ff00' })
+      .setInteractive()
+      .on('pointerdown', () => {
+        travelToCity(scene, city);
+      });
+    travelList.add([title, btn]);
+    city.ui = { title, btn };
+    cityY += 60;
+  });
+  updateTravelUI(scene);
+}
+
 function toggleTravel(scene, resume = true, withFade = true) {
   const visible = !travelContainer.visible;
   travelOverlay.setVisible(visible);
@@ -1032,6 +1052,7 @@ function toggleTravel(scene, resume = true, withFade = true) {
   if (visible) {
     // Dim the background while the travel menu is open
     if (withFade) fadeScreenOverlay(scene, 0.5);
+    showTravelRegions(scene);
     updateTravelUI(scene);
     if (hideMeterEvent) {
       hideMeterEvent.remove(false);
