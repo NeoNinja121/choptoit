@@ -998,6 +998,14 @@ function hideTradeMenu(scene) {
   startSwingMeter(scene);
 }
 
+function resetBackOverlay(scene) {
+  // Stop any existing fade tweens and return the background overlay
+  // to a fully transparent starting state.
+  scene.tweens.killTweensOf(backOverlay);
+  backOverlay.setAlpha(0);
+  backOverlay.setVisible(true);
+}
+
 function resetForNewCity(scene) {
   killStreak = 0;
   streakMultiplierText.setText(`x${killStreak}`);
@@ -1031,8 +1039,9 @@ function selectCity(scene, city) {
   // Force-close the travel menu in case it somehow remained visible.
   travelOverlay.setVisible(false);
   travelContainer.setVisible(false);
-  // Directly reset for the new city without fading the camera or
-  // manipulating the darkness overlay.
+  // Reset the darkness overlay and begin the new city's intro fresh.
+  resetBackOverlay(scene);
+  // Directly reset for the new city without fading the camera first.
   resetForNewCity(scene);
 }
 
@@ -1234,6 +1243,8 @@ function slashExecutioner(scene, angle, onComplete) {
 }
 function introExecutioner(scene, onComplete) {
   executionerIntro = false;
+  // Ensure previous background tweens don't conflict
+  scene.tweens.killTweensOf(backOverlay);
   executioner.setPosition(850, 460);
   executioner.setAlpha(0);
   executioner.setVisible(true);
