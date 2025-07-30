@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.31';
+const VERSION = 'v2.32';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -219,12 +219,30 @@ const cities = [
     modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
   { name: 'London', desc: 'Bustling capital of the realm.', fameReq: 2, /* bgColor: 0x34342d, */
     modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Bristol', desc: 'Busy trading port.', fameReq: 3, /* bgColor: 0x2d342d, */
-    modifiers: { 'Silver Cup': { buy: 0.85, sell: 1.15 } } },
-  { name: 'Norwich', desc: 'Town of fine artisans.', fameReq: 4, /* bgColor: 0x342d2d, */
+  { name: 'Dover', desc: 'Channel crossing hub.', fameReq: 3, /* bgColor: 0x2d342d, */
+    modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
+  { name: 'Durham', desc: 'Northern cathedral city.', fameReq: 4, /* bgColor: 0x34342d, */
+    modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } },
+  { name: 'Norwich', desc: 'Town of fine artisans.', fameReq: 5, /* bgColor: 0x342d2d, */
     modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
-  { name: 'Winchester', desc: 'Former royal seat.', fameReq: 5, /* bgColor: 0x2d3434, */
-    modifiers: { Mead: { buy: 0.9, sell: 1.1 } } }
+  { name: 'Winchester', desc: 'Former royal seat.', fameReq: 6, /* bgColor: 0x2d3434, */
+    modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
+  { name: 'Chester', desc: 'Fortified Roman town.', fameReq: 7, /* bgColor: 0x342d34, */
+    modifiers: { 'Silver Cup': { buy: 0.85, sell: 1.15 } } },
+  { name: 'Hull', desc: 'North Sea trading port.', fameReq: 8, /* bgColor: 0x2d342d, */
+    modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
+  { name: 'Newcastle', desc: 'City on the Tyne.', fameReq: 9, /* bgColor: 0x2d2d34, */
+    modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } },
+  { name: 'Colchester', desc: 'Ancient Roman city.', fameReq: 10, /* bgColor: 0x34342d, */
+    modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
+  { name: 'Lincoln', desc: 'Cathedral and castle city.', fameReq: 11, /* bgColor: 0x342d2d, */
+    modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
+  { name: 'Oxford', desc: 'Home of great learning.', fameReq: 12, /* bgColor: 0x2d3434, */
+    modifiers: { 'Silver Cup': { buy: 0.85, sell: 1.15 } } },
+  { name: 'Southampton', desc: 'Southern port city.', fameReq: 13, /* bgColor: 0x2d2d34, */
+    modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
+  { name: 'Gloucester', desc: 'Historic Roman city.', fameReq: 14, /* bgColor: 0x34342d, */
+    modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } }
 ];
 
 // Format the current calendar date
