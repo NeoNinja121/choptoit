@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.21';
+const VERSION = 'v2.22';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -80,7 +80,14 @@ let tradeSellBtns = [];
 let travelButton;
 let travelContainer;
 let travelOverlay;
-let backOverlay;
+// The dimming overlay previously used during menu transitions caused a
+// distracting flash when switching cities. To remove it while keeping the
+// rest of the code functional, we replace it with a no-op stub.
+const backOverlay = {
+  visible: false,
+  setVisible() {},
+  setAlpha() {},
+};
 let backOverlayWasVisible = false;
 let locationText;
 let currentCity = 'York';
@@ -311,10 +318,7 @@ function create() {
   backgroundRect.setDepth(-2);
   stage = scene.add.image(400, 520, 'platform').setDepth(0);
 
-  backOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000)
-    .setAlpha(0)
-    .setDepth(-1)
-    .setVisible(false);
+
 
   // Executioner, starts off-screen and walks in on first spawn
   // Place him behind the prisoner but in front of the background
