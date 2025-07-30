@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.37';
+const VERSION = 'v2.41';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1017,15 +1017,17 @@ function showTravelRegions(scene) {
   // Clear any existing city UI references to avoid stale elements
   cities.forEach(c => { if (c.ui) delete c.ui; });
   travelList.removeAll(true);
-  const northBtn = scene.add.text(10, 0, 'The North', { font: '18px monospace', fill: '#00ff00' })
+  const northBtn = scene.add.text(175, 0, 'The North', { font: '18px monospace', fill: '#00ff00' })
+    .setOrigin(0.5, 0)
     .setInteractive()
     .on('pointerdown', () => showCityList(scene, 'north'));
-  const southBtn = scene.add.text(360, 0, 'The South', { font: '18px monospace', fill: '#00ff00' })
+  const southBtn = scene.add.text(525, 0, 'The South', { font: '18px monospace', fill: '#00ff00' })
+    .setOrigin(0.5, 0)
     .setInteractive()
     .on('pointerdown', () => showCityList(scene, 'south'));
 
-  const northPlaceholder = scene.add.rectangle(10, 30, 250, 400, 0x444444).setOrigin(0, 0);
-  const southPlaceholder = scene.add.rectangle(360, 30, 250, 400, 0x444444).setOrigin(0, 0);
+  const northPlaceholder = scene.add.rectangle(50, 30, 250, 400, 0x444444).setOrigin(0, 0);
+  const southPlaceholder = scene.add.rectangle(400, 30, 250, 400, 0x444444).setOrigin(0, 0);
   travelList.add([northBtn, southBtn, northPlaceholder, southPlaceholder]);
 }
 
