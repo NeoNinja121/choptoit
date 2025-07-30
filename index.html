@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.35';
+const VERSION = 'v2.37';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1014,6 +1014,8 @@ function updateTravelUI(scene) {
 }
 
 function showTravelRegions(scene) {
+  // Clear any existing city UI references to avoid stale elements
+  cities.forEach(c => { if (c.ui) delete c.ui; });
   travelList.removeAll(true);
   const northBtn = scene.add.text(10, 0, 'The North', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
@@ -1029,6 +1031,7 @@ function showTravelRegions(scene) {
 
 function showCityList(scene, region) {
   travelList.removeAll(true);
+  cities.forEach(c => { if (c.ui) delete c.ui; });
   const backBtn = scene.add.text(10, 0, '[Back]', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
     .on('pointerdown', () => showTravelRegions(scene));
