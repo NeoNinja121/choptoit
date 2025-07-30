@@ -83,12 +83,12 @@ let travelOverlay;
 // The dimming overlay previously used during menu transitions caused a
 // distracting flash when switching cities. To remove it while keeping the
 // rest of the code functional, we replace it with a no-op stub.
-const backOverlay = {
-  visible: false,
-  setVisible() {},
-  setAlpha() {},
-};
-let backOverlayWasVisible = false;
+// const backOverlay = {
+//   visible: false,
+//   setVisible() {},
+//   setAlpha() {},
+// };
+// let backOverlayWasVisible = false;
 let locationText;
 let currentCity = 'York';
 let backgroundRect;
@@ -823,13 +823,13 @@ function toggleShop(scene) {
     swingActive = false;
     inputEnabled = false;
     cursor.setVisible(false);
-    backOverlayWasVisible = backOverlay.visible;
-    backOverlay.setVisible(false);
+    // backOverlayWasVisible = backOverlay.visible;
+    // backOverlay.setVisible(false);
     scene.physics.world.pause();
     scene.tweens.pauseAll();
     scene.time.paused = true;
   } else {
-    backOverlay.setVisible(backOverlayWasVisible);
+    // backOverlay.setVisible(backOverlayWasVisible);
     scene.physics.world.resume();
     scene.tweens.resumeAll();
     scene.time.paused = false;
@@ -958,13 +958,13 @@ function toggleTravel(scene, resume = true) {
     swingActive = false;
     inputEnabled = false;
     cursor.setVisible(false);
-    backOverlayWasVisible = backOverlay.visible;
-    backOverlay.setVisible(false);
+    // backOverlayWasVisible = backOverlay.visible;
+    // backOverlay.setVisible(false);
     scene.physics.world.pause();
     scene.tweens.pauseAll();
     scene.time.paused = true;
   } else {
-    backOverlay.setVisible(backOverlayWasVisible);
+    // backOverlay.setVisible(backOverlayWasVisible);
     scene.physics.world.resume();
     scene.tweens.resumeAll();
     scene.time.paused = false;
@@ -988,8 +988,8 @@ function showTradeMenu(scene, index, mode = 'buy') {
   swingActive = false;
   inputEnabled = false;
   cursor.setVisible(false);
-  backOverlayWasVisible = backOverlay.visible;
-  backOverlay.setVisible(false);
+  // backOverlayWasVisible = backOverlay.visible;
+  // backOverlay.setVisible(false);
   scene.physics.world.pause();
   scene.tweens.pauseAll();
   scene.time.paused = true;
@@ -998,20 +998,20 @@ function showTradeMenu(scene, index, mode = 'buy') {
 function hideTradeMenu(scene) {
   tradeOverlay.setVisible(false);
   tradeContainer.setVisible(false);
-  backOverlay.setVisible(backOverlayWasVisible);
+  // backOverlay.setVisible(backOverlayWasVisible);
   scene.physics.world.resume();
   scene.tweens.resumeAll();
   scene.time.paused = false;
   startSwingMeter(scene);
 }
 
-function resetBackOverlay(scene) {
-  // Stop any existing fade tweens and return the background overlay
-  // to a fully transparent starting state.
-  scene.tweens.killTweensOf(backOverlay);
-  backOverlay.setAlpha(0);
-  backOverlay.setVisible(true);
-}
+// function resetBackOverlay(scene) {
+//   // Stop any existing fade tweens and return the background overlay
+//   // to a fully transparent starting state.
+//   scene.tweens.killTweensOf(backOverlay);
+//   backOverlay.setAlpha(0);
+//   backOverlay.setVisible(true);
+// }
 
 function resetForNewCity(scene) {
   killStreak = 0;
@@ -1051,7 +1051,7 @@ function selectCity(scene, city) {
   tradeOverlay.setVisible(false);
   tradeContainer.setVisible(false);
   // Reset the darkness overlay and begin the new city's intro fresh.
-  resetBackOverlay(scene);
+  // resetBackOverlay(scene);
   // Directly reset for the new city without fading the camera first.
   resetForNewCity(scene);
   // Extra safety: hide the travel overlay again in case any async events
@@ -1258,12 +1258,12 @@ function slashExecutioner(scene, angle, onComplete) {
 function introExecutioner(scene, onComplete) {
   executionerIntro = false;
   // Ensure previous background tweens don't conflict
-  scene.tweens.killTweensOf(backOverlay);
+  // scene.tweens.killTweensOf(backOverlay);
   executioner.setPosition(850, 460);
   executioner.setAlpha(0);
   executioner.setVisible(true);
-  backOverlay.setAlpha(0);
-  backOverlay.setVisible(true);
+  // backOverlay.setAlpha(0);
+  // backOverlay.setVisible(true);
   // scene.tweens.add({
   //   targets: backOverlay,
   //   alpha: 0.72,
