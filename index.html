@@ -53,7 +53,7 @@ let headEmitter;
 let splatEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.32';
+const VERSION = 'v2.35';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -635,14 +635,14 @@ function create() {
   travelOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
     .setVisible(false)
     .setDepth(30);
-  travelContainer = scene.add.container(100, 100).setVisible(false).setDepth(31);
-  const travelBg = scene.add.rectangle(0, 0, 600, 380, 0x222222, 1).setOrigin(0, 0);
+  travelContainer = scene.add.container(50, 50).setVisible(false).setDepth(31);
+  const travelBg = scene.add.rectangle(0, 0, 700, 500, 0x222222, 1).setOrigin(0, 0);
   travelBg.setStrokeStyle(2, 0xffffff);
   travelContainer.add(travelBg);
   travelList = scene.add.container(0, 40);
   travelContainer.add(travelList);
   showTravelRegions(scene);
-  const travelClose = scene.add.text(560, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
+  const travelClose = scene.add.text(660, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
     .on('pointerdown', () => { toggleTravel(scene); });
   travelContainer.add(travelClose);
@@ -1015,13 +1015,16 @@ function updateTravelUI(scene) {
 
 function showTravelRegions(scene) {
   travelList.removeAll(true);
-  const northBtn = scene.add.text(10, 0, 'Cities in the North', { font: '18px monospace', fill: '#00ff00' })
+  const northBtn = scene.add.text(10, 0, 'The North', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
     .on('pointerdown', () => showCityList(scene, 'north'));
-  const southBtn = scene.add.text(10, 40, 'Cities in the South', { font: '18px monospace', fill: '#00ff00' })
+  const southBtn = scene.add.text(360, 0, 'The South', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
     .on('pointerdown', () => showCityList(scene, 'south'));
-  travelList.add([northBtn, southBtn]);
+
+  const northPlaceholder = scene.add.rectangle(10, 30, 250, 400, 0x444444).setOrigin(0, 0);
+  const southPlaceholder = scene.add.rectangle(360, 30, 250, 400, 0x444444).setOrigin(0, 0);
+  travelList.add([northBtn, southBtn, northPlaceholder, southPlaceholder]);
 }
 
 function showCityList(scene, region) {
