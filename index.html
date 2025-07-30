@@ -62,7 +62,7 @@ let splatEmitter;
 let fireworkEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.48';
+const VERSION = 'v2.49';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -331,9 +331,9 @@ function createTargetAppearance(scene, target, type) {
 function spawnBird(scene) {
   const fromRight = Phaser.Math.Between(0, 1) === 1;
   const startX = fromRight ? -50 : 850;
-  const y = Phaser.Math.Between(120, 200);
+  const y = 300; // spawn birds 300px from the top for testing
   const texture = Phaser.Math.Between(0, 1) ? 'crow' : 'dove';
-  const bird = scene.physics.add.image(startX, y, texture).setDepth(5);
+  const bird = scene.physics.add.image(startX, y, texture).setDepth(5).setScale(3);
   bird.type = texture === 'dove' ? 'dove' : 'crow';
   bird.setVelocityX(fromRight ? 150 : -150);
   bird.setImmovable(true);
