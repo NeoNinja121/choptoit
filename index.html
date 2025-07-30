@@ -62,7 +62,7 @@ let splatEmitter;
 let fireworkEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.49';
+const VERSION = 'v2.50';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -159,9 +159,10 @@ let targetGroup;
 let birdGroup;
 let featherEmitter;
 let currentWeather = 'none';
-let windForce = 0;
+let windForce = { x: 0, y: 0 };
 let roundCount = 0;
 let weatherText;
+let weatherIndicator;
 
 // Inventory for trading market items
 let inventory = {};
@@ -335,7 +336,7 @@ function spawnBird(scene) {
   const texture = Phaser.Math.Between(0, 1) ? 'crow' : 'dove';
   const bird = scene.physics.add.image(startX, y, texture).setDepth(5).setScale(3);
   bird.type = texture === 'dove' ? 'dove' : 'crow';
-  bird.setVelocityX(fromRight ? 150 : -150);
+  bird.setVelocityX(fromRight ? 80 : -80);
   bird.setImmovable(true);
   bird.body.allowGravity = false;
   birdGroup.add(bird);
@@ -358,19 +359,36 @@ function handleBirdHit(scene, head, bird) {
 function applyRandomWeather(scene) {
   const choices = ['wind', 'fog', 'rain', 'none'];
   currentWeather = FEATURES.weather ? Phaser.Utils.Array.GetRandom(choices) : 'none';
-  windForce = 0;
+  windForce = { x: 0, y: 0 };
   weatherText.setText(currentWeather === 'none' ? '' : currentWeather.toUpperCase());
+  let letter = '';
+  let arrow = '';
   targetGroup.getChildren().forEach(t => {
     if (t.fogTween) { t.fogTween.stop(); t.fogTween = null; }
     t.setAlpha(1);
   });
   if (currentWeather === 'wind') {
-    windForce = Phaser.Math.Between(-50, 50);
+    windForce.x = Phaser.Math.Between(-50, 50);
+    windForce.y = Phaser.Math.Between(-50, 50);
+    letter = 'W';
+    arrow = arrowForWind(windForce.x, windForce.y);
   } else if (currentWeather === 'fog') {
+    letter = 'F';
     targetGroup.getChildren().forEach(t => {
       t.fogTween = scene.tweens.add({ targets: t, alpha: 0.3, yoyo: true, repeat: -1, duration: 800 });
     });
+  } else if (currentWeather === 'rain') {
+    letter = 'R';
   }
+  weatherIndicator.setText(letter + arrow);
+}
+
+function arrowForWind(x, y) {
+  const angle = Math.atan2(y, x);
+  const arrows = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'];
+  let idx = Math.round(angle / (Math.PI / 4));
+  if (idx < 0) idx += 8;
+  return arrows[idx % 8];
 }
 
 // Display the day's market chatter
@@ -509,6 +527,8 @@ function create() {
   killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
   weatherText = scene.add.text(400, 96, '', { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0);
+  weatherIndicator = scene.add.text(10, 590, '', { font: '20px monospace', fill: '#ffffff' })
+    .setOrigin(0, 1);
   locationText = scene.add.text(400, 16, currentCity, { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0);
   dateText = scene.add.text(400, 112, getDateString(), { font: '20px monospace', fill: '#ffffff' })
@@ -598,8 +618,8 @@ function create() {
   cursor = scene.add.rectangle(250, meterY, 10, 20, 0xffffff).setVisible(false);
 
   // Blood pool
-  bloodPool = scene.add.rectangle(400, 510, 40, 10, 0x770000)
-    .setOrigin(0.5, 0)
+  bloodPool = scene.add.rectangle(400, 600, 800, 1, 0x770000)
+    .setOrigin(0.5, 1)
     .setVisible(false)
     .setDepth(0.6);
 
@@ -688,7 +708,7 @@ function create() {
     });
     birdGroup = scene.physics.add.group({ allowGravity: false });
     scene.time.addEvent({
-      delay: 1000,
+      delay: 500,
       loop: true,
       callback: () => { if (FEATURES.birds) spawnBird(scene); }
     });
@@ -749,7 +769,7 @@ function create() {
     callback: () => {
       const half = bloodPool.displayWidth / 2;
       const x = Phaser.Math.Between(bloodPool.x - half, bloodPool.x + half);
-      dripEmitter.emitParticleAt(x, bloodPool.y + bloodPool.displayHeight, 1);
+      dripEmitter.emitParticleAt(x, bloodPool.y, 1);
     }
   });
 
@@ -1416,7 +1436,7 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
 
   // Reveal and grow the blood pool once the head is off
   bloodPool.setVisible(true);
-  bloodPool.displayWidth = Math.min(bloodPool.displayWidth + 5, 300);
+  bloodPool.displayHeight = Math.min(bloodPool.displayHeight + 1, 600);
 
   // Hide the template prisoner while the physics body takes over
   prisoner.setVisible(false);
@@ -1450,9 +1470,13 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   const speed = 250 * power;
   let vx = Math.sin(rad) * speed;
   if (FEATURES.weather && currentWeather === 'wind') {
-    vx += windForce;
+    vx += windForce.x;
   }
-  hBody.setVelocity(vx, -Math.cos(rad) * speed);
+  let vy = -Math.cos(rad) * speed;
+  if (FEATURES.weather && currentWeather === 'wind') {
+    vy += windForce.y;
+  }
+  hBody.setVelocity(vx, vy);
   hBody.setAngularVelocity(Phaser.Math.Between(-200, 200));
 
   headResetEvent = scene.time.delayedCall(2500, () => {
@@ -1860,6 +1884,7 @@ function handleTargetHit(scene, target, head) {
     return;
   }
   target.collected = true;
+  if (target.moveTween) { target.moveTween.stop(); target.moveTween = null; }
   const jester = target.jester;
   let fameGain = 1;
   if (target.isMoving) fameGain *= 2;
@@ -2026,11 +2051,11 @@ function spawnTarget(scene) {
     if (killStreak >= 3) {
       target.isMoving = true;
       const dur = killStreak >= 10 ? 400 : 800;
-      scene.tweens.add({ targets: target, y: target.y - 20, duration: dur, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      target.moveTween = scene.tweens.add({ targets: target, y: target.y - 20, duration: dur, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     }
   } else if (FEATURES.movingTargets && Phaser.Math.Between(0, 1) === 1) {
     target.isMoving = true;
-    scene.tweens.add({ targets: target, y: target.y - 20, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    target.moveTween = scene.tweens.add({ targets: target, y: target.y - 20, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
   }
 
   target.collected = false;
