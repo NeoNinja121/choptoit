@@ -62,7 +62,7 @@ let splatEmitter;
 let fireworkEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.50';
+const VERSION = 'v2.51';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -2073,8 +2073,9 @@ function spawnTarget(scene) {
     onComplete: () => {
       scene.physics.world.enable(target);
       if (type === 'explodingBarrel') {
-        target.body.setSize(30, 40);
-        target.body.setOffset(-15, -20);
+        // Include the fuse above the barrel in the hitbox
+        target.body.setSize(30, 46);
+        target.body.setOffset(-15, -26);
       } else {
         target.body.setCircle(20, -20, -20);
       }
