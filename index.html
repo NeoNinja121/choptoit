@@ -66,7 +66,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.65';
+const VERSION = 'Pre Alpha —v2.66';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -162,7 +162,6 @@ let marketPrisoner;
 // Group to hold fallen bodies that pile up at the bottom
 let bodyGroup;
 let targetGroup;
-let birdGroup;
 let featherEmitter;
 let currentWeather = 'none';
 let windForce = { x: 0, y: 0 };
@@ -358,6 +357,7 @@ function chooseTargetType() {
   if (r <= 15) return 'holyMonk';
   if (r <= 35) return killStreak >= 8 ? 'explodingBarrel' : 'standard';
   if (r <= 65) return 'woodenShield';
+  if (r <= 75) return FEATURES.birds ? 'bird' : 'standard';
   return 'standard';
 }
 
@@ -381,47 +381,27 @@ function createTargetAppearance(scene, target, type) {
       target.add(m);
       break;
     }
-    case 'royal': {
-      const o = scene.add.circle(0, 0, 20, 0xffff00);
-      const txt = scene.add.text(0, 0, 'R', { font: '16px monospace', fill: '#000' })
-        .setOrigin(0.5);
-      target.add([o, txt]);
-      break;
-    }
-    default: {
-      const outer = scene.add.circle(0, 0, 20, 0xff0000);
-      const inner = scene.add.circle(0, 0, 8, 0xffffff);
-      target.add([outer, inner]);
-    }
+      case 'royal': {
+        const o = scene.add.circle(0, 0, 20, 0xffff00);
+        const txt = scene.add.text(0, 0, 'R', { font: '16px monospace', fill: '#000' })
+          .setOrigin(0.5);
+        target.add([o, txt]);
+        break;
+      }
+      case 'bird': {
+        const c = scene.add.circle(0, 0, 20, 0x444444);
+        target.add(c);
+        break;
+      }
+      default: {
+        const outer = scene.add.circle(0, 0, 20, 0xff0000);
+        const inner = scene.add.circle(0, 0, 8, 0xffffff);
+        target.add([outer, inner]);
+      }
   }
 }
 
-function spawnBird(scene) {
-  const fromRight = Phaser.Math.Between(0, 1) === 1;
-  const startX = fromRight ? -50 : 850;
-  const y = 300; // spawn birds 300px from the top for testing
-  const texture = Phaser.Math.Between(0, 1) ? 'crow' : 'dove';
-  const bird = scene.physics.add.image(startX, y, texture).setDepth(5).setScale(3);
-  bird.type = texture === 'dove' ? 'dove' : 'crow';
-  bird.setVelocityX(fromRight ? 80 : -80);
-  bird.setImmovable(true);
-  bird.body.allowGravity = false;
-  birdGroup.add(bird);
-  bird.setData('fromRight', fromRight);
-}
 
-function handleBirdHit(scene, head, bird) {
-  bird.destroy();
-  featherEmitter.explode(10, bird.x, bird.y);
-  if (bird.type === 'dove') {
-    fame = Math.max(0, fame - 1);
-    fameText.setText(`Fame: ${Math.floor(fame)}`);
-  } else {
-    gainFame(scene, bird, 1);
-    gold += 1;
-    goldText.setText(`Gold: ${gold}`);
-  }
-}
 
 function applyRandomWeather(scene) {
   const choices = ['wind', 'fog', 'rain', 'none'];
@@ -856,12 +836,6 @@ function create() {
       lifespan: 600,
       quantity: 0,
       on: false
-    });
-    birdGroup = scene.physics.add.group({ allowGravity: false });
-    scene.time.addEvent({
-      delay: 500,
-      loop: true,
-      callback: () => { if (FEATURES.birds) spawnBird(scene); }
     });
   }
 
@@ -1630,11 +1604,6 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   scene.physics.add.overlap(flyingHead, targetGroup, (head, target) => {
     handleTargetHit(scene, target, head);
   });
-  if (FEATURES.birds) {
-    scene.physics.add.overlap(flyingHead, birdGroup, (head, bird) => {
-      handleBirdHit(scene, head, bird);
-    });
-  }
   hBody.setAllowGravity(true);
   hBody.onWorldBounds = true;
   hBody.setCollideWorldBounds(true);
@@ -2066,6 +2035,19 @@ function handleTargetHit(scene, target, head) {
   if (target.isMoving) fameGain *= 2;
   if (target.targetType === 'royal') fameGain *= 5;
   if (target.targetType === 'holyMonk') fameGain = -2;
+  if (target.targetType === 'bird') {
+    featherEmitter.explode(10, target.x, target.y);
+    if (target.birdKind === 'dove') {
+      fame = Math.max(0, fame - 1);
+      fameText.setText(`Fame: ${Math.floor(fame)}`);
+      fameGain = 0;
+    } else {
+      gainFame(scene, target, 1);
+      gold += 1;
+      goldText.setText(`Gold: ${gold}`);
+      fameGain = 0;
+    }
+  }
   gainFame(scene, target, fameGain);
   if (target.targetType === 'explodingBarrel') {
     targetGroup.getChildren().forEach(t => {
@@ -2223,6 +2205,9 @@ function spawnTarget(scene) {
   const target = scene.add.container(startX, 460 - 20 - poleHeight).setDepth(20);
   target.targetType = type;
   createTargetAppearance(scene, target, type);
+  if (type === 'bird') {
+    target.birdKind = Phaser.Math.Between(0, 1) ? 'crow' : 'dove';
+  }
 
   if (type === 'woodenShield') {
     if (killStreak >= 3) {
@@ -2306,11 +2291,6 @@ function update(time, delta) {
     }
   }
 
-  if (FEATURES.birds && birdGroup) {
-    birdGroup.getChildren().forEach(b => {
-      if (b.x < -60 || b.x > 860) b.destroy();
-    });
-  }
 
   // Splash when heads hit the blood pool
   if (bloodPool && bloodEmitter && bodyGroup) {
