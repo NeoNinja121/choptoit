@@ -55,6 +55,7 @@ let yellowZone;
 let greenZone;
 let swingBar;
 let bloodPool;
+let stageBlood;
 let bloodEmitter;
 let dripEmitter;
 let headEmitter;
@@ -64,7 +65,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.55';
+const VERSION = 'v2.56';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -468,6 +469,10 @@ function create() {
   backgroundRect.setDisplaySize(800, 600);
   backgroundRect.setDepth(-2);
   stage = scene.add.image(400, 520, 'platform').setDepth(0);
+  stageBlood = scene.add.rectangle(400, 470, 1, 10, 0x770000)
+    .setOrigin(0.5, 1)
+    .setVisible(false)
+    .setDepth(0.5);
   // Overlay that only dims the background behind characters
   backgroundFadeOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 1)
     .setDepth(-1)
@@ -808,9 +813,11 @@ function create() {
     delay: 400,
     loop: true,
     callback: () => {
-      const half = bloodPool.displayWidth / 2;
-      const x = Phaser.Math.Between(bloodPool.x - half, bloodPool.x + half);
-      dripEmitter.emitParticleAt(x, bloodPool.y, 1);
+      if (stageBlood.visible && stageBlood.displayWidth > 0) {
+        const half = stageBlood.displayWidth / 2;
+        const x = Phaser.Math.Between(stageBlood.x - half, stageBlood.x + half);
+        dripEmitter.emitParticleAt(x, stageBlood.y, 1);
+      }
     }
   });
 
@@ -1362,6 +1369,8 @@ function resetForNewCity(scene) {
   });
   bloodPool.setVisible(false);
   bloodPool.displayHeight = 1;
+  stageBlood.setVisible(false);
+  stageBlood.displayWidth = 1;
   speedMultiplier = 1;
   swingSpeed = baseSwingSpeed;
   resetHead(scene);
@@ -1480,6 +1489,8 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   // Reveal and grow the blood pool once the head is off
   bloodPool.setVisible(true);
   bloodPool.displayHeight = Math.min(bloodPool.displayHeight + 1, 100);
+  stageBlood.setVisible(true);
+  stageBlood.displayWidth = Math.min(stageBlood.displayWidth + 5, 300);
 
   // Hide the template prisoner while the physics body takes over
   prisoner.setVisible(false);
