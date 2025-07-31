@@ -61,11 +61,12 @@ let dripEmitter;
 let headEmitter;
 let splatEmitter;
 let fireworkEmitter;
+let fireworkCloseEmitter;
 let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.62';
+const VERSION = 'Pre Alpha —v2.63';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -541,7 +542,7 @@ function create() {
   // Apply the initial background for the starting city
   updateBackground(scene);
   stage = scene.add.image(400, 520, 'platform').setDepth(0);
-  stageBlood = scene.add.rectangle(400, 470, 1, 10, 0x770000)
+  stageBlood = scene.add.rectangle(400, 520, 1, 10, 0x770000)
     .setOrigin(0.5, 1)
     .setVisible(false)
     .setDepth(0.4);
@@ -608,10 +609,12 @@ function create() {
   fameText = scene.add.text(16, 40, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' });
   missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
   killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
+  // Hide the old weather label at the top
   weatherText = scene.add.text(400, 96, '', { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0)
-    .setDepth(50);
-  weatherIndicatorBg = scene.add.circle(20, 590, 14, 0x000000)
+    .setDepth(50)
+    .setVisible(false);
+  weatherIndicatorBg = scene.add.circle(20, 590, 24, 0x000000)
     .setOrigin(0.5, 1)
     .setDepth(49);
   weatherIndicator = scene.add.text(20, 590, '', { font: '20px monospace', fill: '#ffffff' })
@@ -619,14 +622,18 @@ function create() {
     .setDepth(50);
   locationText = scene.add.text(400, 16, currentCity, { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0);
-  dateText = scene.add.text(400, 112, getDateString(), { font: '20px monospace', fill: '#ffffff' })
-    .setOrigin(0.5, 0);
-  xpText = scene.add.text(400, 146, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
-    .setOrigin(0.5);
-  xpBarFill = scene.add.rectangle(250, 160, 0, 12, 0x00ff00).setOrigin(0, 0);
+  const dateBg = scene.add.rectangle(80, 590, 80, 28, 0xffffff)
+    .setOrigin(0.5, 1)
+    .setDepth(49);
+  dateText = scene.add.text(80, 590, getDateString(), { font: '16px monospace', fill: '#000000' })
+    .setOrigin(0.5, 1)
+    .setDepth(50);
+  xpText = scene.add.text(400, 570, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
+    .setOrigin(0.5, 1);
+  xpBarFill = scene.add.rectangle(250, 584, 0, 12, 0x00ff00).setOrigin(0, 1);
   updateXPUI();
-  streakMultiplierText = scene.add.text(400, 70, 'x0', { font: '48px monospace', fill: '#ff0000' })
-    .setOrigin(0.5)
+  streakMultiplierText = scene.add.text(750, 520, 'x0', { font: '48px monospace', fill: '#ff0000' })
+    .setOrigin(0.5, 1)
     .setDepth(2);
   versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#ffffff' })
     .setOrigin(1, 1)
@@ -767,6 +774,20 @@ function create() {
     angle: { min: 250, max: 290 },
     gravityY: 200,
     lifespan: 1000,
+    scale: { start: 1, end: 0 },
+    blendMode: 'ADD',
+    quantity: 0,
+    on: false
+  });
+  const gPix = scene.add.graphics();
+  gPix.fillStyle(0xffffff, 1);
+  gPix.fillRect(0, 0, 2, 2);
+  gPix.generateTexture('pixel', 2, 2);
+  gPix.destroy();
+  const fwCloseParts = scene.add.particles('pixel').setDepth(6);
+  fireworkCloseEmitter = fwCloseParts.createEmitter({
+    speed: { min: 20, max: 60 },
+    lifespan: 600,
     scale: { start: 1, end: 0 },
     blendMode: 'ADD',
     quantity: 0,
@@ -2045,6 +2066,7 @@ function handleTargetHit(scene, target, head) {
     });
     targetGroup.remove(target);
     fireworkEmitter.explode(25, target.x, target.y);
+    fireworkCloseEmitter.explode(40, target.x, target.y);
     if (jester && !jester.running) {
       jester.running = true;
       const offX = jester.startFromRight ? 900 : -100;
