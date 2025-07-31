@@ -65,7 +65,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.61';
+const VERSION = 'Pre Alpha —v2.62';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -236,28 +236,28 @@ const marketItems = [
 const cities = [
   { name: 'York', desc: 'Historic northern city.', fameReq: 0, region: 'north', /* bgColor: 0x2d2d2d, */
     modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Canterbury', desc: 'Seat of the Archbishop.', fameReq: 1, region: 'south', /* bgColor: 0x2d2d34, */
-    modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
-  { name: 'London', desc: 'Bustling capital of the realm.', fameReq: 2, region: 'south', /* bgColor: 0x34342d, */
-    modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Dover', desc: 'Channel crossing hub.', fameReq: 3, region: 'south', /* bgColor: 0x2d342d, */
-    modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Durham', desc: 'Northern cathedral city.', fameReq: 4, region: 'north', /* bgColor: 0x34342d, */
+  { name: 'Durham', desc: 'Northern cathedral city.', fameReq: 1, region: 'north', /* bgColor: 0x34342d, */
     modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Norwich', desc: 'Town of fine artisans.', fameReq: 5, region: 'south', /* bgColor: 0x342d2d, */
-    modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
-  { name: 'Winchester', desc: 'Former royal seat.', fameReq: 6, region: 'south', /* bgColor: 0x2d3434, */
-    modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Chester', desc: 'Fortified Roman town.', fameReq: 7, region: 'north', /* bgColor: 0x342d34, */
+  { name: 'Chester', desc: 'Fortified Roman town.', fameReq: 2, region: 'north', /* bgColor: 0x342d34, */
     modifiers: { 'Silver Cup': { buy: 0.85, sell: 1.15 } } },
-  { name: 'Hull', desc: 'North Sea trading port.', fameReq: 8, region: 'north', /* bgColor: 0x2d342d, */
+  { name: 'Hull', desc: 'North Sea trading port.', fameReq: 3, region: 'north', /* bgColor: 0x2d342d, */
     modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
-  { name: 'Newcastle', desc: 'City on the Tyne.', fameReq: 9, region: 'north', /* bgColor: 0x2d2d34, */
+  { name: 'Newcastle', desc: 'City on the Tyne.', fameReq: 4, region: 'north', /* bgColor: 0x2d2d34, */
     modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Colchester', desc: 'Ancient Roman city.', fameReq: 10, region: 'south', /* bgColor: 0x34342d, */
-    modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
-  { name: 'Lincoln', desc: 'Cathedral and castle city.', fameReq: 11, region: 'north', /* bgColor: 0x342d2d, */
+  { name: 'Lincoln', desc: 'Cathedral and castle city.', fameReq: 5, region: 'north', /* bgColor: 0x342d2d, */
     modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
+  { name: 'Canterbury', desc: 'Seat of the Archbishop.', fameReq: 6, region: 'south', /* bgColor: 0x2d2d34, */
+    modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
+  { name: 'London', desc: 'Bustling capital of the realm.', fameReq: 7, region: 'south', /* bgColor: 0x34342d, */
+    modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
+  { name: 'Dover', desc: 'Channel crossing hub.', fameReq: 8, region: 'south', /* bgColor: 0x2d342d, */
+    modifiers: { Salt: { buy: 0.9, sell: 1.1 } } },
+  { name: 'Norwich', desc: 'Town of fine artisans.', fameReq: 9, region: 'south', /* bgColor: 0x342d2d, */
+    modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
+  { name: 'Winchester', desc: 'Former royal seat.', fameReq: 10, region: 'south', /* bgColor: 0x2d3434, */
+    modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
+  { name: 'Colchester', desc: 'Ancient Roman city.', fameReq: 11, region: 'south', /* bgColor: 0x34342d, */
+    modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
   { name: 'Oxford', desc: 'Home of great learning.', fameReq: 12, region: 'south', /* bgColor: 0x2d3434, */
     modifiers: { 'Silver Cup': { buy: 0.85, sell: 1.15 } } },
   { name: 'Southampton', desc: 'Southern port city.', fameReq: 13, region: 'south', /* bgColor: 0x2d2d34, */
@@ -1316,15 +1316,17 @@ function showTravelMenu(scene, region = travelRegion) {
   travelList.removeAll(true);
   cities.forEach(c => { if (c.ui) delete c.ui; });
 
-  // If no region selected, present North/South options first
+  // If no region selected, present North/South options first with placeholders
   if (!travelRegion) {
-    const northBtn = scene.add.text(10, 10, 'Northern Cities', { font: '18px monospace', fill: '#ffffaa' })
+    const northBtn = scene.add.text(10, 0, 'The North', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => showTravelMenu(scene, 'north'));
-    const southBtn = scene.add.text(10, 40, 'Southern Cities', { font: '18px monospace', fill: '#ffffaa' })
+    const southBtn = scene.add.text(360, 0, 'The South', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => showTravelMenu(scene, 'south'));
-    travelList.add([northBtn, southBtn]);
+    const northPlaceholder = scene.add.rectangle(10, 30, 250, 400, 0x444444).setOrigin(0, 0);
+    const southPlaceholder = scene.add.rectangle(360, 30, 250, 400, 0x444444).setOrigin(0, 0);
+    travelList.add([northBtn, southBtn, northPlaceholder, southPlaceholder]);
     return;
   }
 
