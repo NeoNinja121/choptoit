@@ -164,6 +164,8 @@ let bodyGroup;
 let targetGroup;
 let featherEmitter;
 let birdTimer;
+let birdIndicator;
+let activeBirds = 0;
 let currentWeather = 'none';
 let windForce = { x: 0, y: 0 };
 let roundCount = 0;
@@ -623,6 +625,10 @@ function create() {
   versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#ffffff' })
     .setOrigin(1, 1)
     .setDepth(11);
+  birdIndicator = scene.add.text(790, 574, '', { font: '14px monospace', fill: '#ffffff' })
+    .setOrigin(1, 1)
+    .setDepth(11)
+    .setVisible(false);
 
   // Logo drop animation before showing the start screen
   // Ensure the logo appears above the start screen background
@@ -2064,6 +2070,10 @@ function handleTargetHit(scene, target, head) {
     gainFame(scene, target, fameGain);
     targetGroup.remove(target);
     target.destroy();
+    activeBirds--;
+    if (activeBirds <= 0 && birdIndicator) {
+      birdIndicator.setVisible(false);
+    }
     return;
   }
   gainFame(scene, target, fameGain);
@@ -2212,10 +2222,19 @@ function spawnBird(scene) {
   bird.collected = false;
   bird.jester = null;
   targetGroup.add(bird);
+  activeBirds++;
+  if (birdIndicator) {
+    birdIndicator.setText('bird');
+    birdIndicator.setVisible(true);
+  }
   scene.time.delayedCall(7000, () => {
     if (!bird.collected) {
       targetGroup.remove(bird);
       bird.destroy();
+      activeBirds--;
+      if (activeBirds <= 0 && birdIndicator) {
+        birdIndicator.setVisible(false);
+      }
     }
   });
 }
