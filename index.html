@@ -66,7 +66,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.68';
+const VERSION = 'Pre Alpha —v2.69';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -163,6 +163,7 @@ let marketPrisoner;
 let bodyGroup;
 let targetGroup;
 let featherEmitter;
+let birdTimer;
 let currentWeather = 'none';
 let windForce = { x: 0, y: 0 };
 let roundCount = 0;
@@ -914,10 +915,11 @@ function create() {
   });
 
   if (FEATURES.birds) {
-    scene.time.addEvent({
+    birdTimer = scene.time.addEvent({
       delay: 1000,
       loop: true,
-      callback: () => spawnBird(scene)
+      callback: () => spawnBird(scene),
+      paused: true
     });
   }
 
@@ -1801,6 +1803,10 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
   //   });
   // }
   prisoner.setVisible(true);
+  if (FEATURES.birds && birdTimer && birdTimer.paused) {
+    spawnBird(scene);
+    birdTimer.paused = false;
+  }
   resetHead(scene);
   prisonerClass = pickClass();
   // Spawn a new target each time a prisoner appears if requested
