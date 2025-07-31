@@ -65,7 +65,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.58';
+const VERSION = 'v2.59';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -106,7 +106,7 @@ let travelOverlay;
 // };
 // let backOverlayWasVisible = false;
 let locationText;
-let currentCity = 'York';
+let currentCity = 'Durham';
 let backgroundRect;
 let stage;
 let travelList;
@@ -263,6 +263,26 @@ const cities = [
   { name: 'Gloucester', desc: 'Historic Roman city.', fameReq: 14, region: 'south', /* bgColor: 0x34342d, */
     modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } }
 ];
+
+// Mapping of cities to their background image files. Keys are the city names
+// and values are the corresponding PNG filenames.
+const cityBackgrounds = {
+  York: 'background_york.png',
+  Canterbury: 'background_canterbury.png',
+  London: 'background_london.png',
+  Dover: 'background_dover.png',
+  Durham: 'background_durham.png',
+  Norwich: 'background_norwich.png',
+  Winchester: 'background_winchester.png',
+  Chester: 'background_chester.png',
+  Hull: 'background_hull.png',
+  Newcastle: 'background_newcastle.png',
+  Colchester: 'background-colchester.png',
+  Lincoln: 'background-lincoln.png',
+  Oxford: 'background-oxford.png',
+  Southampton: 'background-southhampton.png',
+  Gloucester: 'background-gloucester.png',
+};
 
 // Format the current calendar date
 function getDateString() {
@@ -459,12 +479,11 @@ function preload() {
   this.load.image('prisonerBodyImg', 'prisonerbody.png');
   this.load.image('jesterHeadImg', 'jesterhead.png');
   this.load.image('jesterBodyImg', 'jesterbody.png');
-  // Load a background image for each city using the naming pattern
-  // background-cityname.png. The keys also include the city name so they can
-  // easily be referenced when travelling.
-  cities.forEach(c => {
-    const key = `background-${c.name.toLowerCase()}`;
-    this.load.image(key, `${key}.png`);
+  // Load city backgrounds using explicit file mappings to handle inconsistent
+  // naming.
+  Object.entries(cityBackgrounds).forEach(([name, file]) => {
+    const key = `background-${name.toLowerCase()}`;
+    this.load.image(key, file);
   });
 }
 
