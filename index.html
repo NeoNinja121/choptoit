@@ -66,7 +66,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.66';
+const VERSION = 'Pre Alpha —v2.68';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -357,7 +357,6 @@ function chooseTargetType() {
   if (r <= 15) return 'holyMonk';
   if (r <= 35) return killStreak >= 8 ? 'explodingBarrel' : 'standard';
   if (r <= 65) return 'woodenShield';
-  if (r <= 75) return FEATURES.birds ? 'bird' : 'standard';
   return 'standard';
 }
 
@@ -913,6 +912,14 @@ function create() {
       });
     }
   });
+
+  if (FEATURES.birds) {
+    scene.time.addEvent({
+      delay: 1000,
+      loop: true,
+      callback: () => spawnBird(scene)
+    });
+  }
 
   // Shop button
   // Move the shop button slightly right to make room for the travel sign
@@ -2037,6 +2044,7 @@ function handleTargetHit(scene, target, head) {
   if (target.targetType === 'holyMonk') fameGain = -2;
   if (target.targetType === 'bird') {
     featherEmitter.explode(10, target.x, target.y);
+    bloodEmitter.explode(25, target.x, target.y);
     if (target.birdKind === 'dove') {
       fame = Math.max(0, fame - 1);
       fameText.setText(`Fame: ${Math.floor(fame)}`);
@@ -2047,6 +2055,10 @@ function handleTargetHit(scene, target, head) {
       goldText.setText(`Gold: ${gold}`);
       fameGain = 0;
     }
+    gainFame(scene, target, fameGain);
+    targetGroup.remove(target);
+    target.destroy();
+    return;
   }
   gainFame(scene, target, fameGain);
   if (target.targetType === 'explodingBarrel') {
@@ -2179,6 +2191,29 @@ function spawnRoyal(scene) {
   });
 }
 
+function spawnBird(scene) {
+  const fromRight = Phaser.Math.Between(0, 1) === 1;
+  const startX = fromRight ? 850 : -50;
+  const birdY = Phaser.Math.Between(60, 220);
+  const kind = Phaser.Math.Between(0, 1) ? 'crow' : 'dove';
+  const bird = scene.add.image(startX, birdY, kind).setDepth(20);
+  bird.targetType = 'bird';
+  bird.birdKind = kind;
+  scene.physics.world.enable(bird);
+  bird.body.setAllowGravity(false);
+  bird.body.setImmovable(true);
+  bird.body.setVelocityX(fromRight ? -120 : 120);
+  bird.collected = false;
+  bird.jester = null;
+  targetGroup.add(bird);
+  scene.time.delayedCall(7000, () => {
+    if (!bird.collected) {
+      targetGroup.remove(bird);
+      bird.destroy();
+    }
+  });
+}
+
 function spawnTarget(scene) {
   const type = chooseTargetType();
   if (type === 'holyMonk') {
@@ -2205,9 +2240,6 @@ function spawnTarget(scene) {
   const target = scene.add.container(startX, 460 - 20 - poleHeight).setDepth(20);
   target.targetType = type;
   createTargetAppearance(scene, target, type);
-  if (type === 'bird') {
-    target.birdKind = Phaser.Math.Between(0, 1) ? 'crow' : 'dove';
-  }
 
   if (type === 'woodenShield') {
     if (killStreak >= 3) {
