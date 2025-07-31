@@ -65,7 +65,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.56';
+const VERSION = 'v2.57';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -472,7 +472,7 @@ function create() {
   stageBlood = scene.add.rectangle(400, 470, 1, 10, 0x770000)
     .setOrigin(0.5, 1)
     .setVisible(false)
-    .setDepth(0.5);
+    .setDepth(0.4);
   // Overlay that only dims the background behind characters
   backgroundFadeOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 1)
     .setDepth(-1)
