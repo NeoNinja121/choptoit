@@ -633,11 +633,11 @@ function create() {
     .setOrigin(0.5)
     .setDepth(50)
     .setVisible(false);
-  xpText = scene.add.text(400, 570, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
+  xpText = scene.add.text(400, 580, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
     .setOrigin(0.5, 1);
   xpBarFill = scene.add.rectangle(250, 584, 0, 12, 0x00ff00).setOrigin(0, 1);
   updateXPUI();
-  streakMultiplierText = scene.add.text(750, 520, 'x0', { font: '48px monospace', fill: '#ff0000' })
+  streakMultiplierText = scene.add.text(450, 520, 'x0', { font: '48px monospace', fill: '#ff0000' })
     .setOrigin(0.5, 1)
     .setDepth(2);
   versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#ffffff' })
