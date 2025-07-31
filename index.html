@@ -65,7 +65,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.57';
+const VERSION = 'v2.58';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -459,6 +459,13 @@ function preload() {
   this.load.image('prisonerBodyImg', 'prisonerbody.png');
   this.load.image('jesterHeadImg', 'jesterhead.png');
   this.load.image('jesterBodyImg', 'jesterbody.png');
+  // Load a background image for each city using the naming pattern
+  // background-cityname.png. The keys also include the city name so they can
+  // easily be referenced when travelling.
+  cities.forEach(c => {
+    const key = `background-${c.name.toLowerCase()}`;
+    this.load.image(key, `${key}.png`);
+  });
 }
 
 function create() {
@@ -468,6 +475,8 @@ function create() {
   backgroundRect = scene.add.image(400, 300, 'background');
   backgroundRect.setDisplaySize(800, 600);
   backgroundRect.setDepth(-2);
+  // Apply the initial background for the starting city
+  updateBackground(scene);
   stage = scene.add.image(400, 520, 'platform').setDepth(0);
   stageBlood = scene.add.rectangle(400, 470, 1, 10, 0x770000)
     .setOrigin(0.5, 1)
@@ -1381,11 +1390,23 @@ function resetForNewCity(scene) {
   introExecutioner(scene, () => spawnPrisoner(scene, false, false));
 }
 
+// Update the background image based on the current city. If a specific
+// texture is missing fallback to the generic background.
+function updateBackground(scene) {
+  const key = `background-${currentCity.toLowerCase()}`;
+  if (scene.textures.exists(key)) {
+    backgroundRect.setTexture(key);
+  } else {
+    backgroundRect.setTexture('background');
+  }
+}
+
 function selectCity(scene, city) {
   if (city.fameReq && fame < city.fameReq) return;
   if (city.name === currentCity) return;
   currentCity = city.name;
   // backgroundRect.setTint(city.bgColor); // disabled per request
+  updateBackground(scene);
   locationText.setText(currentCity);
   advanceDay();
   // Ensure the travel UI overlay is hidden before starting the transition.
