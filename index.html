@@ -65,7 +65,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'v2.59';
+const VERSION = 'Pre Alpha —v2.60';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -166,6 +166,7 @@ let windForce = { x: 0, y: 0 };
 let roundCount = 0;
 let weatherText;
 let weatherIndicator;
+let weatherIndicatorBg;
 
 // Inventory for trading market items
 let inventory = {};
@@ -283,6 +284,46 @@ const cityBackgrounds = {
   Southampton: 'background-southhampton.png',
   Gloucester: 'background-gloucester.png',
 };
+
+// Rough geographic coordinates for each city used to estimate travel time
+const cityCoords = {
+  Winchester: [51.06, -1.31],
+  York: [53.96, -1.08],
+  Dover: [51.13, 1.31],
+  Durham: [54.78, -1.58],
+  Canterbury: [51.28, 1.08],
+  London: [51.5, -0.1],
+  Chester: [53.19, -2.89],
+  Norwich: [52.63, 1.3],
+  Hull: [53.74, -0.34],
+  Newcastle: [54.97, -1.61],
+  Colchester: [51.89, 0.9],
+  Lincoln: [53.23, -0.54],
+  Oxford: [51.75, -1.26],
+  Southampton: [50.9, -1.4],
+  Gloucester: [51.87, -2.24],
+};
+
+// Calculate great-circle distance between two coordinate pairs in miles
+function distanceMiles(a, b) {
+  const [lat1, lon1] = cityCoords[a];
+  const [lat2, lon2] = cityCoords[b];
+  const R = 6371e3; // metres
+  const phi1 = lat1 * Math.PI / 180;
+  const phi2 = lat2 * Math.PI / 180;
+  const dPhi = (lat2 - lat1) * Math.PI / 180;
+  const dLambda = (lon2 - lon1) * Math.PI / 180;
+  const aa = Math.sin(dPhi / 2) ** 2 + Math.cos(phi1) * Math.cos(phi2) * Math.sin(dLambda / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(aa), Math.sqrt(1 - aa));
+  return (R * c) / 1609.34;
+}
+
+// Average pace roughly 24 miles per day
+function getTravelDays(from, to) {
+  if (from === to) return 0;
+  const miles = distanceMiles(from, to);
+  return Math.max(1, Math.round(miles / 24));
+}
 
 // Format the current calendar date
 function getDateString() {
@@ -444,12 +485,14 @@ function dailyMarketUpdate() {
   updateMarketChatter();
 }
 
-// Advance the calendar when travelling to a new city
-function advanceDay() {
-  currentDay++;
-  if (currentDay > 30) {
-    currentDay = 1;
-    currentMonth = (currentMonth + 1) % months.length;
+// Advance the calendar by a number of days
+function advanceDays(days = 1) {
+  for (let i = 0; i < days; i++) {
+    currentDay++;
+    if (currentDay > 30) {
+      currentDay = 1;
+      currentMonth = (currentMonth + 1) % months.length;
+    }
   }
   if (dateText) dateText.setText(getDateString());
   dailyMarketUpdate();
@@ -567,8 +610,11 @@ function create() {
   weatherText = scene.add.text(400, 96, '', { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0)
     .setDepth(50);
-  weatherIndicator = scene.add.text(10, 590, '', { font: '20px monospace', fill: '#ffffff' })
-    .setOrigin(0, 1)
+  weatherIndicatorBg = scene.add.circle(20, 590, 14, 0x000000)
+    .setOrigin(0.5, 1)
+    .setDepth(49);
+  weatherIndicator = scene.add.text(20, 590, '', { font: '20px monospace', fill: '#ffffff' })
+    .setOrigin(0.5, 1)
     .setDepth(50);
   locationText = scene.add.text(400, 16, currentCity, { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0);
@@ -890,7 +936,7 @@ function create() {
   travelContainer.add(travelBg);
   travelList = scene.add.container(0, 40);
   travelContainer.add(travelList);
-  showTravelRegions(scene);
+  showTravelMenu(scene);
   const travelClose = scene.add.text(660, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
     .on('pointerdown', () => { toggleTravel(scene); });
@@ -1253,51 +1299,30 @@ function updateTravelUI(scene) {
   cities.forEach(c => {
     if (!c.ui) return;
     const locked = c.fameReq && fame < c.fameReq;
-    const desc = locked ? `Locked (Fame ${c.fameReq})` : c.desc;
-    c.ui.title.setText(`${c.name} - ${desc}`);
+    const days = getTravelDays(currentCity, c.name);
+    const title = c.name === currentCity ? c.name : `${c.name} — ${days} days`;
+    c.ui.title.setText(title);
     const label = c.name === currentCity ? '[Here]' : locked ? '[Locked]' : '[Go]';
     c.ui.btn.setText(label);
-    const color = c.name === currentCity ? '#777777' : '#00ff00';
+    const color = c.name === currentCity || locked ? '#777777' : '#00ff00';
     c.ui.btn.setFill(color);
   });
 }
 
-function showTravelRegions(scene) {
-  // Clear any existing city UI references to avoid stale elements
-  cities.forEach(c => { if (c.ui) delete c.ui; });
-  travelList.removeAll(true);
-  const northBtn = scene.add.text(175, 0, 'The North', { font: '18px monospace', fill: '#00ff00' })
-    .setOrigin(0.5, 0)
-    .setInteractive()
-    .on('pointerdown', () => showCityList(scene, 'north'));
-  const southBtn = scene.add.text(525, 0, 'The South', { font: '18px monospace', fill: '#00ff00' })
-    .setOrigin(0.5, 0)
-    .setInteractive()
-    .on('pointerdown', () => showCityList(scene, 'south'));
-
-  const northPlaceholder = scene.add.rectangle(50, 30, 250, 400, 0x444444).setOrigin(0, 0);
-  const southPlaceholder = scene.add.rectangle(400, 30, 250, 400, 0x444444).setOrigin(0, 0);
-  travelList.add([northBtn, southBtn, northPlaceholder, southPlaceholder]);
-}
-
-function showCityList(scene, region) {
+function showTravelMenu(scene) {
   travelList.removeAll(true);
   cities.forEach(c => { if (c.ui) delete c.ui; });
-  const backBtn = scene.add.text(10, 0, '[Back]', { font: '18px monospace', fill: '#ffffff' })
-    .setInteractive()
-    .on('pointerdown', () => showTravelRegions(scene));
-  travelList.add(backBtn);
-  let cityY = 40;
-  cities.filter(c => c.region === region).forEach(city => {
-    const title = scene.add.text(10, cityY, '', { font: '18px monospace', fill: '#ffffaa', wordWrap: { width: 520 } });
-    const btn = scene.add.text(450, cityY, '[Go]', { font: '18px monospace', fill: '#00ff00' })
+  let cityY = 10;
+  cities.forEach(city => {
+    const title = scene.add.text(10, cityY, '', { font: '18px monospace', fill: '#ffffaa', wordWrap: { width: 420 } });
+    const btn = scene.add.text(500, cityY, '[Go]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => {
         travelToCity(scene, city);
       });
     travelList.add([title, btn]);
     city.ui = { title, btn };
-    cityY += 60;
+    cityY += 30;
   });
   updateTravelUI(scene);
 }
@@ -1309,7 +1334,7 @@ function toggleTravel(scene, resume = true, withFade = true) {
   if (visible) {
     // Dim the background while the travel menu is open
     if (withFade) fadeScreenOverlay(scene, 0.5);
-    showTravelRegions(scene);
+    showTravelMenu(scene);
     updateTravelUI(scene);
     if (hideMeterEvent) {
       hideMeterEvent.remove(false);
@@ -1336,8 +1361,10 @@ function toggleTravel(scene, resume = true, withFade = true) {
 
 // Fade completely to black, change cities, then reveal the new scene.
 function travelToCity(scene, city) {
+  const days = getTravelDays(currentCity, city.name);
   fadeScreenOverlay(scene, 1, 500, () => {
     toggleTravel(scene, false, false);
+    advanceDays(days);
     selectCity(scene, city);
     // After the new city is ready, fade back to gameplay
     fadeScreenOverlay(scene, 0, 500);
@@ -1427,7 +1454,6 @@ function selectCity(scene, city) {
   // backgroundRect.setTint(city.bgColor); // disabled per request
   updateBackground(scene);
   locationText.setText(currentCity);
-  advanceDay();
   // Ensure the travel UI overlay is hidden before starting the transition.
   // Force-close the travel menu in case it somehow remained visible
   // and ensure the dimming overlay disappears when travelling.

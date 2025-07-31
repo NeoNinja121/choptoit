@@ -3,7 +3,7 @@
 # This avoids issues where commit counts might decrease due to rebases or
 # branch changes and guarantees the version number only increases.
 
-current=$(grep -o "const VERSION = 'v[0-9]*\.[0-9]*';" index.html | grep -o "v[0-9]*\.[0-9]*")
+current=$(grep -o "const VERSION = 'Pre Alpha —v[0-9]*\.[0-9]*';" index.html | grep -o "v[0-9]*\.[0-9]*")
 current=${current#v}
 major=${current%%.*}
 minor=${current##*.}
@@ -13,4 +13,4 @@ if [ "$minor" -ge 100 ]; then
   major=$((major + 1))
 fi
 version="v${major}.${minor}"
-sed -i -E "s/const VERSION = 'v[0-9.]+';/const VERSION = '$version';/" index.html
+sed -i -E "s/const VERSION = 'Pre Alpha —v[0-9.]+';/const VERSION = 'Pre Alpha —$version';/" index.html
