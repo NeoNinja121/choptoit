@@ -65,7 +65,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.60';
+const VERSION = 'Pre Alpha —v2.61';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -96,6 +96,7 @@ let tradeSellBtns = [];
 let travelButton;
 let travelContainer;
 let travelOverlay;
+let travelRegion = null;
 // The dimming overlay previously used during menu transitions caused a
 // distracting flash when switching cities. To remove it while keeping the
 // rest of the code functional, we replace it with a no-op stub.
@@ -936,6 +937,7 @@ function create() {
   travelContainer.add(travelBg);
   travelList = scene.add.container(0, 40);
   travelContainer.add(travelList);
+  travelRegion = null;
   showTravelMenu(scene);
   const travelClose = scene.add.text(660, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
@@ -1309,11 +1311,25 @@ function updateTravelUI(scene) {
   });
 }
 
-function showTravelMenu(scene) {
+function showTravelMenu(scene, region = travelRegion) {
+  travelRegion = region;
   travelList.removeAll(true);
   cities.forEach(c => { if (c.ui) delete c.ui; });
+
+  // If no region selected, present North/South options first
+  if (!travelRegion) {
+    const northBtn = scene.add.text(10, 10, 'Northern Cities', { font: '18px monospace', fill: '#ffffaa' })
+      .setInteractive()
+      .on('pointerdown', () => showTravelMenu(scene, 'north'));
+    const southBtn = scene.add.text(10, 40, 'Southern Cities', { font: '18px monospace', fill: '#ffffaa' })
+      .setInteractive()
+      .on('pointerdown', () => showTravelMenu(scene, 'south'));
+    travelList.add([northBtn, southBtn]);
+    return;
+  }
+
   let cityY = 10;
-  cities.forEach(city => {
+  cities.filter(c => c.region === travelRegion).forEach(city => {
     const title = scene.add.text(10, cityY, '', { font: '18px monospace', fill: '#ffffaa', wordWrap: { width: 420 } });
     const btn = scene.add.text(500, cityY, '[Go]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
@@ -1324,6 +1340,12 @@ function showTravelMenu(scene) {
     city.ui = { title, btn };
     cityY += 30;
   });
+
+  const backBtn = scene.add.text(10, cityY + 10, '[Back]', { font: '18px monospace', fill: '#ffff00' })
+    .setInteractive()
+    .on('pointerdown', () => showTravelMenu(scene, null));
+  travelList.add(backBtn);
+
   updateTravelUI(scene);
 }
 
@@ -1334,6 +1356,7 @@ function toggleTravel(scene, resume = true, withFade = true) {
   if (visible) {
     // Dim the background while the travel menu is open
     if (withFade) fadeScreenOverlay(scene, 0.5);
+    travelRegion = null;
     showTravelMenu(scene);
     updateTravelUI(scene);
     if (hideMeterEvent) {
