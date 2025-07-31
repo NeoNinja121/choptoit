@@ -66,7 +66,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.63';
+const VERSION = 'Pre Alpha —v2.64';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -141,6 +141,7 @@ const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 let currentDay = 1;
 let currentMonth = 0;
 let dateText;
+let dateBg;
 
 // Daily trading modifiers
 let dailyBuySpecial = null;
@@ -614,20 +615,24 @@ function create() {
     .setOrigin(0.5, 0)
     .setDepth(50)
     .setVisible(false);
-  weatherIndicatorBg = scene.add.circle(20, 590, 24, 0x000000)
-    .setOrigin(0.5, 1)
-    .setDepth(49);
-  weatherIndicator = scene.add.text(20, 590, '', { font: '20px monospace', fill: '#ffffff' })
-    .setOrigin(0.5, 1)
-    .setDepth(50);
+  weatherIndicatorBg = scene.add.circle(20, 566, 24, 0x000000)
+    .setOrigin(0.5)
+    .setDepth(49)
+    .setVisible(false);
+  weatherIndicator = scene.add.text(20, 566, '', { font: '20px monospace', fill: '#ffffff' })
+    .setOrigin(0.5)
+    .setDepth(50)
+    .setVisible(false);
   locationText = scene.add.text(400, 16, currentCity, { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0);
-  const dateBg = scene.add.rectangle(80, 590, 80, 28, 0xffffff)
-    .setOrigin(0.5, 1)
-    .setDepth(49);
-  dateText = scene.add.text(80, 590, getDateString(), { font: '16px monospace', fill: '#000000' })
-    .setOrigin(0.5, 1)
-    .setDepth(50);
+  dateBg = scene.add.rectangle(100, 576, 80, 28, 0xffffff)
+    .setOrigin(0.5)
+    .setDepth(49)
+    .setVisible(false);
+  dateText = scene.add.text(100, 576, getDateString(), { font: '16px monospace', fill: '#000000' })
+    .setOrigin(0.5)
+    .setDepth(50)
+    .setVisible(false);
   xpText = scene.add.text(400, 570, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
     .setOrigin(0.5, 1);
   xpBarFill = scene.add.rectangle(250, 584, 0, 12, 0x00ff00).setOrigin(0, 1);
@@ -686,6 +691,10 @@ function create() {
         startContainer.setVisible(false);
         startContainer.setAlpha(1);
         logoContainer.setVisible(false);
+        weatherIndicatorBg.setVisible(true);
+        weatherIndicator.setVisible(true);
+        dateBg.setVisible(true);
+        dateText.setVisible(true);
         if (executionerIntro) {
           introExecutioner(scene, () => spawnPrisoner(scene, false));
         } else {
