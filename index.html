@@ -66,7 +66,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.74';
+const VERSION = 'Pre Alpha —v2.75';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -162,10 +162,7 @@ let marketPrisoner;
 // Group to hold fallen bodies that pile up at the bottom
 let bodyGroup;
 let targetGroup;
-let featherEmitter;
-let birdTimer;
-let birdIndicator;
-let activeBirds = 0;
+
 let currentWeather = 'none';
 let windForce = { x: 0, y: 0 };
 let roundCount = 0;
@@ -391,8 +388,12 @@ function createTargetAppearance(scene, target, type) {
         break;
       }
       case 'bird': {
-        const c = scene.add.circle(0, 0, 20, 0x444444);
-        target.add(c);
+        const color = target.birdKind === 'dove' ? 0xffffff : 0x000000;
+        const textColor = target.birdKind === 'dove' ? '#000' : '#fff';
+        const r = scene.add.rectangle(0, 0, 40, 30, color);
+        const txt = scene.add.text(0, 0, 'B', { font: '16px monospace', fill: textColor })
+          .setOrigin(0.5);
+        target.add([r, txt]);
         break;
       }
       default: {
@@ -625,10 +626,7 @@ function create() {
   versionText = scene.add.text(790, 590, VERSION, { font: '14px monospace', fill: '#ffffff' })
     .setOrigin(1, 1)
     .setDepth(11);
-  birdIndicator = scene.add.text(790, 574, '', { font: '14px monospace', fill: '#ffffff' })
-    .setOrigin(1, 1)
-    .setDepth(11)
-    .setVisible(false);
+
 
   // Logo drop animation before showing the start screen
   // Ensure the logo appears above the start screen background
@@ -821,29 +819,7 @@ function create() {
     on: false
   });
 
-  // Setup birds and feathers if enabled
-  if (FEATURES.birds) {
-    const gBird = scene.add.graphics();
-    gBird.fillStyle(0xffff00, 1);
-    gBird.fillRect(0, 0, 100, 100);
-    gBird.generateTexture('crow', 100, 100);
-    gBird.clear();
-    gBird.fillStyle(0xffff00, 1);
-    gBird.fillRect(0, 0, 100, 100);
-    gBird.generateTexture('dove', 100, 100);
-    gBird.clear();
-    gBird.fillStyle(0xffffff, 1);
-    gBird.fillCircle(1, 1, 1);
-    gBird.generateTexture('feather', 2, 2);
-    gBird.destroy();
-    const featherParts = scene.add.particles('feather').setDepth(5);
-    featherEmitter = featherParts.createEmitter({
-      speed: { min: 50, max: 100 },
-      lifespan: 600,
-      quantity: 0,
-      on: false
-    });
-  }
+
 
   // Physics group to accumulate fallen bodies
   bodyGroup = scene.physics.add.group();
@@ -920,14 +896,7 @@ function create() {
     }
   });
 
-  if (FEATURES.birds) {
-    birdTimer = scene.time.addEvent({
-      delay: 1000,
-      loop: true,
-      callback: () => spawnBird(scene),
-      paused: true
-    });
-  }
+
 
   // Shop button
   // Move the shop button slightly right to make room for the travel sign
@@ -1809,9 +1778,8 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
   //   });
   // }
   prisoner.setVisible(true);
-  if (FEATURES.birds && birdTimer && birdTimer.paused) {
+  if (FEATURES.birds) {
     spawnBird(scene);
-    birdTimer.paused = false;
   }
   resetHead(scene);
   prisonerClass = pickClass();
@@ -2055,7 +2023,6 @@ function handleTargetHit(scene, target, head) {
   if (target.targetType === 'royal') fameGain *= 5;
   if (target.targetType === 'holyMonk') fameGain = -2;
   if (target.targetType === 'bird') {
-    featherEmitter.explode(10, target.x, target.y);
     bloodEmitter.explode(25, target.x, target.y);
     if (target.birdKind === 'dove') {
       fame = Math.max(0, fame - 1);
@@ -2070,10 +2037,6 @@ function handleTargetHit(scene, target, head) {
     gainFame(scene, target, fameGain);
     targetGroup.remove(target);
     target.destroy();
-    activeBirds--;
-    if (activeBirds <= 0 && birdIndicator) {
-      birdIndicator.setVisible(false);
-    }
     return;
   }
   gainFame(scene, target, fameGain);
@@ -2210,31 +2173,35 @@ function spawnRoyal(scene) {
 function spawnBird(scene) {
   const fromRight = Phaser.Math.Between(0, 1) === 1;
   const startX = fromRight ? 850 : -50;
-  const birdY = 460;
-  const kind = Phaser.Math.Between(0, 1) ? 'crow' : 'dove';
-  const bird = scene.add.image(startX, birdY, kind).setDepth(1);
+  const stopX = fromRight ? 500 : 300;
+  const kind = Phaser.Math.Between(0, 1) ? 'dove' : 'crow';
+  const bird = scene.add.container(startX, 460).setDepth(20);
   bird.targetType = 'bird';
   bird.birdKind = kind;
+  createTargetAppearance(scene, bird, 'bird');
   scene.physics.world.enable(bird);
   bird.body.setAllowGravity(false);
   bird.body.setImmovable(true);
-  bird.body.setVelocityX(fromRight ? -300 : 300);
+  bird.body.setVelocityX(fromRight ? -40 : 40);
   bird.collected = false;
   bird.jester = null;
   targetGroup.add(bird);
-  activeBirds++;
-  if (birdIndicator) {
-    birdIndicator.setText('bird');
-    birdIndicator.setVisible(true);
-  }
-  scene.time.delayedCall(7000, () => {
-    if (!bird.collected) {
-      targetGroup.remove(bird);
-      bird.destroy();
-      activeBirds--;
-      if (activeBirds <= 0 && birdIndicator) {
-        birdIndicator.setVisible(false);
-      }
+  scene.tweens.add({
+    targets: bird,
+    x: stopX,
+    duration: 1500,
+    ease: 'Linear',
+    onComplete: () => {
+      bird.body.setVelocityX(0);
+      scene.time.delayedCall(Phaser.Math.Between(2000, 5000), () => {
+        scene.tweens.add({
+          targets: bird,
+          x: fromRight ? 850 : -50,
+          duration: 1500,
+          ease: 'Linear',
+          onComplete: () => bird.destroy()
+        });
+      });
     }
   });
 }
