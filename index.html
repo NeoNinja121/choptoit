@@ -68,7 +68,7 @@ let fogEmitter;
 let windEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.86';
+const VERSION = 'Pre Alpha —v2.87';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -852,8 +852,9 @@ function create() {
   const windParts = scene.add.particles('leaf').setDepth(4);
   windEmitter = windParts.createEmitter({
     lifespan: 4000,
-    quantity: 0,
-    frequency: 200,
+    // Increase particle output dramatically so the wind effect is visible
+    quantity: 10,
+    frequency: 20,
     scale: { start: 1, end: 0 },
     rotate: { min: -180, max: 180 },
     on: false
