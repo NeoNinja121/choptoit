@@ -2255,7 +2255,7 @@ function spawnTarget(scene) {
       target.body.setAllowGravity(false);
       target.body.setImmovable(true);
       if (FEATURES.birds) {
-        spawnBird(scene);
+        scene.time.delayedCall(2000, () => spawnBird(scene));
       }
     },
     onUpdate: () => {
