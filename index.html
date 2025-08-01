@@ -67,7 +67,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.81';
+const VERSION = 'Pre Alpha —v2.82';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -2292,7 +2292,7 @@ function spawnTarget(scene) {
       }
       target.body.setAllowGravity(false);
       target.body.setImmovable(true);
-      if (FEATURES.birds) {
+      if (FEATURES.birds && Phaser.Math.Between(1, 10) === 1) {
         scene.time.delayedCall(2000, () => spawnBird(scene));
       }
     },
