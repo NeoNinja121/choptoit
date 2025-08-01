@@ -66,7 +66,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.75';
+const VERSION = 'Pre Alpha —v2.76';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -2173,9 +2173,9 @@ function spawnRoyal(scene) {
 function spawnBird(scene) {
   const fromRight = Phaser.Math.Between(0, 1) === 1;
   const startX = fromRight ? 850 : -50;
-  const stopX = fromRight ? 500 : 300;
+  const endX = fromRight ? -50 : 850;
   const kind = Phaser.Math.Between(0, 1) ? 'dove' : 'crow';
-  const bird = scene.add.container(startX, 460).setDepth(20);
+  const bird = scene.add.container(startX, 260).setDepth(20);
   bird.targetType = 'bird';
   bird.birdKind = kind;
   createTargetAppearance(scene, bird, 'bird');
@@ -2188,21 +2188,10 @@ function spawnBird(scene) {
   targetGroup.add(bird);
   scene.tweens.add({
     targets: bird,
-    x: stopX,
-    duration: 1500,
+    x: endX,
+    duration: 3000,
     ease: 'Linear',
-    onComplete: () => {
-      bird.body.setVelocityX(0);
-      scene.time.delayedCall(Phaser.Math.Between(2000, 5000), () => {
-        scene.tweens.add({
-          targets: bird,
-          x: fromRight ? 850 : -50,
-          duration: 1500,
-          ease: 'Linear',
-          onComplete: () => bird.destroy()
-        });
-      });
-    }
+    onComplete: () => bird.destroy()
   });
 }
 
