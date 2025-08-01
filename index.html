@@ -66,7 +66,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.70';
+const VERSION = 'Pre Alpha —v2.71';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -824,12 +824,12 @@ function create() {
   // Setup birds and feathers if enabled
   if (FEATURES.birds) {
     const gBird = scene.add.graphics();
-    gBird.fillStyle(0x000000, 1);
-    gBird.fillTriangle(0, 50, 100, 0, 100, 100);
+    gBird.fillStyle(0xffff00, 1);
+    gBird.fillRect(0, 0, 100, 100);
     gBird.generateTexture('crow', 100, 100);
     gBird.clear();
-    gBird.fillStyle(0xffffff, 1);
-    gBird.fillTriangle(0, 50, 100, 0, 100, 100);
+    gBird.fillStyle(0xffff00, 1);
+    gBird.fillRect(0, 0, 100, 100);
     gBird.generateTexture('dove', 100, 100);
     gBird.clear();
     gBird.fillStyle(0xffffff, 1);
@@ -2210,7 +2210,7 @@ function spawnRoyal(scene) {
 function spawnBird(scene) {
   const fromRight = Phaser.Math.Between(0, 1) === 1;
   const startX = fromRight ? 850 : -50;
-  const birdY = Phaser.Math.Between(60, 220);
+  const birdY = 460;
   const kind = Phaser.Math.Between(0, 1) ? 'crow' : 'dove';
   const bird = scene.add.image(startX, birdY, kind).setDepth(20);
   bird.targetType = 'bird';
