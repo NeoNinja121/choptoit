@@ -67,7 +67,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.78';
+const VERSION = 'Pre Alpha —v2.79';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -2248,11 +2248,25 @@ function spawnTarget(scene) {
     if (killStreak >= 3) {
       target.isMoving = true;
       const dur = killStreak >= 10 ? 400 : 800;
-      target.moveTween = scene.tweens.add({ targets: target, y: target.y - 20, duration: dur, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      target.moveTween = scene.tweens.add({
+        targets: [target, jester],
+        y: '-=20',
+        duration: dur,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
     }
   } else if (FEATURES.movingTargets && Phaser.Math.Between(0, 1) === 1) {
     target.isMoving = true;
-    target.moveTween = scene.tweens.add({ targets: target, y: target.y - 20, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    target.moveTween = scene.tweens.add({
+      targets: [target, jester],
+      y: '-=20',
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
   }
 
   target.collected = false;
