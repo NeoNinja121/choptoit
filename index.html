@@ -67,7 +67,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.82';
+const VERSION = 'Pre Alpha —v2.83';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -421,8 +421,8 @@ function applyRandomWeather(scene) {
     t.setAlpha(1);
   });
   if (currentWeather === 'wind') {
-    windForce.x = Phaser.Math.Between(-50, 50);
-    windForce.y = Phaser.Math.Between(-50, 50);
+    windForce.x = Phaser.Math.Between(-100, 100);
+    windForce.y = Phaser.Math.Between(-100, 100);
     letter = 'W';
     arrow = arrowForWind(windForce.x, windForce.y);
   } else if (currentWeather === 'fog') {
@@ -1606,6 +1606,7 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   hBody.checkCollision.up = false;
   hBody.setBounce(0.6);
   hBody.setDrag(50, 0);
+  hBody.setGravityY(FEATURES.weather && currentWeather === 'rain' ? 300 : 0);
   const speed = 250 * power;
   let vx = Math.sin(rad) * speed;
   if (FEATURES.weather && currentWeather === 'wind') {
@@ -1681,7 +1682,7 @@ function choosePower(scene) {
   if (arrowPowerTween) arrowPowerTween.stop();
   let power = aimArrow.scaleY;
   if (FEATURES.weather && currentWeather === 'rain') {
-    power *= Phaser.Math.FloatBetween(0.8, 1.2);
+    power *= 0.8; // rain makes heads heavier
   }
   aimArrow.setVisible(false);
   slashExecutioner(scene, selectedAngle, () => {
