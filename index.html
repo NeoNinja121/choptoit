@@ -66,7 +66,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.76';
+const VERSION = 'Pre Alpha —v2.77';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1778,9 +1778,7 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
   //   });
   // }
   prisoner.setVisible(true);
-  if (FEATURES.birds) {
-    spawnBird(scene);
-  }
+  // Birds now fly in once the jester has reached the stage
   resetHead(scene);
   prisonerClass = pickClass();
   // Spawn a new target each time a prisoner appears if requested
@@ -2175,7 +2173,7 @@ function spawnBird(scene) {
   const startX = fromRight ? 850 : -50;
   const endX = fromRight ? -50 : 850;
   const kind = Phaser.Math.Between(0, 1) ? 'dove' : 'crow';
-  const bird = scene.add.container(startX, 260).setDepth(20);
+  const bird = scene.add.container(startX, 160).setDepth(20);
   bird.targetType = 'bird';
   bird.birdKind = kind;
   createTargetAppearance(scene, bird, 'bird');
@@ -2253,6 +2251,9 @@ function spawnTarget(scene) {
       }
       target.body.setAllowGravity(false);
       target.body.setImmovable(true);
+      if (FEATURES.birds) {
+        spawnBird(scene);
+      }
     },
     onUpdate: () => {
       if (target.body) {
