@@ -419,6 +419,8 @@ function applyRandomWeather(scene) {
   targetGroup.getChildren().forEach(t => {
     if (t.fogTween) { t.fogTween.stop(); t.fogTween = null; }
     t.setAlpha(1);
+    if (t.jester && t.jester.fogTween) { t.jester.fogTween.stop(); t.jester.fogTween = null; }
+    if (t.jester) t.jester.setAlpha(1);
   });
   if (currentWeather === 'wind') {
     windForce.x = Phaser.Math.Between(-100, 100);
@@ -428,7 +430,10 @@ function applyRandomWeather(scene) {
   } else if (currentWeather === 'fog') {
     letter = 'F';
     targetGroup.getChildren().forEach(t => {
-      t.fogTween = scene.tweens.add({ targets: t, alpha: 0.6, yoyo: true, repeat: -1, duration: 800 });
+      t.fogTween = scene.tweens.add({ targets: t, alpha: 0.4, yoyo: true, repeat: -1, duration: 800 });
+      if (t.jester) {
+        t.jester.fogTween = scene.tweens.add({ targets: t.jester, alpha: 0.4, yoyo: true, repeat: -1, duration: 800 });
+      }
     });
     if (fogEmitter) fogEmitter.start();
   } else if (currentWeather === 'rain') {
@@ -803,7 +808,7 @@ function create() {
   gWeather.fillRect(0, 0, 2, 10);
   gWeather.generateTexture('raindrop', 2, 10);
   gWeather.clear();
-  gWeather.fillStyle(0xffffff, 0.3);
+  gWeather.fillStyle(0xffffff, 0.6);
   gWeather.fillRect(0, 0, 20, 8);
   gWeather.generateTexture('fog', 20, 8);
   gWeather.destroy();
@@ -821,11 +826,11 @@ function create() {
   fogEmitter = fogParts.createEmitter({
     x: { min: -50, max: 850 },
     y: { min: 300, max: 580 },
-    lifespan: 4000,
+    lifespan: 6000,
     speedX: { min: -20, max: 20 },
     speedY: { min: -5, max: 5 },
-    quantity: 2,
-    alpha: { start: 0.6, end: 0 },
+    quantity: 6,
+    alpha: { start: 0.8, end: 0.1 },
     on: false
   });
 
