@@ -65,9 +65,10 @@ let fireworkCloseEmitter;
 let bloodFireworkEmitter;
 let rainEmitter;
 let fogEmitter;
+let windEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.85';
+const VERSION = 'Pre Alpha —v2.86';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -414,6 +415,7 @@ function applyRandomWeather(scene) {
   weatherText.setText(currentWeather === 'none' ? '' : currentWeather.toUpperCase());
   if (rainEmitter) rainEmitter.stop();
   if (fogEmitter) fogEmitter.stop();
+  if (windEmitter) windEmitter.stop();
   let letter = '';
   let arrow = '';
   targetGroup.getChildren().forEach(t => {
@@ -427,6 +429,14 @@ function applyRandomWeather(scene) {
     windForce.y = Phaser.Math.Between(-100, 100);
     letter = 'W';
     arrow = arrowForWind(windForce.x, windForce.y);
+    if (windEmitter) {
+      windEmitter.setSpeedX({ min: windForce.x - 20, max: windForce.x + 20 });
+      windEmitter.setSpeedY({ min: windForce.y - 20, max: windForce.y + 20 });
+      const zoneX = windForce.x > 0 ? -20 : 820;
+      const zone = new Phaser.Geom.Rectangle(zoneX, 0, 1, 600);
+      windEmitter.setEmitZone({ type: 'random', source: zone });
+      windEmitter.start();
+    }
   } else if (currentWeather === 'fog') {
     letter = 'F';
     targetGroup.getChildren().forEach(t => {
@@ -831,6 +841,21 @@ function create() {
     speedY: { min: -5, max: 5 },
     quantity: 6,
     alpha: { start: 0.8, end: 0.1 },
+    on: false
+  });
+
+  const windG = scene.add.graphics();
+  windG.fillStyle(0x996633, 1);
+  windG.fillCircle(2, 2, 2);
+  windG.generateTexture('leaf', 4, 4);
+  windG.destroy();
+  const windParts = scene.add.particles('leaf').setDepth(4);
+  windEmitter = windParts.createEmitter({
+    lifespan: 4000,
+    quantity: 0,
+    frequency: 200,
+    scale: { start: 1, end: 0 },
+    rotate: { min: -180, max: 180 },
     on: false
   });
 
