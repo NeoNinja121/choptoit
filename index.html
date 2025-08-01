@@ -62,6 +62,7 @@ let headEmitter;
 let splatEmitter;
 let fireworkEmitter;
 let fireworkCloseEmitter;
+let bloodFireworkEmitter;
 let rainEmitter;
 let fogEmitter;
 let missText;
@@ -750,6 +751,15 @@ function create() {
   splatEmitter = particles.createEmitter({
     speed: { min: 100, max: 200 },
     angle: { min: 240, max: 300 },
+    gravityY: 400,
+    lifespan: 800,
+    scale: { start: 1, end: 0 },
+    quantity: 0,
+    on: false
+  });
+  bloodFireworkEmitter = particles.createEmitter({
+    speed: { min: 150, max: 250 },
+    angle: { min: 0, max: 360 },
     gravityY: 400,
     lifespan: 800,
     scale: { start: 1, end: 0 },
@@ -2021,7 +2031,7 @@ function handleTargetHit(scene, target, head) {
   if (target.targetType === 'royal') fameGain *= 5;
   if (target.targetType === 'holyMonk') fameGain = -2;
   if (target.targetType === 'bird') {
-    bloodEmitter.explode(25, target.x, target.y);
+    bloodFireworkEmitter.explode(25, target.x, target.y);
     if (target.birdKind === 'dove') {
       fame = Math.max(0, fame - 1);
       fameText.setText(`Fame: ${Math.floor(fame)}`);
@@ -2034,7 +2044,18 @@ function handleTargetHit(scene, target, head) {
     }
     gainFame(scene, target, fameGain);
     targetGroup.remove(target);
-    target.destroy();
+    target.body.setVelocity(0, 0);
+    target.body.setAllowGravity(false);
+    target.body.setImmovable(true);
+    target.body.setCollideWorldBounds(false);
+    target.body.enable = false;
+    scene.tweens.add({
+      targets: target,
+      y: 560,
+      duration: 600,
+      ease: 'Linear',
+      onComplete: () => target.destroy()
+    });
     return;
   }
   gainFame(scene, target, fameGain);
@@ -2184,7 +2205,7 @@ function spawnBird(scene) {
   bird.collected = false;
   bird.jester = null;
   targetGroup.add(bird);
-  scene.tweens.add({
+  bird.moveTween = scene.tweens.add({
     targets: bird,
     x: endX,
     duration: 3000,
