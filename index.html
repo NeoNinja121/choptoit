@@ -68,7 +68,7 @@ let fogEmitter;
 let windEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.87';
+const VERSION = 'Pre Alpha —v2.88';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -432,8 +432,7 @@ function applyRandomWeather(scene) {
     if (windEmitter) {
       windEmitter.setSpeedX({ min: windForce.x - 20, max: windForce.x + 20 });
       windEmitter.setSpeedY({ min: windForce.y - 20, max: windForce.y + 20 });
-      const zoneX = windForce.x > 0 ? -20 : 820;
-      const zone = new Phaser.Geom.Rectangle(zoneX, 0, 1, 600);
+      const zone = new Phaser.Geom.Rectangle(-20, 0, 840, 600);
       windEmitter.setEmitZone({ type: 'random', source: zone });
       windEmitter.start();
     }
