@@ -67,7 +67,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.83';
+const VERSION = 'Pre Alpha —v2.84';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -428,7 +428,7 @@ function applyRandomWeather(scene) {
   } else if (currentWeather === 'fog') {
     letter = 'F';
     targetGroup.getChildren().forEach(t => {
-      t.fogTween = scene.tweens.add({ targets: t, alpha: 0.3, yoyo: true, repeat: -1, duration: 800 });
+      t.fogTween = scene.tweens.add({ targets: t, alpha: 0.45, yoyo: true, repeat: -1, duration: 800 });
     });
     if (fogEmitter) fogEmitter.start();
   } else if (currentWeather === 'rain') {
@@ -609,11 +609,11 @@ function create() {
     .setVisible(false);
   locationText = scene.add.text(400, 16, currentCity, { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0);
-  dateBg = scene.add.rectangle(100, 576, 80, 28, 0xffffff)
+  dateBg = scene.add.rectangle(400, 42, 80, 28, 0xffffff)
     .setOrigin(0.5)
     .setDepth(49)
     .setVisible(false);
-  dateText = scene.add.text(100, 576, getDateString(), { font: '16px monospace', fill: '#000000' })
+  dateText = scene.add.text(400, 42, getDateString(), { font: '16px monospace', fill: '#000000' })
     .setOrigin(0.5)
     .setDepth(50)
     .setVisible(false);
@@ -825,7 +825,7 @@ function create() {
     speedX: { min: -20, max: 20 },
     speedY: { min: -5, max: 5 },
     quantity: 2,
-    alpha: { start: 0.3, end: 0 },
+    alpha: { start: 0.45, end: 0 },
     on: false
   });
 
@@ -1606,7 +1606,12 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   hBody.checkCollision.up = false;
   hBody.setBounce(0.6);
   hBody.setDrag(50, 0);
-  hBody.setGravityY(FEATURES.weather && currentWeather === 'rain' ? 300 : 0);
+  if (FEATURES.weather && currentWeather === 'rain') {
+    hBody.setGravityY(0);
+    flyingHead.rainGravityApplied = false;
+  } else {
+    hBody.setGravityY(0);
+  }
   const speed = 250 * power;
   let vx = Math.sin(rad) * speed;
   if (FEATURES.weather && currentWeather === 'wind') {
@@ -1681,9 +1686,6 @@ function choosePower(scene) {
   awaitingPower = false;
   if (arrowPowerTween) arrowPowerTween.stop();
   let power = aimArrow.scaleY;
-  if (FEATURES.weather && currentWeather === 'rain') {
-    power *= 0.8; // rain makes heads heavier
-  }
   aimArrow.setVisible(false);
   slashExecutioner(scene, selectedAngle, () => {
     beheadPrisoner(scene, pendingBlood, selectedAngle, power);
@@ -2345,6 +2347,16 @@ function update(time, delta) {
     if (cursor.x > 550 || cursor.x < 250) {
       swingDirection *= -1;
     }
+  }
+
+  // Apply extra gravity once heads start falling in the rain
+  if (FEATURES.weather && currentWeather === 'rain' && bodyGroup) {
+    bodyGroup.getChildren().forEach(obj => {
+      if (obj.isHead && !obj.rainGravityApplied && obj.body.velocity.y > 0) {
+        obj.body.setGravityY(300);
+        obj.rainGravityApplied = true;
+      }
+    });
   }
 
 
