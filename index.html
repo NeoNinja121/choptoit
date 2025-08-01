@@ -67,7 +67,7 @@ let rainEmitter;
 let fogEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.79';
+const VERSION = 'Pre Alpha —v2.80';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -2249,8 +2249,8 @@ function spawnTarget(scene) {
       target.isMoving = true;
       const dur = killStreak >= 10 ? 400 : 800;
       target.moveTween = scene.tweens.add({
-        targets: [target, jester],
-        y: '-=20',
+        targets: target,
+        y: target.y - 20,
         duration: dur,
         yoyo: true,
         repeat: -1,
@@ -2260,8 +2260,8 @@ function spawnTarget(scene) {
   } else if (FEATURES.movingTargets && Phaser.Math.Between(0, 1) === 1) {
     target.isMoving = true;
     target.moveTween = scene.tweens.add({
-      targets: [target, jester],
-      y: '-=20',
+      targets: target,
+      y: target.y - 20,
       duration: 800,
       yoyo: true,
       repeat: -1,
@@ -2285,7 +2285,10 @@ function spawnTarget(scene) {
         target.body.setSize(30, 46);
         target.body.setOffset(-15, -26);
       } else {
-        target.body.setCircle(20, -20, -20);
+        target.body.setCircle(20);
+        target.body.setOffset(-20, -20);
+        target.body.x = target.x - target.body.halfWidth;
+        target.body.y = target.y - target.body.halfHeight;
       }
       target.body.setAllowGravity(false);
       target.body.setImmovable(true);
