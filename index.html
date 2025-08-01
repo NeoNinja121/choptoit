@@ -68,7 +68,7 @@ let fogEmitter;
 let windEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.88';
+const VERSION = 'Pre Alpha —v2.89';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1415,13 +1415,9 @@ function toggleTravel(scene, resume = true, withFade = true) {
 // Fade completely to black, change cities, then reveal the new scene.
 function travelToCity(scene, city) {
   const days = getTravelDays(currentCity, city.name);
-  fadeScreenOverlay(scene, 1, 500, () => {
-    toggleTravel(scene, false, false);
-    advanceDays(days);
-    selectCity(scene, city);
-    // After the new city is ready, fade back to gameplay
-    fadeScreenOverlay(scene, 0, 500);
-  });
+  toggleTravel(scene, false, false);
+  scene.scene.launch('TravelScene', { city, days, mainScene: scene });
+  scene.scene.pause();
 }
 
 function showTradeMenu(scene, index, mode = 'buy') {
@@ -2408,6 +2404,54 @@ function update(time, delta) {
     });
   }
 }
+
+class TravelScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'TravelScene' });
+  }
+  init(data) {
+    this.city = data.city;
+    this.days = Math.max(1, data.days);
+    this.mainScene = data.mainScene;
+  }
+  create() {
+    const keys = Object.keys(cityBackgrounds).map(n => `background-${n.toLowerCase()}`);
+    let bgKey = Phaser.Utils.Array.GetRandom(keys);
+    if (!this.textures.exists(bgKey)) bgKey = 'background';
+    this.add.image(400, 300, bgKey).setDisplaySize(800, 600);
+    this.add.text(400, 40, `Travelling to ${this.city.name}`, { font: '32px serif', fill: '#ffff00' }).setOrigin(0.5);
+    let d = currentDay;
+    let m = currentMonth;
+    const date = this.add.text(400, 80, `${d} ${months[m]}`, { font: '28px monospace', fill: '#ffffff' }).setOrigin(0.5);
+    const exec = this.add.container(-100, 460);
+    const body = this.add.image(0, 50, 'executionerBody').setOrigin(0.5, 1);
+    const head = this.add.image(0, -30, 'executionerHead').setOrigin(0.5);
+    exec.add([body, head]);
+    this.add.existing(exec);
+
+    const duration = this.days * 700;
+    this.tweens.add({ targets: exec, x: 900, duration, ease: 'Linear' });
+    this.time.addEvent({
+      delay: duration / this.days,
+      repeat: this.days - 1,
+      callback: () => {
+        d++;
+        if (d > 30) { d = 1; m = (m + 1) % months.length; }
+        date.setText(`${d} ${months[m]}`);
+      }
+    });
+
+    this.time.delayedCall(duration, () => this.finish());
+  }
+  finish() {
+    advanceDays(this.days);
+    selectCity(this.mainScene, this.city);
+    this.scene.stop();
+    this.mainScene.scene.resume();
+  }
+}
+
+game.scene.add('TravelScene', TravelScene, false);
 </script>
 
 </body>
