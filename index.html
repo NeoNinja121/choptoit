@@ -2184,7 +2184,7 @@ function spawnBird(scene) {
   bird.collected = false;
   bird.jester = null;
   targetGroup.add(bird);
-  scene.tweens.add({
+  bird.moveTween = scene.tweens.add({
     targets: bird,
     x: endX,
     duration: 3000,
