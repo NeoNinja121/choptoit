@@ -2434,6 +2434,10 @@ class TravelScene extends Phaser.Scene {
     let d = currentDay;
     let m = currentMonth;
     const date = this.add.text(400, 80, `${d} ${months[m]}`, { font: '28px monospace', fill: '#ffffff' }).setOrigin(0.5);
+    const weatherChoices = ['Clear', 'Rain', 'Wind', 'Fog'];
+    const pickWeather = () => Phaser.Utils.Array.GetRandom(weatherChoices);
+    let weather = pickWeather();
+    const weatherText = this.add.text(400, 120, `Weather: ${weather}`, { font: '28px monospace', fill: '#ffffff' }).setOrigin(0.5);
     const exec = this.add.container(-100, 460);
     const body = this.add.image(0, 50, 'executionerBody').setOrigin(0.5, 1);
     const head = this.add.image(0, -30, 'executionerHead').setOrigin(0.5);
@@ -2449,6 +2453,8 @@ class TravelScene extends Phaser.Scene {
         d++;
         if (d > 30) { d = 1; m = (m + 1) % months.length; }
         date.setText(`${d} ${months[m]}`);
+        weather = pickWeather();
+        weatherText.setText(`Weather: ${weather}`);
       }
     });
 
