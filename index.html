@@ -1220,14 +1220,18 @@ function toggleShop(scene) {
     // backOverlay.setVisible(false);
     scene.physics.world.pause();
     scene.tweens.pauseAll();
-    scene.time.paused = true;
+    // Pausing the entire scene's time also halts input processing, which
+    // prevented shop buttons from receiving pointer events.  We only pause
+    // physics and tweens so the game action freezes while keeping the UI
+    // responsive.
   } else {
     // backOverlay.setVisible(backOverlayWasVisible);
     // Remove the dim when closing the shop
     fadeScreenOverlay(scene, 0);
     scene.physics.world.resume();
     scene.tweens.resumeAll();
-    scene.time.paused = false;
+    // No need to unpause the Time plugin since we never fully pause it for the
+    // shop overlay.
     startSwingMeter(scene);
   }
 }
@@ -1402,14 +1406,17 @@ function toggleTravel(scene, resume = true, withFade = true) {
     // backOverlay.setVisible(false);
     scene.physics.world.pause();
     scene.tweens.pauseAll();
-    scene.time.paused = true;
+    // Do not pause the global time system; doing so disables input events and
+    // breaks the travel and shop interfaces.  Physics and tweens are paused to
+    // freeze gameplay while menus are open.
   } else {
     // backOverlay.setVisible(backOverlayWasVisible);
     // Clear the dim when returning to gameplay
     if (withFade) fadeScreenOverlay(scene, 0);
     scene.physics.world.resume();
     scene.tweens.resumeAll();
-    scene.time.paused = false;
+    // Time was never paused for the travel overlay, so there is nothing to
+    // resume beyond physics and tweens.
     if (resume) startSwingMeter(scene);
   }
 }
