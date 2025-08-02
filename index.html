@@ -165,7 +165,7 @@ let marketPrisoner;
 let bodyGroup;
 let targetGroup;
 
-let currentWeather = 'none';
+let currentWeather = 'clear';
 let windForce = { x: 0, y: 0 };
 let roundCount = 0;
 let weatherText;
@@ -409,10 +409,10 @@ function createTargetAppearance(scene, target, type) {
 
 
 function applyRandomWeather(scene) {
-  const choices = ['wind', 'fog', 'rain', 'none'];
-  currentWeather = FEATURES.weather ? Phaser.Utils.Array.GetRandom(choices) : 'none';
+  const choices = ['clear', 'rain', 'wind', 'fog'];
+  currentWeather = FEATURES.weather ? Phaser.Utils.Array.GetRandom(choices) : 'clear';
   windForce = { x: 0, y: 0 };
-  weatherText.setText(currentWeather === 'none' ? '' : currentWeather.toUpperCase());
+  weatherText.setText(currentWeather.toUpperCase());
   if (rainEmitter) rainEmitter.stop();
   if (fogEmitter) fogEmitter.stop();
   if (windEmitter) windEmitter.stop();
@@ -448,6 +448,8 @@ function applyRandomWeather(scene) {
   } else if (currentWeather === 'rain') {
     letter = 'R';
     if (rainEmitter) rainEmitter.start();
+  } else if (currentWeather === 'clear') {
+    letter = 'C';
   }
   weatherIndicator.setText(letter + arrow);
 }
@@ -1524,6 +1526,8 @@ function selectCity(scene, city) {
   // resetBackOverlay(scene);
   // Directly reset for the new city without fading the camera first.
   resetForNewCity(scene);
+  applyRandomWeather(scene);
+  roundCount = 1;
   // Extra safety: hide the travel overlay again in case any async events
   // re-enabled it during the city transition.
   travelOverlay.setVisible(false);
