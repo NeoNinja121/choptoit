@@ -68,7 +68,7 @@ let fogEmitter;
 let windEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.89';
+const VERSION = 'Pre Alpha —v2.91';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -2437,7 +2437,50 @@ class TravelScene extends Phaser.Scene {
     const weatherChoices = ['Clear', 'Rain', 'Wind', 'Fog'];
     const pickWeather = () => Phaser.Utils.Array.GetRandom(weatherChoices);
     let weather = pickWeather();
-    const weatherText = this.add.text(400, 120, `Weather: ${weather}`, { font: '28px monospace', fill: '#ffffff' }).setOrigin(0.5);
+
+    // Simple particle emitters to visualize travel weather
+    const rainEmitter = this.add.particles('raindrop').createEmitter({
+      x: { min: 0, max: 800 },
+      y: 0,
+      lifespan: 800,
+      speedY: { min: 400, max: 600 },
+      quantity: 15,
+      frequency: 100,
+      on: false
+    });
+    const fogEmitter = this.add.particles('fog').createEmitter({
+      x: { min: -50, max: 850 },
+      y: { min: 300, max: 580 },
+      lifespan: 6000,
+      speedX: { min: -20, max: 20 },
+      speedY: { min: -5, max: 5 },
+      quantity: 6,
+      alpha: { start: 0.8, end: 0.1 },
+      on: false
+    });
+    const windEmitter = this.add.particles('leaf').createEmitter({
+      lifespan: 4000,
+      quantity: 10,
+      frequency: 20,
+      scale: { start: 1, end: 0 },
+      rotate: { min: -180, max: 180 },
+      on: false
+    });
+    const setWeather = (w) => {
+      rainEmitter.stop();
+      fogEmitter.stop();
+      windEmitter.stop();
+      if (w === 'Rain') {
+        rainEmitter.start();
+      } else if (w === 'Fog') {
+        fogEmitter.start();
+      } else if (w === 'Wind') {
+        windEmitter.setSpeedX({ min: -50, max: 50 });
+        windEmitter.setSpeedY({ min: 0, max: 0 });
+        windEmitter.start();
+      }
+    };
+    setWeather(weather);
     const exec = this.add.container(-100, 460);
     const body = this.add.image(0, 50, 'executionerBody').setOrigin(0.5, 1);
     const head = this.add.image(0, -30, 'executionerHead').setOrigin(0.5);
@@ -2454,7 +2497,7 @@ class TravelScene extends Phaser.Scene {
         if (d > 30) { d = 1; m = (m + 1) % months.length; }
         date.setText(`${d} ${months[m]}`);
         weather = pickWeather();
-        weatherText.setText(`Weather: ${weather}`);
+        setWeather(weather);
       }
     });
 
