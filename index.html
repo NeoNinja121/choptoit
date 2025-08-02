@@ -1416,6 +1416,13 @@ function toggleTravel(scene, resume = true, withFade = true) {
 function travelToCity(scene, city) {
   const days = getTravelDays(currentCity, city.name);
   toggleTravel(scene, false, false);
+  // Clear any residual screen dim from the travel menu before pausing the scene
+  if (screenFadeTween) {
+    screenFadeTween.stop();
+    screenFadeTween = null;
+  }
+  screenFadeOverlay.setAlpha(0);
+  screenFadeOverlay.setVisible(false);
   scene.scene.launch('TravelScene', { city, days, mainScene: scene });
   scene.scene.pause();
 }
