@@ -646,14 +646,19 @@ function create() {
 
   // Gold text
   goldText = scene.add.text(16, 16, `Gold: ${player.gold}`, { font: '20px monospace', fill: '#ffff88' });
+  goldText.setY(goldText.y + 50); // Avoid overlap with upgrade button
   fameText = scene.add.text(16, 40, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' });
+  fameText.setY(fameText.y + 50);
   missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
+  missText.setY(missText.y + 50);
   killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
+  killText.setY(killText.y + 50);
   // Hide the old weather label at the top
   weatherText = scene.add.text(400, 96, '', { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0)
     .setDepth(50)
     .setVisible(false);
+  weatherText.setY(weatherText.y + 50);
   weatherIndicatorBg = scene.add.circle(25, 571, 24, 0x000000)
     .setOrigin(0.5)
     .setDepth(49)
@@ -664,14 +669,17 @@ function create() {
     .setVisible(false);
   locationText = scene.add.text(400, 16, currentCity, { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0);
+  locationText.setY(locationText.y + 50);
   dateBg = scene.add.rectangle(400, 52, 80, 28, 0xffffff)
     .setOrigin(0.5)
     .setDepth(49)
     .setVisible(false);
+  dateBg.setY(dateBg.y + 50);
   dateText = scene.add.text(400, 52, getDateString(), { font: '16px monospace', fill: '#000000' })
     .setOrigin(0.5)
     .setDepth(50)
     .setVisible(false);
+  dateText.setY(dateText.y + 50);
   xpText = scene.add.text(400, 580, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
     .setOrigin(0.5, 1);
   xpBarFill = scene.add.rectangle(250, 584, 0, 12, 0x00ff00).setOrigin(0, 1);
@@ -2692,6 +2700,44 @@ class TravelScene extends Phaser.Scene {
 }
 
 game.scene.add('TravelScene', TravelScene, false);
+
+// Inject styled gameplay instructions beneath the Phaser canvas once the page loads
+window.addEventListener('load', () => {
+  const instructions = document.createElement('div');
+  instructions.id = 'game-instructions';
+  instructions.style.padding = '30px';
+  instructions.style.fontFamily = 'Georgia, serif';
+  instructions.style.maxWidth = '800px';
+  instructions.style.margin = '0 auto';
+  instructions.style.textAlign = 'center';
+
+  instructions.innerHTML = `
+    <h1>⚔️ Welcome to <em>Chop To It</em> ⚔️</h1>
+    <p><strong>This game is a work-in-progress demo — completely made by AI.</strong></p>
+
+    <h2>🕹️ Instructions</h2>
+    <ul style="list-style: none; padding-left: 0;">
+      <li>🔪 Click in the centre of the meter to determine if you <strong>hit</strong> or <strong>miss</strong>.</li>
+      <li>🎯 The second click sets the <strong>direction</strong> your customer’s head flies.</li>
+      <li>💥 The third click determines the <strong>power</strong> of your strike.</li>
+      <li>🎯 Aim for jesters and flying targets to maximise your rewards.</li>
+    </ul>
+
+    <h2>📦 Features</h2>
+    <ul style="list-style: none; padding-left: 0;">
+      <li>🌦️ Weather alters gravity and shot physics.</li>
+      <li>🔥 Hit streaks increase gold and spawn rarer characters.</li>
+      <li>🚚 Buy storage upgrades and travel to new cities.</li>
+      <li>📉 Buy low, sell high — master the medieval market.</li>
+    </ul>
+
+    <h2>🏆 Your Goal</h2>
+    <p><em>Earn <strong>1,000,001 gold</strong> within one year.</em></p>
+    <p>Only the most brutal and brilliant executioner shall rise to glory.</p>
+  `;
+
+  document.body.appendChild(instructions);
+});
 </script>
 
 </body>
