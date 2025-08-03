@@ -75,7 +75,7 @@ let fogEmitter;
 let windEmitter;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.91';
+const VERSION = 'Pre Alpha —v2.93';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -872,7 +872,7 @@ function create() {
   gWeather.fillRect(0, 0, 20, 8);
   gWeather.generateTexture('fog', 20, 8);
   gWeather.destroy();
-  const rainParts = scene.add.particles('raindrop').setDepth(4);
+  const rainParts = scene.add.particles('raindrop').setDepth(32);
   rainEmitter = rainParts.createEmitter({
     x: { min: 0, max: 800 },
     y: 0,
@@ -882,7 +882,7 @@ function create() {
     frequency: 100,
     on: false
   });
-  const fogParts = scene.add.particles('fog').setDepth(4);
+  const fogParts = scene.add.particles('fog').setDepth(32);
   fogEmitter = fogParts.createEmitter({
     x: { min: -50, max: 850 },
     y: { min: 300, max: 580 },
@@ -899,7 +899,7 @@ function create() {
   windG.fillCircle(2, 2, 2);
   windG.generateTexture('leaf', 4, 4);
   windG.destroy();
-  const windParts = scene.add.particles('leaf').setDepth(4);
+  const windParts = scene.add.particles('leaf').setDepth(32);
   windEmitter = windParts.createEmitter({
     lifespan: 4000,
     // Increase particle output dramatically so the wind effect is visible
@@ -1288,6 +1288,8 @@ function toggleShop(scene) {
   const visible = !shopContainer.visible;
   shopOverlay.setVisible(visible);
   shopContainer.setVisible(visible);
+  if (dateBg) dateBg.setVisible(!visible);
+  if (dateText) dateText.setVisible(!visible);
   if (visible) {
     // Fade the game behind the shop so it appears paused and dimmed
     fadeScreenOverlay(scene, 0.5);
@@ -1472,6 +1474,8 @@ function toggleTravel(scene, resume = true, withFade = true) {
   const visible = !travelContainer.visible;
   travelOverlay.setVisible(visible);
   travelContainer.setVisible(visible);
+  if (dateBg) dateBg.setVisible(!visible);
+  if (dateText) dateText.setVisible(!visible);
   if (visible) {
     // Dim the background while the travel menu is open
     if (withFade) fadeScreenOverlay(scene, 0.5);
@@ -2693,7 +2697,7 @@ class TravelScene extends Phaser.Scene {
 
     // Storage upgrade image follows behind the executioner during travel
     const upgrade = this.add
-      .image(-250, 560, `storage${player.storageLevel}`)
+      .image(-250, 460, `storage${player.storageLevel}`)
       .setOrigin(0.5, 1);
 
     const duration = this.days * 700;
