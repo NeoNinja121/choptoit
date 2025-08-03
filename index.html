@@ -2689,16 +2689,17 @@ class TravelScene extends Phaser.Scene {
       }
     };
     setWeather(weather);
-    const exec = this.add.container(-100, 460);
+    const exec = this.add.container(-100, 460).setDepth(1);
     const body = this.add.image(0, 50, 'executionerBody').setOrigin(0.5, 1);
     const head = this.add.image(0, -30, 'executionerHead').setOrigin(0.5);
     exec.add([body, head]);
     this.add.existing(exec);
 
-    // Storage upgrade image follows behind the executioner during travel
+    // Storage upgrade image trails 70px lower behind the executioner
     const upgrade = this.add
-      .image(-250, 460, `storage${player.storageLevel}`)
-      .setOrigin(0.5, 1);
+      .image(-250, 530, `storage${player.storageLevel}`)
+      .setOrigin(0.5, 1)
+      .setDepth(0);
 
     const duration = this.days * 700;
     this.tweens.add({ targets: exec, x: 900, duration, ease: 'Linear' });
