@@ -43,7 +43,13 @@ const FEATURES = {
   weather: true,
 };
 
-let gold = 0;
+// Core player state: gold, storage level, and carrying capacity
+const player = {
+  gold: 0,
+  storageLevel: 1,
+  maxStorage: 10, // 10 items per level
+};
+
 let goldText;
 let fame = 0;
 let fameText;
@@ -101,6 +107,11 @@ let storageButton;
 let weaponsButton;
 let travelContainer;
 let travelOverlay;
+let storageOverlay;
+let storageContainer;
+let storageUpgradeBtn;
+let storageCostText;
+let storageImage;
 let travelRegion = null;
 // The dimming overlay previously used during menu transitions caused a
 // distracting flash when switching cities. To remove it while keeping the
@@ -526,6 +537,12 @@ function preload() {
   this.load.image('signTravel', 'sign_travel.png');
   this.load.image('signStorage', 'sign_storage.png');
   this.load.image('signWeapons', 'sign_weapons.png');
+  // Storage upgrade assets
+  this.load.image('backgroundStorage', 'background_storage.png');
+  this.load.image('storageUpgradeBtn', 'upgrade_button.png');
+  for (let i = 1; i <= 16; i++) {
+    this.load.image(`storage${i}`, `storage_${i}.png`);
+  }
   this.load.image('background', 'background.png');
   this.load.image('prisonerHead1', 'prisonerhead.png');
   this.load.image('prisonerBody1', 'prisonerbody.png');
@@ -628,7 +645,7 @@ function create() {
   rightEscort.setVisible(false);
 
   // Gold text
-  goldText = scene.add.text(16, 16, 'Gold: 0', { font: '20px monospace', fill: '#ffff88' });
+  goldText = scene.add.text(16, 16, `Gold: ${player.gold}`, { font: '20px monospace', fill: '#ffff88' });
   fameText = scene.add.text(16, 40, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' });
   missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
   killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
@@ -965,7 +982,8 @@ function create() {
   storageButton = scene.add.image(0, 0, 'signStorage')
     .setOrigin(0, 0)
     .setDisplaySize(107, 71)
-    .setInteractive();
+    .setInteractive()
+    .on('pointerdown', () => { toggleStorage(scene); });
   weaponsButton = scene.add.image(120, 0, 'signWeapons')
     .setOrigin(0, 0)
     .setDisplaySize(107, 71)
@@ -987,6 +1005,27 @@ function create() {
     .setDisplaySize(107, 71)
     .setInteractive()
     .on('pointerdown', () => { toggleTravel(scene); });
+
+  // Storage upgrade container and overlay
+  storageOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
+    .setVisible(false)
+    .setDepth(30);
+  storageContainer = scene.add.container(0, 0).setVisible(false).setDepth(31);
+  const storageBg = scene.add.image(400, 300, 'backgroundStorage')
+    .setDisplaySize(800, 600);
+  storageImage = scene.add.image(400, 560, `storage${player.storageLevel}`)
+    .setOrigin(0.5, 1);
+  storageUpgradeBtn = scene.add.image(400, 170, 'storageUpgradeBtn')
+    .setDisplaySize(220, 150)
+    .setInteractive()
+    .on('pointerdown', () => { upgradeStorage(scene); });
+  storageCostText = scene.add.text(400, 60, '', { font: '24px monospace', fill: '#ffffff' })
+    .setOrigin(0.5);
+  const storageClose = scene.add.text(760, 20, '[X]', { font: '18px monospace', fill: '#ffffff' })
+    .setInteractive()
+    .on('pointerdown', () => { toggleStorage(scene); });
+  storageContainer.add([storageBg, storageImage, storageUpgradeBtn, storageCostText, storageClose]);
+  updateStorageUI();
 
   // Travel container and overlay
   travelOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
@@ -1126,7 +1165,9 @@ function create() {
     .setInteractive()
     .on('pointerdown', () => {
       const item = marketItems[tradeItemIndex];
-      const max = Math.floor(gold / item.currentBuy);
+      const goldMax = Math.floor(player.gold / item.currentBuy);
+      const space = player.maxStorage - getInventoryCount();
+      const max = Math.min(goldMax, space);
       if (max > 0) buyMarketItem(scene, tradeItemIndex, max);
       hideTradeMenu(scene);
     });
@@ -1270,9 +1311,9 @@ function toggleShop(scene) {
 function buyWeapon(scene, index) {
   const w = weapons[index];
   if (w.purchased) return;
-  if (gold >= w.cost) {
-    gold -= w.cost;
-    goldText.setText(`Gold: ${gold}`);
+  if (player.gold >= w.cost) {
+    player.gold -= w.cost;
+    goldText.setText(`Gold: ${player.gold}`);
     zoneMods.red += w.effects.red || 0;
     zoneMods.yellow += w.effects.yellow || 0;
     zoneMods.green += w.effects.green || 0;
@@ -1309,9 +1350,9 @@ function showShopTab(scene, tab) {
 function buyUpgrade(scene, index) {
   const u = gameUpgrades[index];
   if (u.purchased || fame < u.fameReq) return;
-  if (gold >= u.cost) {
-    gold -= u.cost;
-    goldText.setText(`Gold: ${gold}`);
+  if (player.gold >= u.cost) {
+    player.gold -= u.cost;
+    goldText.setText(`Gold: ${player.gold}`);
     fameMultiplier = u.mult;
     u.purchased = true;
     if (u.ui && u.ui.buy) {
@@ -1325,9 +1366,9 @@ function buyMarketItem(scene, index, qty = 1) {
   const item = marketItems[index];
   if (fame < item.fameReq) return;
   const cost = item.currentBuy * qty;
-  if (gold >= cost) {
-    gold -= cost;
-    goldText.setText(`Gold: ${gold}`);
+  if (player.gold >= cost && getInventoryCount() + qty <= player.maxStorage) {
+    player.gold -= cost;
+    goldText.setText(`Gold: ${player.gold}`);
     inventory[item.name] = (inventory[item.name] || 0) + qty;
     updateMarketUI();
   }
@@ -1338,8 +1379,8 @@ function sellMarketItem(scene, index, qty = 1) {
   const item = marketItems[index];
   if ((inventory[item.name] || 0) >= qty) {
     inventory[item.name] -= qty;
-    gold += item.currentSell * qty;
-    goldText.setText(`Gold: ${gold}`);
+    player.gold += item.currentSell * qty;
+    goldText.setText(`Gold: ${player.gold}`);
     updateMarketUI();
   }
 }
@@ -1355,7 +1396,7 @@ function updateMarketUI() {
     m.ui.buyPrice.setText(locked ? '-' : `${m.currentBuy}g`);
     m.ui.sellPrice.setText(locked ? '-' : `${m.currentSell}g`);
     m.ui.qtyText.setText(qty);
-    const canBuy = !locked && gold >= m.currentBuy;
+    const canBuy = !locked && player.gold >= m.currentBuy && getInventoryCount() < player.maxStorage;
     const canSell = qty >= 1;
     m.ui.buyBtn.setFill(canBuy ? '#00ff00' : '#777777');
     m.ui.sellBtn.setFill(canSell ? '#00ff00' : '#777777');
@@ -1450,6 +1491,70 @@ function toggleTravel(scene, resume = true, withFade = true) {
     // resume beyond physics and tweens.
     if (resume) startSwingMeter(scene);
   }
+}
+
+// Toggle the storage upgrade screen
+function toggleStorage(scene) {
+  const visible = !storageContainer.visible;
+  storageOverlay.setVisible(visible);
+  storageContainer.setVisible(visible);
+  if (visible) {
+    fadeScreenOverlay(scene, 0.5);
+    updateStorageUI();
+    if (hideMeterEvent) {
+      hideMeterEvent.remove(false);
+      hideMeterEvent = null;
+    }
+    swingActive = false;
+    inputEnabled = false;
+    cursor.setVisible(false);
+    scene.physics.world.pause();
+    scene.tweens.pauseAll();
+  } else {
+    fadeScreenOverlay(scene, 0);
+    scene.physics.world.resume();
+    scene.tweens.resumeAll();
+    startSwingMeter(scene);
+  }
+}
+
+// Cost to upgrade to the next storage level
+function getStorageUpgradeCost() {
+  return 10 * Math.pow(2, player.storageLevel - 1);
+}
+
+// Refresh storage image, upgrade cost text, and button state
+function updateStorageUI() {
+  if (!storageImage) return;
+  storageImage.setTexture(`storage${player.storageLevel}`);
+  if (player.storageLevel >= 16) {
+    storageCostText.setText('Max Level Reached');
+    storageUpgradeBtn.disableInteractive();
+    storageUpgradeBtn.setAlpha(0.5);
+  } else {
+    const cost = getStorageUpgradeCost();
+    storageCostText.setText(`Upgrade Cost: ${cost} gold`);
+    storageUpgradeBtn.setAlpha(1);
+    storageUpgradeBtn.setInteractive();
+  }
+}
+
+// Attempt to upgrade storage if the player can afford it
+function upgradeStorage(scene) {
+  if (player.storageLevel >= 16) return;
+  const cost = getStorageUpgradeCost();
+  if (player.gold >= cost) {
+    player.gold -= cost;
+    goldText.setText(`Gold: ${player.gold}`);
+    player.storageLevel++;
+    player.maxStorage = player.storageLevel * 10;
+    updateStorageUI();
+  }
+}
+
+// Total items currently stored in inventory
+function getInventoryCount() {
+  return Object.values(inventory).reduce((s, v) => s + v, 0);
 }
 
 // Fade completely to black, change cities, then reveal the new scene.
@@ -2034,8 +2139,8 @@ function endSwing(scene) {
   missText.setText(`Misses: ${missStreak}`);
 
   const goldGain = missed ? payout : payout * killStreak;
-  gold += goldGain;
-  goldText.setText(`Gold: ${gold}`);
+  player.gold += goldGain;
+  goldText.setText(`Gold: ${player.gold}`);
   if (!missed && goldGain > 0) {
     lastGoldGain = goldGain;
   }
@@ -2126,8 +2231,8 @@ function handleTargetHit(scene, target, head) {
       fameGain = 0;
     } else {
       gainFame(scene, target, 1);
-      gold += 1;
-      goldText.setText(`Gold: ${gold}`);
+      player.gold += 1;
+      goldText.setText(`Gold: ${player.gold}`);
       fameGain = 0;
     }
     gainFame(scene, target, fameGain);
