@@ -2695,9 +2695,9 @@ class TravelScene extends Phaser.Scene {
     exec.add([body, head]);
     this.add.existing(exec);
 
-    // Storage upgrade image trails 70px lower behind the executioner
+    // Storage upgrade image trails 50px lower behind the executioner
     const upgrade = this.add
-      .image(-250, 530, `storage${player.storageLevel}`)
+      .image(-250, 510, `storage${player.storageLevel}`)
       .setOrigin(0.5, 1)
       .setDepth(0);
 
