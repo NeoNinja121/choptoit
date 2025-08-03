@@ -97,6 +97,8 @@ let tradeMode = 'buy';
 let tradeBuyBtns = [];
 let tradeSellBtns = [];
 let travelButton;
+let storageButton;
+let weaponsButton;
 let travelContainer;
 let travelOverlay;
 let travelRegion = null;
@@ -522,6 +524,8 @@ function preload() {
   this.load.image('escortHead', 'escorthead.png');
   this.load.image('escortBody', 'escortbody.png');
   this.load.image('signTravel', 'sign_travel.png');
+  this.load.image('signStorage', 'sign_storage.png');
+  this.load.image('signWeapons', 'sign_weapons.png');
   this.load.image('background', 'background.png');
   this.load.image('prisonerHead1', 'prisonerhead.png');
   this.load.image('prisonerBody1', 'prisonerbody.png');
@@ -956,7 +960,16 @@ function create() {
     }
   });
 
-
+  
+  // Storage and weapons signs
+  storageButton = scene.add.image(0, 0, 'signStorage')
+    .setOrigin(0, 0)
+    .setDisplaySize(107, 71)
+    .setInteractive();
+  weaponsButton = scene.add.image(120, 0, 'signWeapons')
+    .setOrigin(0, 0)
+    .setDisplaySize(107, 71)
+    .setInteractive();
 
   // Shop button
   // Move the shop button slightly right to make room for the travel sign
