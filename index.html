@@ -109,7 +109,6 @@ let travelContainer;
 let travelOverlay;
 let storageOverlay;
 let storageContainer;
-let storageUpgradeBtn;
 let storageCostText;
 let storageImage;
 let travelRegion = null;
@@ -539,7 +538,6 @@ function preload() {
   this.load.image('signWeapons', 'sign_weapons.png');
   // Storage upgrade assets
   this.load.image('backgroundStorage', 'background_storage.png');
-  this.load.image('storageUpgradeBtn', 'upgrade_button.png');
   for (let i = 1; i <= 16; i++) {
     this.load.image(`storage${i}`, `storage_${i}.png`);
   }
@@ -1014,17 +1012,15 @@ function create() {
   const storageBg = scene.add.image(400, 300, 'backgroundStorage')
     .setDisplaySize(800, 600);
   storageImage = scene.add.image(400, 560, `storage${player.storageLevel}`)
-    .setOrigin(0.5, 1);
-  storageUpgradeBtn = scene.add.image(400, 170, 'storageUpgradeBtn')
-    .setDisplaySize(220, 150)
+    .setOrigin(0.5, 1)
     .setInteractive()
     .on('pointerdown', () => { upgradeStorage(scene); });
-  storageCostText = scene.add.text(400, 60, '', { font: '24px monospace', fill: '#ffffff' })
+  storageCostText = scene.add.text(400, 300, '', { font: '24px monospace', fill: '#ffffff' })
     .setOrigin(0.5);
   const storageClose = scene.add.text(760, 20, '[X]', { font: '18px monospace', fill: '#ffffff' })
     .setInteractive()
     .on('pointerdown', () => { toggleStorage(scene); });
-  storageContainer.add([storageBg, storageImage, storageUpgradeBtn, storageCostText, storageClose]);
+  storageContainer.add([storageBg, storageImage, storageCostText, storageClose]);
   updateStorageUI();
 
   // Travel container and overlay
@@ -1523,19 +1519,19 @@ function getStorageUpgradeCost() {
   return 10 * Math.pow(2, player.storageLevel - 1);
 }
 
-// Refresh storage image, upgrade cost text, and button state
+// Refresh storage image, upgrade cost text, and interactivity
 function updateStorageUI() {
   if (!storageImage) return;
   storageImage.setTexture(`storage${player.storageLevel}`);
   if (player.storageLevel >= 16) {
     storageCostText.setText('Max Level Reached');
-    storageUpgradeBtn.disableInteractive();
-    storageUpgradeBtn.setAlpha(0.5);
+    storageImage.disableInteractive();
+    storageImage.setAlpha(0.5);
   } else {
     const cost = getStorageUpgradeCost();
     storageCostText.setText(`Upgrade Cost: ${cost} gold`);
-    storageUpgradeBtn.setAlpha(1);
-    storageUpgradeBtn.setInteractive();
+    storageImage.setAlpha(1);
+    storageImage.setInteractive();
   }
 }
 
@@ -1546,9 +1542,18 @@ function upgradeStorage(scene) {
   if (player.gold >= cost) {
     player.gold -= cost;
     goldText.setText(`Gold: ${player.gold}`);
-    player.storageLevel++;
-    player.maxStorage = player.storageLevel * 10;
-    updateStorageUI();
+    storageImage.disableInteractive();
+    scene.tweens.add({
+      targets: storageImage,
+      scale: 1.2,
+      duration: 200,
+      yoyo: true,
+      onComplete: () => {
+        player.storageLevel++;
+        player.maxStorage = player.storageLevel * 10;
+        updateStorageUI();
+      },
+    });
   }
 }
 
