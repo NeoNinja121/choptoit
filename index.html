@@ -2691,8 +2691,14 @@ class TravelScene extends Phaser.Scene {
     exec.add([body, head]);
     this.add.existing(exec);
 
+    // Storage upgrade image follows behind the executioner during travel
+    const upgrade = this.add
+      .image(-250, 560, `storage${player.storageLevel}`)
+      .setOrigin(0.5, 1);
+
     const duration = this.days * 700;
     this.tweens.add({ targets: exec, x: 900, duration, ease: 'Linear' });
+    this.tweens.add({ targets: upgrade, x: 750, duration, ease: 'Linear' });
     this.time.addEvent({
       delay: duration / this.days,
       repeat: this.days - 1,
