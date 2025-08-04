@@ -71,8 +71,11 @@ let fireworkEmitter;
 let fireworkCloseEmitter;
 let bloodFireworkEmitter;
 let rainEmitter;
+let rainParts;
 let fogEmitter;
+let fogParts;
 let windEmitter;
+let windParts;
 let missText;
 let missStreak = 0;
 const VERSION = 'Pre Alpha —v2.93';
@@ -872,7 +875,7 @@ function create() {
   gWeather.fillRect(0, 0, 20, 8);
   gWeather.generateTexture('fog', 20, 8);
   gWeather.destroy();
-  const rainParts = scene.add.particles('raindrop').setDepth(32);
+  rainParts = scene.add.particles('raindrop').setDepth(32);
   rainEmitter = rainParts.createEmitter({
     x: { min: 0, max: 800 },
     y: 0,
@@ -882,7 +885,7 @@ function create() {
     frequency: 100,
     on: false
   });
-  const fogParts = scene.add.particles('fog').setDepth(32);
+  fogParts = scene.add.particles('fog').setDepth(32);
   fogEmitter = fogParts.createEmitter({
     x: { min: -50, max: 850 },
     y: { min: 300, max: 580 },
@@ -899,7 +902,7 @@ function create() {
   windG.fillCircle(2, 2, 2);
   windG.generateTexture('leaf', 4, 4);
   windG.destroy();
-  const windParts = scene.add.particles('leaf').setDepth(32);
+  windParts = scene.add.particles('leaf').setDepth(32);
   windEmitter = windParts.createEmitter({
     lifespan: 4000,
     // Increase particle output dramatically so the wind effect is visible
@@ -1613,6 +1616,19 @@ function showTradeMenu(scene, index, mode = 'buy') {
   tradeSellBtns.forEach(btn => btn.setVisible(!showBuy));
   tradeOverlay.setVisible(true);
   tradeContainer.setVisible(true);
+  if (currentWeather === 'rain' && rainEmitter && rainParts) {
+    rainEmitter.stop();
+    rainEmitter.killAll();
+    rainParts.setVisible(false);
+  } else if (currentWeather === 'fog' && fogEmitter && fogParts) {
+    fogEmitter.stop();
+    fogEmitter.killAll();
+    fogParts.setVisible(false);
+  } else if (currentWeather === 'wind' && windEmitter && windParts) {
+    windEmitter.stop();
+    windEmitter.killAll();
+    windParts.setVisible(false);
+  }
   if (hideMeterEvent) {
     hideMeterEvent.remove(false);
     hideMeterEvent = null;
@@ -1634,6 +1650,16 @@ function hideTradeMenu(scene) {
   scene.physics.world.resume();
   scene.tweens.resumeAll();
   scene.time.paused = false;
+  if (currentWeather === 'rain' && rainEmitter && rainParts) {
+    rainParts.setVisible(true);
+    rainEmitter.start();
+  } else if (currentWeather === 'fog' && fogEmitter && fogParts) {
+    fogParts.setVisible(true);
+    fogEmitter.start();
+  } else if (currentWeather === 'wind' && windEmitter && windParts) {
+    windParts.setVisible(true);
+    windEmitter.start();
+  }
   startSwingMeter(scene);
 }
 
