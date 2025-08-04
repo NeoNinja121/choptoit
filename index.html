@@ -78,7 +78,7 @@ let windEmitter;
 let windParts;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.93';
+const VERSION = 'Pre Alpha —v2.94';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -875,7 +875,8 @@ function create() {
   gWeather.fillRect(0, 0, 20, 8);
   gWeather.generateTexture('fog', 20, 8);
   gWeather.destroy();
-  rainParts = scene.add.particles('raindrop').setDepth(32);
+  // Place weather effects behind UI overlays so menus appear on top
+  rainParts = scene.add.particles('raindrop').setDepth(28);
   rainEmitter = rainParts.createEmitter({
     x: { min: 0, max: 800 },
     y: 0,
@@ -885,7 +886,7 @@ function create() {
     frequency: 100,
     on: false
   });
-  fogParts = scene.add.particles('fog').setDepth(32);
+  fogParts = scene.add.particles('fog').setDepth(28);
   fogEmitter = fogParts.createEmitter({
     x: { min: -50, max: 850 },
     y: { min: 300, max: 580 },
@@ -902,7 +903,7 @@ function create() {
   windG.fillCircle(2, 2, 2);
   windG.generateTexture('leaf', 4, 4);
   windG.destroy();
-  windParts = scene.add.particles('leaf').setDepth(32);
+  windParts = scene.add.particles('leaf').setDepth(28);
   windEmitter = windParts.createEmitter({
     lifespan: 4000,
     // Increase particle output dramatically so the wind effect is visible
