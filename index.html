@@ -78,7 +78,7 @@ let windEmitter;
 let windParts;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.94';
+const VERSION = 'Pre Alpha —v2.95';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -2043,9 +2043,13 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
   }
   prisonerBody.setTexture(prisonerBodyKey);
   prisonerHeadSprite.setTexture(prisonerHeadKey);
-  // Spawn a new target each time a prisoner appears if requested
+  // Spawn up to 3 targets (jesters, barrels, etc.) each time a prisoner appears
+  // The number of targets is chosen at random to keep gameplay varied
   if (withTarget) {
-    spawnTarget(scene);
+    const targetCount = Phaser.Math.Between(1, 3);
+    for (let i = 0; i < targetCount; i++) {
+      spawnTarget(scene);
+    }
   }
   prisonerBody.setTint(prisonerClass.color);
   baseSwingSpeed = prisonerClass.speed;
