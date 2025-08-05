@@ -42,7 +42,10 @@ const FEATURES = {
   movingTargets: true,
   specialTargets: true,
   weather: true,
+  clouds: true,
 };
+
+const CLOUD_AREA_HEIGHT = 200;
 
 // Core player state: gold, storage level, and carrying capacity
 const player = {
@@ -76,9 +79,11 @@ let fogEmitter;
 let fogParts;
 let windEmitter;
 let windParts;
+let cloudLayerFar;
+let cloudLayerNear;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.95';
+const VERSION = 'Pre Alpha —v2.96';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -586,6 +591,47 @@ function create() {
   backgroundRect.setDepth(-2);
   // Apply the initial background for the starting city
   updateBackground(scene);
+
+  // Parallax cloud layers
+  if (FEATURES.clouds) {
+    const gfx = scene.make.graphics({ x: 0, y: 0, add: false });
+    gfx.fillStyle(0xffffff, 0.8);
+    gfx.fillCircle(30, 30, 20);
+    gfx.fillCircle(50, 20, 25);
+    gfx.fillCircle(70, 30, 20);
+    gfx.generateTexture('cloud-small', 100, 60);
+    gfx.clear();
+    gfx.fillStyle(0xffffff, 0.8);
+    gfx.fillCircle(40, 30, 25);
+    gfx.fillCircle(70, 20, 35);
+    gfx.fillCircle(100, 30, 25);
+    gfx.generateTexture('cloud-big', 140, 60);
+    gfx.destroy();
+
+    cloudLayerFar = scene.add.group();
+    cloudLayerNear = scene.add.group();
+
+    for (let i = 0; i < 5; i++) {
+      const cloud = scene.add.image(
+        Phaser.Math.Between(0, config.width),
+        Phaser.Math.Between(20, CLOUD_AREA_HEIGHT),
+        'cloud-small'
+      );
+      cloud.setDepth(-1);
+      cloudLayerFar.add(cloud);
+    }
+
+    for (let i = 0; i < 3; i++) {
+      const cloud = scene.add.image(
+        Phaser.Math.Between(0, config.width),
+        Phaser.Math.Between(40, CLOUD_AREA_HEIGHT),
+        'cloud-big'
+      );
+      cloud.setDepth(-0.5);
+      cloudLayerNear.add(cloud);
+    }
+  }
+
   stage = scene.add.image(400, 520, 'platform').setDepth(0);
   stageBlood = scene.add.rectangle(400, 520, 1, 10, 0x770000)
     .setOrigin(0.5, 1)
@@ -2616,6 +2662,23 @@ function onLevelUp(scene) {
 }
 
 function update(time, delta) {
+
+  if (FEATURES.clouds && cloudLayerFar && cloudLayerNear) {
+    cloudLayerFar.getChildren().forEach(cloud => {
+      cloud.x -= 0.2;
+      if (cloud.x < -cloud.width / 2) {
+        cloud.x = config.width + cloud.width / 2;
+        cloud.y = Phaser.Math.Between(20, CLOUD_AREA_HEIGHT);
+      }
+    });
+    cloudLayerNear.getChildren().forEach(cloud => {
+      cloud.x -= 0.4;
+      if (cloud.x < -cloud.width / 2) {
+        cloud.x = config.width + cloud.width / 2;
+        cloud.y = Phaser.Math.Between(40, CLOUD_AREA_HEIGHT);
+      }
+    });
+  }
 
   // Move cursor
   if (swingActive) {
