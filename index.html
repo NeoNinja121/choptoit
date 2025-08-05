@@ -595,16 +595,26 @@ function create() {
   // Parallax cloud layers
   if (FEATURES.clouds) {
     const gfx = scene.make.graphics({ x: 0, y: 0, add: false });
-    gfx.fillStyle(0xffffff, 0.8);
+    // draw a more detailed small cloud with subtle shading
+    gfx.fillStyle(0xdddddd, 0.6);
+    gfx.fillEllipse(50, 45, 60, 20);
+    gfx.fillStyle(0xffffff, 0.9);
     gfx.fillCircle(30, 30, 20);
     gfx.fillCircle(50, 20, 25);
     gfx.fillCircle(70, 30, 20);
+    gfx.fillCircle(40, 40, 18);
+    gfx.fillCircle(60, 40, 18);
     gfx.generateTexture('cloud-small', 100, 60);
     gfx.clear();
-    gfx.fillStyle(0xffffff, 0.8);
+    // draw a more detailed large cloud
+    gfx.fillStyle(0xdddddd, 0.6);
+    gfx.fillEllipse(70, 45, 80, 25);
+    gfx.fillStyle(0xffffff, 0.9);
     gfx.fillCircle(40, 30, 25);
     gfx.fillCircle(70, 20, 35);
     gfx.fillCircle(100, 30, 25);
+    gfx.fillCircle(55, 45, 20);
+    gfx.fillCircle(85, 45, 20);
     gfx.generateTexture('cloud-big', 140, 60);
     gfx.destroy();
 
@@ -618,6 +628,8 @@ function create() {
         'cloud-small'
       );
       cloud.setDepth(-1);
+      cloud.setAlpha(Phaser.Math.FloatBetween(0.6, 0.9));
+      cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
       cloudLayerFar.add(cloud);
     }
 
@@ -628,6 +640,8 @@ function create() {
         'cloud-big'
       );
       cloud.setDepth(-0.5);
+      cloud.setAlpha(Phaser.Math.FloatBetween(0.6, 0.9));
+      cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
       cloudLayerNear.add(cloud);
     }
   }
@@ -2669,6 +2683,8 @@ function update(time, delta) {
       if (cloud.x < -cloud.width / 2) {
         cloud.x = config.width + cloud.width / 2;
         cloud.y = Phaser.Math.Between(20, CLOUD_AREA_HEIGHT);
+        cloud.setAlpha(Phaser.Math.FloatBetween(0.6, 0.9));
+        cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
       }
     });
     cloudLayerNear.getChildren().forEach(cloud => {
@@ -2676,6 +2692,8 @@ function update(time, delta) {
       if (cloud.x < -cloud.width / 2) {
         cloud.x = config.width + cloud.width / 2;
         cloud.y = Phaser.Math.Between(40, CLOUD_AREA_HEIGHT);
+        cloud.setAlpha(Phaser.Math.FloatBetween(0.6, 0.9));
+        cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
       }
     });
   }
