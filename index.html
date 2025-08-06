@@ -52,6 +52,7 @@ const player = {
   gold: 0,
   storageLevel: 1,
   maxStorage: 10, // 10 items per level
+  weaponLevel: 1,
 };
 
 let goldText;
@@ -121,6 +122,11 @@ let storageContainer;
 let storageCostText;
 let storageImage;
 let upgradeButton;
+let weaponsOverlay;
+let weaponsContainer;
+let weaponsCostText;
+let weaponsImage;
+let weaponUpgradeButton;
 let travelRegion = null;
 // The dimming overlay previously used during menu transitions caused a
 // distracting flash when switching cities. To remove it while keeping the
@@ -162,6 +168,7 @@ let prisonerClass;
 let swingSpeed = 5;
 let executioner;
 let executionerIntro = true;
+let executionerWeapon;
 
 // Medieval calendar variables
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -560,6 +567,11 @@ function preload() {
   for (let i = 1; i <= 16; i++) {
     this.load.image(`storage${i}`, `storage_${i}.png`);
   }
+  // Weapons upgrade assets
+  this.load.image('backgroundWeapons', 'background_weapons.png');
+  for (let i = 1; i <= 30; i++) {
+    this.load.image(`weapons${i}`, `weapons${i}.png`);
+  }
   this.load.image('background', 'background.png');
   this.load.image('prisonerHead1', 'prisonerhead.png');
   this.load.image('prisonerBody1', 'prisonerbody.png');
@@ -680,11 +692,14 @@ function create() {
   // Executioner, starts off-screen and walks in on first spawn
   // Place him behind the prisoner but in front of the background
   executioner = scene.add.container(400, 460).setDepth(0.5);
+  executionerWeapon = scene.add.image(0, -20, `weapons${player.weaponLevel}`)
+    .setOrigin(0.5)
+    .setAngle(135);
   const execBody = scene.add.image(0, 50, 'executionerBody')
     .setOrigin(0.5, 1);
   const execHead = scene.add.image(0, -30, 'executionerHead')
     .setOrigin(0.5, 0.5);
-  executioner.add([execBody, execHead]);
+  executioner.add([executionerWeapon, execBody, execHead]);
   executioner.setVisible(false);
 
   // Condemned figure with separate head and body
@@ -1073,7 +1088,8 @@ function create() {
   weaponsButton = scene.add.image(120, 0, 'signWeapons')
     .setOrigin(0, 0)
     .setDisplaySize(107, 71)
-    .setInteractive();
+    .setInteractive()
+    .on('pointerdown', () => { toggleWeapons(scene); });
 
   // Shop button
   // Move the shop button slightly right to make room for the travel sign
@@ -1113,6 +1129,28 @@ function create() {
     .on('pointerdown', () => { toggleStorage(scene); });
   storageContainer.add([storageBg, storageImage, upgradeButton, storageCostText, storageClose]);
   updateStorageUI();
+
+  // Weapons upgrade container and overlay
+  weaponsOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
+    .setVisible(false)
+    .setDepth(30);
+  weaponsContainer = scene.add.container(0, 0).setVisible(false).setDepth(31);
+  const weaponsBg = scene.add.image(400, 300, 'backgroundWeapons')
+    .setDisplaySize(800, 600);
+  weaponsImage = scene.add.image(400, 300, `weapons${player.weaponLevel}`)
+    .setOrigin(0.5);
+  weaponsCostText = scene.add.text(400, 460, '', { font: '24px monospace', fill: '#ffd700' })
+    .setOrigin(0.5);
+  weaponUpgradeButton = scene.add.image(400, 500, 'upgradeButton')
+    .setOrigin(0.5, 0)
+    .setScale(0.5)
+    .setInteractive()
+    .on('pointerdown', () => { upgradeWeapon(scene); });
+  const weaponsClose = scene.add.text(760, 20, '[X]', { font: '18px monospace', fill: '#ffd700' })
+    .setInteractive()
+    .on('pointerdown', () => { toggleWeapons(scene); });
+  weaponsContainer.add([weaponsBg, weaponsImage, weaponUpgradeButton, weaponsCostText, weaponsClose]);
+  updateWeaponsUI();
 
   // Travel container and overlay
   travelOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
@@ -1657,6 +1695,92 @@ function upgradeStorage(scene) {
         updateStorageUI();
       },
     });
+  }
+}
+
+// Toggle the weapons upgrade screen
+function toggleWeapons(scene) {
+  const visible = !weaponsContainer.visible;
+  weaponsOverlay.setVisible(visible);
+  weaponsContainer.setVisible(visible);
+  if (dateBg) dateBg.setVisible(!visible);
+  if (dateText) dateText.setVisible(!visible);
+  if (visible) {
+    fadeScreenOverlay(scene, 0.5);
+    updateWeaponsUI();
+    if (hideMeterEvent) {
+      hideMeterEvent.remove(false);
+      hideMeterEvent = null;
+    }
+    swingActive = false;
+    inputEnabled = false;
+    cursor.setVisible(false);
+    scene.physics.world.pause();
+    storageButton.disableInteractive();
+    shopButton.disableInteractive();
+    weaponsButton.disableInteractive();
+    travelButton.disableInteractive();
+  } else {
+    fadeScreenOverlay(scene, 0);
+    scene.physics.world.resume();
+    storageButton.setInteractive();
+    shopButton.setInteractive();
+    weaponsButton.setInteractive();
+    travelButton.setInteractive();
+    startSwingMeter(scene);
+  }
+}
+
+// Cost to upgrade to the next weapon level
+function getWeaponUpgradeCost() {
+  return 10 * Math.pow(2, player.weaponLevel - 1);
+}
+
+// Refresh weapon image, upgrade cost text, and interactivity
+function updateWeaponsUI() {
+  if (!weaponsImage) return;
+  weaponsImage.setTexture(`weapons${player.weaponLevel}`);
+  if (player.weaponLevel >= 30) {
+    weaponsCostText.setText('Max Level Reached');
+    weaponUpgradeButton.disableInteractive();
+    weaponUpgradeButton.setAlpha(0.5);
+  } else {
+    const cost = getWeaponUpgradeCost();
+    weaponsCostText.setText(`Upgrade Cost: ${cost} gold`);
+    weaponUpgradeButton.setAlpha(1);
+    weaponUpgradeButton.setInteractive();
+  }
+  updateExecutionerWeaponTexture();
+}
+
+// Attempt to upgrade weapon if the player can afford it
+function upgradeWeapon(scene) {
+  if (player.weaponLevel >= 30) return;
+  const cost = getWeaponUpgradeCost();
+  if (player.gold >= cost) {
+    player.gold -= cost;
+    goldText.setText(`Gold: ${player.gold}`);
+    weaponUpgradeButton.disableInteractive();
+    player.weaponLevel++;
+    weaponsImage.setTexture(`weapons${player.weaponLevel}`);
+    weaponsImage.setScale(4);
+    updateExecutionerWeaponTexture();
+    scene.tweens.add({
+      targets: weaponsImage,
+      scale: 1,
+      duration: 300,
+      ease: 'Cubic.easeOut',
+      onComplete: () => {
+        updateWeaponsUI();
+      }
+    });
+  }
+}
+
+// Update executioner's carried weapon to current level
+function updateExecutionerWeaponTexture() {
+  if (executionerWeapon) {
+    executionerWeapon.setTexture(`weapons${player.weaponLevel}`);
   }
 }
 
@@ -2910,9 +3034,12 @@ class TravelScene extends Phaser.Scene {
     };
     setWeather(weather);
     const exec = this.add.container(-100, 460).setDepth(1);
+    const weapon = this.add.image(0, -20, `weapons${player.weaponLevel}`)
+      .setOrigin(0.5)
+      .setAngle(135);
     const body = this.add.image(0, 50, 'executionerBody').setOrigin(0.5, 1);
     const head = this.add.image(0, -30, 'executionerHead').setOrigin(0.5);
-    exec.add([body, head]);
+    exec.add([weapon, body, head]);
     this.add.existing(exec);
 
     // Storage upgrade image trails 50px lower behind the executioner
