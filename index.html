@@ -437,8 +437,12 @@ function createTargetAppearance(scene, target, type) {
 
 
 function applyRandomWeather(scene) {
-  const choices = ['clear', 'rain', 'wind', 'fog'];
-  currentWeather = FEATURES.weather ? Phaser.Utils.Array.GetRandom(choices) : 'clear';
+  const clearChance = 0.5;
+  if (!FEATURES.weather || Math.random() < clearChance) {
+    currentWeather = 'clear';
+  } else {
+    currentWeather = Phaser.Utils.Array.GetRandom(['rain', 'wind', 'fog']);
+  }
   windForce = { x: 0, y: 0 };
   weatherText.setText(currentWeather.toUpperCase());
   if (rainEmitter) rainEmitter.stop();
@@ -2078,7 +2082,7 @@ function resetHead(scene) {
 function spawnPrisoner(scene, fromRight, withTarget = true) {
   const city = cities.find(c => c.name === currentCity);
   roundCount++;
-  if (FEATURES.weather && (roundCount === 1 || roundCount % 3 === 1)) {
+  if (FEATURES.weather && (roundCount === 1 || roundCount % 5 === 1)) {
     applyRandomWeather(scene);
   }
   // Temporarily disable background tinting when prisoners spawn
@@ -2762,8 +2766,10 @@ class TravelScene extends Phaser.Scene {
     let d = currentDay;
     let m = currentMonth;
     const date = this.add.text(400, 80, `${d} ${months[m]}`, { font: '28px monospace', fill: '#ffffff' }).setOrigin(0.5);
-    const weatherChoices = ['Clear', 'Rain', 'Wind', 'Fog'];
-    const pickWeather = () => Phaser.Utils.Array.GetRandom(weatherChoices);
+    const pickWeather = () =>
+      Math.random() < 0.5
+        ? 'Clear'
+        : Phaser.Utils.Array.GetRandom(['Rain', 'Wind', 'Fog']);
     let weather = pickWeather();
 
     // Simple particle emitters to visualize travel weather
@@ -2795,6 +2801,57 @@ class TravelScene extends Phaser.Scene {
       on: false
     });
 
+    // Parallax clouds that drift during travel
+    if (FEATURES.clouds) {
+      if (!this.textures.exists('cloud-small')) {
+        const gfx = this.make.graphics({ x: 0, y: 0, add: false });
+        gfx.fillStyle(0xdddddd, 0.6);
+        gfx.fillEllipse(50, 45, 60, 20);
+        gfx.fillStyle(0xffffff, 0.9);
+        gfx.fillCircle(30, 30, 20);
+        gfx.fillCircle(50, 20, 25);
+        gfx.fillCircle(70, 30, 20);
+        gfx.fillCircle(40, 40, 18);
+        gfx.fillCircle(60, 40, 18);
+        gfx.generateTexture('cloud-small', 100, 60);
+        gfx.clear();
+        gfx.fillStyle(0xdddddd, 0.6);
+        gfx.fillEllipse(70, 45, 80, 25);
+        gfx.fillStyle(0xffffff, 0.9);
+        gfx.fillCircle(40, 30, 25);
+        gfx.fillCircle(70, 20, 35);
+        gfx.fillCircle(100, 30, 25);
+        gfx.fillCircle(55, 45, 20);
+        gfx.fillCircle(85, 45, 20);
+        gfx.generateTexture('cloud-big', 140, 60);
+        gfx.destroy();
+      }
+      this.travelCloudLayerFar = this.add.group();
+      this.travelCloudLayerNear = this.add.group();
+      for (let i = 0; i < 5; i++) {
+        const cloud = this.add.image(
+          Phaser.Math.Between(0, config.width),
+          Phaser.Math.Between(20, CLOUD_AREA_HEIGHT),
+          'cloud-small'
+        );
+        cloud.setDepth(-1);
+        cloud.setAlpha(Phaser.Math.FloatBetween(0.6, 0.9));
+        cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
+        this.travelCloudLayerFar.add(cloud);
+      }
+      for (let i = 0; i < 3; i++) {
+        const cloud = this.add.image(
+          Phaser.Math.Between(0, config.width),
+          Phaser.Math.Between(40, CLOUD_AREA_HEIGHT),
+          'cloud-big'
+        );
+        cloud.setDepth(-0.5);
+        cloud.setAlpha(Phaser.Math.FloatBetween(0.6, 0.9));
+        cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
+        this.travelCloudLayerNear.add(cloud);
+      }
+    }
+
     // Parallax grass tufts that blow past during travel
     const grassG = this.add.graphics();
     grassG.fillStyle(0x2e8b57, 1);
@@ -2816,24 +2873,26 @@ class TravelScene extends Phaser.Scene {
     const grassFarParts = this.add.particles('grassTuft').setDepth(0);
     grassFarParts.createEmitter({
       x: { min: 0, max: 800 },
-      y: { min: 540, max: 580 },
+      y: { min: 520, max: 560 },
       lifespan: 5000,
       speedX: { min: -80, max: -40 },
       speedY: { min: -20, max: 20 },
       quantity: 1,
       frequency: 300,
-      alpha: { start: 1, end: 0 }
+      alpha: { start: 1, end: 0 },
+      scale: { start: 0.6, end: 0.2 }
     });
     const grassNearParts = this.add.particles('grassTuft').setDepth(2);
     grassNearParts.createEmitter({
       x: { min: 0, max: 800 },
-      y: { min: 560, max: 600 },
+      y: { min: 570, max: 600 },
       lifespan: 3000,
       speedX: { min: -200, max: -120 },
       speedY: { min: -30, max: 30 },
       quantity: 1,
       frequency: 150,
-      alpha: { start: 1, end: 0 }
+      alpha: { start: 1, end: 0 },
+      scale: { start: 1.5, end: 0.7 }
     });
     const setWeather = (w) => {
       rainEmitter.stop();
@@ -2872,12 +2931,36 @@ class TravelScene extends Phaser.Scene {
         d++;
         if (d > 30) { d = 1; m = (m + 1) % months.length; }
         date.setText(`${d} ${months[m]}`);
-        weather = pickWeather();
-        setWeather(weather);
+        if (Math.random() < 0.5) {
+          weather = pickWeather();
+          setWeather(weather);
+        }
       }
     });
 
     this.time.delayedCall(duration, () => this.finish());
+  }
+  update() {
+    if (FEATURES.clouds && this.travelCloudLayerFar && this.travelCloudLayerNear) {
+      this.travelCloudLayerFar.getChildren().forEach(cloud => {
+        cloud.x -= 0.2;
+        if (cloud.x < -cloud.width / 2) {
+          cloud.x = config.width + cloud.width / 2;
+          cloud.y = Phaser.Math.Between(20, CLOUD_AREA_HEIGHT);
+          cloud.setAlpha(Phaser.Math.FloatBetween(0.6, 0.9));
+          cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
+        }
+      });
+      this.travelCloudLayerNear.getChildren().forEach(cloud => {
+        cloud.x -= 0.4;
+        if (cloud.x < -cloud.width / 2) {
+          cloud.x = config.width + cloud.width / 2;
+          cloud.y = Phaser.Math.Between(40, CLOUD_AREA_HEIGHT);
+          cloud.setAlpha(Phaser.Math.FloatBetween(0.6, 0.9));
+          cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
+        }
+      });
+    }
   }
   finish() {
     advanceDays(this.days);
