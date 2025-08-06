@@ -314,6 +314,9 @@ const cityBackgrounds = {
   Gloucester: 'background-gloucester.png',
 };
 
+// List of travel background images used during travel scenes.
+const travelBackgrounds = Array.from({ length: 14 }, (_, i) => `background_travel${i + 1}.png`);
+
 // Rough geographic coordinates for each city used to estimate travel time
 const cityCoords = {
   Winchester: [51.06, -1.31],
@@ -578,6 +581,11 @@ function preload() {
   // naming.
   Object.entries(cityBackgrounds).forEach(([name, file]) => {
     const key = `background-${name.toLowerCase()}`;
+    this.load.image(key, file);
+  });
+  // Load dedicated travel backgrounds.
+  travelBackgrounds.forEach((file, i) => {
+    const key = `background-travel${i + 1}`;
     this.load.image(key, file);
   });
 }
@@ -2746,7 +2754,7 @@ class TravelScene extends Phaser.Scene {
     this.mainScene = data.mainScene;
   }
   create() {
-    const keys = Object.keys(cityBackgrounds).map(n => `background-${n.toLowerCase()}`);
+    const keys = travelBackgrounds.map((_, i) => `background-travel${i + 1}`);
     let bgKey = Phaser.Utils.Array.GetRandom(keys);
     if (!this.textures.exists(bgKey)) bgKey = 'background';
     this.add.image(400, 300, bgKey).setDisplaySize(800, 600);
