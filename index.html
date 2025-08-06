@@ -2794,6 +2794,47 @@ class TravelScene extends Phaser.Scene {
       rotate: { min: -180, max: 180 },
       on: false
     });
+
+    // Parallax grass tufts that blow past during travel
+    const grassG = this.add.graphics();
+    grassG.fillStyle(0x2e8b57, 1);
+    grassG.beginPath();
+    grassG.moveTo(2, 8);
+    grassG.lineTo(4, 0);
+    grassG.lineTo(6, 8);
+    grassG.lineTo(2, 8);
+    grassG.moveTo(0, 8);
+    grassG.lineTo(1, 3);
+    grassG.lineTo(2, 8);
+    grassG.moveTo(6, 8);
+    grassG.lineTo(7, 3);
+    grassG.lineTo(8, 8);
+    grassG.fillPath();
+    grassG.generateTexture('grassTuft', 8, 8);
+    grassG.destroy();
+
+    const grassFarParts = this.add.particles('grassTuft').setDepth(0);
+    grassFarParts.createEmitter({
+      x: { min: 0, max: 800 },
+      y: { min: 540, max: 580 },
+      lifespan: 5000,
+      speedX: { min: -80, max: -40 },
+      speedY: { min: -20, max: 20 },
+      quantity: 1,
+      frequency: 300,
+      alpha: { start: 1, end: 0 }
+    });
+    const grassNearParts = this.add.particles('grassTuft').setDepth(2);
+    grassNearParts.createEmitter({
+      x: { min: 0, max: 800 },
+      y: { min: 560, max: 600 },
+      lifespan: 3000,
+      speedX: { min: -200, max: -120 },
+      speedY: { min: -30, max: 30 },
+      quantity: 1,
+      frequency: 150,
+      alpha: { start: 1, end: 0 }
+    });
     const setWeather = (w) => {
       rainEmitter.stop();
       fogEmitter.stop();
