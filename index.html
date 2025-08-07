@@ -769,6 +769,30 @@ function create() {
     .setOrigin(0.5)
     .setDepth(50)
     .setVisible(false);
+
+  // Debug cheat: hold the weather icon for 10 seconds to gain resources
+  let weatherHoldEvent = null;
+  function cancelWeatherHold() {
+    if (weatherHoldEvent) {
+      weatherHoldEvent.remove(false);
+      weatherHoldEvent = null;
+    }
+  }
+  [weatherIndicatorBg, weatherIndicator].forEach(icon => {
+    icon.setInteractive();
+    icon.on('pointerdown', () => {
+      cancelWeatherHold();
+      weatherHoldEvent = scene.time.delayedCall(10000, () => {
+        player.gold += 1000000;
+        goldText.setText(`Gold: ${player.gold}`);
+        fame += 500;
+        fameText.setText(`Fame: ${Math.floor(fame)}`);
+        weatherHoldEvent = null;
+      });
+    });
+    icon.on('pointerup', cancelWeatherHold);
+    icon.on('pointerout', cancelWeatherHold);
+  });
   locationText = scene.add.text(400, 16, currentCity, { font: '20px monospace', fill: '#ffffff' })
     .setOrigin(0.5, 0);
   locationText.setY(locationText.y + 50);
