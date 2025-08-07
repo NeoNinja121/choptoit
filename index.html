@@ -139,6 +139,7 @@ let travelRegion = null;
 // let backOverlayWasVisible = false;
 let locationText;
 let currentCity = 'Durham';
+let skyRect;
 let backgroundRect;
 let stage;
 let travelList;
@@ -576,6 +577,7 @@ function preload() {
     this.load.image(`weapons${i}`, `weapons${i}.png`);
   }
   this.load.image('background', 'background.png');
+  this.load.image('backgroundSky', 'background_bluesky.png');
   this.load.image('prisonerHead1', 'prisonerhead.png');
   this.load.image('prisonerBody1', 'prisonerbody.png');
   this.load.image('prisonerHead2', 'prisonerhead2.png');
@@ -613,6 +615,10 @@ function create() {
   const scene = this;
 
   // Background and stage art
+  skyRect = scene.add.image(400, 300, 'backgroundSky');
+  skyRect.setDisplaySize(800, 600);
+  skyRect.setDepth(-4);
+
   backgroundRect = scene.add.image(400, 300, 'background');
   backgroundRect.setDisplaySize(800, 600);
   backgroundRect.setDepth(-2);
@@ -654,8 +660,9 @@ function create() {
         Phaser.Math.Between(20, CLOUD_AREA_HEIGHT),
         'cloud-small'
       );
-      cloud.setDepth(-1);
-      cloud.setAlpha(Phaser.Math.FloatBetween(0.6, 0.9));
+      cloud.setDepth(-3);
+      cloud.setTint(0x888888);
+      cloud.setAlpha(Phaser.Math.FloatBetween(0.3, 0.5));
       cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
       cloudLayerFar.add(cloud);
     }
@@ -666,7 +673,7 @@ function create() {
         Phaser.Math.Between(40, CLOUD_AREA_HEIGHT),
         'cloud-big'
       );
-      cloud.setDepth(-0.5);
+      cloud.setDepth(-1);
       cloud.setAlpha(Phaser.Math.FloatBetween(0.6, 0.9));
       cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
       cloudLayerNear.add(cloud);
@@ -2901,7 +2908,8 @@ class TravelScene extends Phaser.Scene {
     const keys = travelBackgrounds.map((_, i) => `background-travel${i + 1}`);
     let bgKey = Phaser.Utils.Array.GetRandom(keys);
     if (!this.textures.exists(bgKey)) bgKey = 'background';
-    this.add.image(400, 300, bgKey).setDisplaySize(800, 600);
+    this.add.image(400, 300, 'backgroundSky').setDisplaySize(800, 600).setDepth(-4);
+    this.add.image(400, 300, bgKey).setDisplaySize(800, 600).setDepth(-2);
     this.add.text(400, 40, `Travelling to ${this.city.name}`, { font: '32px serif', fill: '#ffff00' }).setOrigin(0.5);
     let d = currentDay;
     let m = currentMonth;
@@ -2974,8 +2982,9 @@ class TravelScene extends Phaser.Scene {
           Phaser.Math.Between(20, CLOUD_AREA_HEIGHT),
           'cloud-small'
         );
-        cloud.setDepth(-1);
-        cloud.setAlpha(Phaser.Math.FloatBetween(0.6, 0.9));
+        cloud.setDepth(-3);
+        cloud.setTint(0x888888);
+        cloud.setAlpha(Phaser.Math.FloatBetween(0.3, 0.5));
         cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
         this.travelCloudLayerFar.add(cloud);
       }
@@ -2985,7 +2994,7 @@ class TravelScene extends Phaser.Scene {
           Phaser.Math.Between(40, CLOUD_AREA_HEIGHT),
           'cloud-big'
         );
-        cloud.setDepth(-0.5);
+        cloud.setDepth(-1);
         cloud.setAlpha(Phaser.Math.FloatBetween(0.6, 0.9));
         cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
         this.travelCloudLayerNear.add(cloud);
