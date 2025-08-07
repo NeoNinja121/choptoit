@@ -561,6 +561,9 @@ function preload() {
   this.load.image('signTravel', 'sign_travel.png');
   this.load.image('signStorage', 'sign_storage.png');
   this.load.image('signWeapons', 'sign_weapons.png');
+  this.load.image('signClose', 'sign_close.png');
+  this.load.image('mapNorth', 'map_north.png');
+  this.load.image('mapSouth', 'map_south.png');
   // Storage upgrade assets
   this.load.image('backgroundStorage', 'background_storage.png');
   this.load.image('upgradeButton', 'upgrade_button.png');
@@ -1126,7 +1129,9 @@ function create() {
     .setScale(0.5)
     .setInteractive()
     .on('pointerdown', () => { upgradeStorage(scene); });
-  const storageClose = scene.add.text(760, 20, '[X]', { font: '18px monospace', fill: '#ffd700' })
+  const storageClose = scene.add.image(700, 0, 'signClose')
+    .setOrigin(0, 0)
+    .setDisplaySize(100, 100)
     .setInteractive()
     .on('pointerdown', () => { toggleStorage(scene); });
   storageContainer.add([storageBg, storageImage, upgradeButton, storageCostText, storageClose]);
@@ -1149,7 +1154,9 @@ function create() {
     .setScale(0.5)
     .setInteractive()
     .on('pointerdown', () => { upgradeWeapon(scene); });
-  const weaponsClose = scene.add.text(760, 20, '[X]', { font: '18px monospace', fill: '#ffd700' })
+  const weaponsClose = scene.add.image(700, 0, 'signClose')
+    .setOrigin(0, 0)
+    .setDisplaySize(100, 100)
     .setInteractive()
     .on('pointerdown', () => { toggleWeapons(scene); });
   weaponsContainer.add([weaponsBg, weaponsImage, weaponUpgradeButton, weaponsCostText, weaponsClose]);
@@ -1167,7 +1174,9 @@ function create() {
   travelContainer.add(travelList);
   travelRegion = null;
   showTravelMenu(scene);
-  const travelClose = scene.add.text(660, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
+  const travelClose = scene.add.image(600, 0, 'signClose')
+    .setOrigin(0, 0)
+    .setDisplaySize(100, 100)
     .setInteractive()
     .on('pointerdown', () => { toggleTravel(scene); });
   travelContainer.add(travelClose);
@@ -1269,7 +1278,9 @@ function create() {
   marketPrisoner = scene.add.container(0, 0, [body, head]);
   marketList.add([marketChatterText, marketPrisoner]);
 
-  const closeBtn = scene.add.text(680, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
+  const closeBtn = scene.add.image(600, 0, 'signClose')
+    .setOrigin(0, 0)
+    .setDisplaySize(100, 100)
     .setInteractive()
     .on('pointerdown', () => { toggleShop(scene); });
   shopContainer.add(closeBtn);
@@ -1313,7 +1324,9 @@ function create() {
       if (max > 0) sellMarketItem(scene, tradeItemIndex, max);
       hideTradeMenu(scene);
     });
-  const tradeClose = scene.add.text(350, 10, '[X]', { font: '18px monospace', fill: '#ffffff' })
+  const tradeClose = scene.add.image(280, 0, 'signClose')
+    .setOrigin(0, 0)
+    .setDisplaySize(100, 100)
     .setInteractive()
     .on('pointerdown', () => { hideTradeMenu(scene); });
   tradeContainer.add([tradeBg, tradeTitle, b1, b10, bMax, s1, s10, sMax, tradeClose]);
@@ -1560,8 +1573,8 @@ function showTravelMenu(scene, region = travelRegion) {
     const southBtn = scene.add.text(360, 0, 'The South', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => showTravelMenu(scene, 'south'));
-    const northPlaceholder = scene.add.rectangle(10, 30, 250, 400, 0x444444).setOrigin(0, 0);
-    const southPlaceholder = scene.add.rectangle(360, 30, 250, 400, 0x444444).setOrigin(0, 0);
+    const northPlaceholder = scene.add.image(10, 30, 'mapNorth').setOrigin(0, 0).setDisplaySize(250, 400);
+    const southPlaceholder = scene.add.image(360, 30, 'mapSouth').setOrigin(0, 0).setDisplaySize(250, 400);
     travelList.add([northBtn, southBtn, northPlaceholder, southPlaceholder]);
     return;
   }
