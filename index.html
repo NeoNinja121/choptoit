@@ -1584,8 +1584,18 @@ function showTravelMenu(scene, region = travelRegion) {
     const southBtn = scene.add.text(360, 0, 'The South', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => showTravelMenu(scene, 'south'));
-    const northPlaceholder = scene.add.image(10, 30, 'mapNorth').setOrigin(0, 0).setDisplaySize(250, 400);
-    const southPlaceholder = scene.add.image(360, 30, 'mapSouth').setOrigin(0, 0).setDisplaySize(250, 400);
+    const northPlaceholder = scene.add
+      .image(10, 30, 'mapNorth')
+      .setOrigin(0, 0)
+      .setDisplaySize(250, 400)
+      .setInteractive()
+      .on('pointerdown', () => showTravelMenu(scene, 'north'));
+    const southPlaceholder = scene.add
+      .image(360, 30, 'mapSouth')
+      .setOrigin(0, 0)
+      .setDisplaySize(250, 400)
+      .setInteractive()
+      .on('pointerdown', () => showTravelMenu(scene, 'south'));
     travelList.add([northBtn, southBtn, northPlaceholder, southPlaceholder]);
     return;
   }
