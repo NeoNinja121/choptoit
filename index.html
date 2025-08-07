@@ -1124,6 +1124,8 @@ function create() {
     .setVisible(false)
     .setDepth(30);
   storageContainer = scene.add.container(0, 0).setVisible(false).setDepth(31);
+  const storageSky = scene.add.image(400, 300, 'backgroundSky')
+    .setDisplaySize(800, 600);
   const storageBg = scene.add.image(400, 300, 'backgroundStorage')
     .setDisplaySize(800, 600);
   storageImage = scene.add.image(400, 560, `storage${player.storageLevel}`)
@@ -1141,7 +1143,7 @@ function create() {
     .setDisplaySize(100, 100)
     .setInteractive()
     .on('pointerdown', () => { toggleStorage(scene); });
-  storageContainer.add([storageBg, storageImage, upgradeButton, storageCostText, storageClose]);
+  storageContainer.add([storageSky, storageBg, storageImage, upgradeButton, storageCostText, storageClose]);
   updateStorageUI();
 
   // Weapons upgrade container and overlay
@@ -1149,6 +1151,8 @@ function create() {
     .setVisible(false)
     .setDepth(30);
   weaponsContainer = scene.add.container(0, 0).setVisible(false).setDepth(31);
+  const weaponsSky = scene.add.image(400, 300, 'backgroundSky')
+    .setDisplaySize(800, 600);
   const weaponsBg = scene.add.image(400, 300, 'backgroundWeapons')
     .setDisplaySize(800, 600);
   weaponsImage = scene.add.image(400, 300, `weapons${player.weaponLevel}`)
@@ -1166,7 +1170,7 @@ function create() {
     .setDisplaySize(100, 100)
     .setInteractive()
     .on('pointerdown', () => { toggleWeapons(scene); });
-  weaponsContainer.add([weaponsBg, weaponsImage, weaponUpgradeButton, weaponsCostText, weaponsClose]);
+  weaponsContainer.add([weaponsSky, weaponsBg, weaponsImage, weaponUpgradeButton, weaponsCostText, weaponsClose]);
   updateWeaponsUI();
 
   // Travel container and overlay
