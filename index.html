@@ -1480,9 +1480,14 @@ function buyWeapon(scene, index) {
 }
 
 function updateZones() {
-  redZone.displayWidth = baseSizes.red + zoneMods.red;
-  yellowZone.displayWidth = baseSizes.yellow + zoneMods.yellow;
-  greenZone.displayWidth = baseSizes.green + zoneMods.green;
+  const baseYellow = baseSizes.yellow + (player.weaponLevel - 1) * 10;
+  const scale = baseYellow / baseSizes.yellow;
+  const baseRed = baseSizes.red * scale;
+  const baseGreen = baseSizes.green * scale;
+
+  redZone.displayWidth = baseRed + zoneMods.red;
+  yellowZone.displayWidth = baseYellow + zoneMods.yellow;
+  greenZone.displayWidth = baseGreen + zoneMods.green;
 }
 
 // Switch between shop tabs and update highlights
@@ -1802,6 +1807,7 @@ function upgradeWeapon(scene) {
     weaponsImage.setTexture(`weapons${player.weaponLevel}`);
     weaponsImage.setScale(4);
     updateExecutionerWeaponTexture();
+    updateZones();
     scene.tweens.add({
       targets: weaponsImage,
       scale: 1,
