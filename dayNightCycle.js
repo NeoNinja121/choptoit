@@ -8,7 +8,9 @@ class DayNightCycle {
       sunriseEnd: 0.30,
       sunsetStart: 0.70,
       sunsetEnd: 0.80,
-      minDarkAlpha: 0.55,
+      // At midnight the background should be 80% dark,
+      // fading to fully transparent at midday.
+      minDarkAlpha: 0.8,
       maxLightAlpha: 0.0,
     };
     this.config = { ...defaults, ...config };
