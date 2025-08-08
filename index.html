@@ -221,6 +221,7 @@ let chest;
 function setGoldChestVisible(visible) {
   if (chest) chest.setVisible(visible);
   if (goldText) goldText.setVisible(visible);
+  if (fameText) fameText.setVisible(visible);
 }
 
 let currentWeather = 'clear';
@@ -629,6 +630,20 @@ function spawnCoin(scene) {
   });
 }
 
+function spawnFameCoin(scene) {
+  const coin = scene.add.circle(chest.x, -20, 8, 0x88ffff).setDepth(101);
+  scene.tweens.add({
+    targets: coin,
+    y: chest.y - chest.height / 2,
+    duration: 800,
+    ease: 'Cubic.easeIn',
+    onComplete: () => {
+      coin.destroy();
+      openChest(scene);
+    },
+  });
+}
+
 function openChest(scene) {
   chest.setFillStyle(0xdaa520);
   scene.time.delayedCall(300, () => chest.setFillStyle(0x8b4513));
@@ -856,21 +871,23 @@ function create() {
   leftEscort.setVisible(false);
   rightEscort.setVisible(false);
 
-  // Gold chest and counter
+  // Gold chest and counters
   chest = scene.add.rectangle(config.width - 60, config.height - 40, 80, 50, 0x8b4513)
     .setOrigin(0.5, 1)
     .setDepth(100)
     .setVisible(false);
-  goldText = scene.add.text(chest.x, chest.y - chest.height - 10, formatGold(player.gold), { font: '20px monospace', fill: '#ffff88' })
+  goldText = scene.add.text(chest.x, chest.y - 10, formatGold(player.gold), { font: '20px monospace', fill: '#ffff88' })
     .setOrigin(0.5, 1)
     .setDepth(101)
     .setScrollFactor(0)
     .setVisible(false);
-  fameText = scene.add.text(16, 40, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' })
-    .setDepth(100)
+  goldText.setStroke('#000000', 4);
+  fameText = scene.add.text(chest.x, goldText.y - 24, '0', { font: '20px monospace', fill: '#88ffff' })
+    .setOrigin(0.5, 1)
+    .setDepth(101)
     .setScrollFactor(0)
     .setVisible(false);
-  fameText.setY(fameText.y + 50);
+  fameText.setStroke('#000000', 4);
   missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' })
     .setDepth(100)
     .setScrollFactor(0)
@@ -911,7 +928,7 @@ function create() {
       weatherHoldEvent = scene.time.delayedCall(10000, () => {
         addGold(scene, 1000000);
         fame += 500;
-        fameText.setText(`Fame: ${Math.floor(fame)}`);
+        fameText.setText(formatGold(Math.floor(fame)));
         weatherHoldEvent = null;
       });
     });
@@ -2649,9 +2666,14 @@ function endSwing(scene) {
 }
 
 function gainFame(scene, npc, amount = 1) {
-  fame += amount * fameMultiplier;
-  fameText.setText(`Fame: ${Math.floor(fame)}`);
+  const fameGain = amount * fameMultiplier;
+  fame += fameGain;
+  fameText.setText(formatGold(Math.floor(fame)));
   addXP(scene, 5 * amount);
+  const coinsToSpawn = Math.max(0, Math.floor(fameGain));
+  for (let i = 0; i < coinsToSpawn; i++) {
+    scene.time.delayedCall(i * 100, () => spawnFameCoin(scene));
+  }
   const popup = scene.add.text(npc.x, npc.y - 40, `+${amount} Fame`, {
     font: '20px monospace',
     fill: '#ffff00'
@@ -2697,7 +2719,7 @@ function handleTargetHit(scene, target, head) {
     bloodFireworkEmitter.explode(25, target.x, target.y);
     if (target.birdKind === 'dove') {
       fame = Math.max(0, fame - 1);
-      fameText.setText(`Fame: ${Math.floor(fame)}`);
+      fameText.setText(formatGold(Math.floor(fame)));
       fameGain = 0;
     } else {
       gainFame(scene, target, 1);
