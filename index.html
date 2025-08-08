@@ -2484,9 +2484,6 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
     duration: 1500,
     ease: 'Linear',
     onComplete: () => {
-      // Ensure prisoner is exactly centered before starting the meter
-      scene.tweens.killTweensOf(prisoner);
-      prisoner.setPosition(400, 460);
       // Once the prisoner reaches the center, have the escorts walk off
       // screen to the left instead of simply disappearing.
       scene.tweens.add({
@@ -3310,8 +3307,10 @@ class TravelScene extends Phaser.Scene {
       this.dayNight.update(delta / 1000);
     }
     if (FEATURES.clouds && this.travelCloudLayerFar && this.travelCloudLayerNear) {
+      // Accelerate cloud movement to keep pace with the sped-up day/night cycle
+      const speedMult = 180 / this.dayNight.config.dayLengthSeconds;
       this.travelCloudLayerFar.getChildren().forEach(cloud => {
-        cloud.x -= 0.2;
+        cloud.x -= 0.2 * speedMult;
         if (cloud.x < -cloud.width / 2) {
           cloud.x = config.width + cloud.width / 2;
           cloud.y = Phaser.Math.Between(20, CLOUD_AREA_HEIGHT);
@@ -3320,7 +3319,7 @@ class TravelScene extends Phaser.Scene {
         }
       });
       this.travelCloudLayerNear.getChildren().forEach(cloud => {
-        cloud.x -= 0.4;
+        cloud.x -= 0.4 * speedMult;
         if (cloud.x < -cloud.width / 2) {
           cloud.x = config.width + cloud.width / 2;
           cloud.y = Phaser.Math.Between(40, CLOUD_AREA_HEIGHT);
