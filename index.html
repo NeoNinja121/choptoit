@@ -410,6 +410,15 @@ function refreshMarketPrices() {
     if (m.name === dailySellSpecial) sellMult *= 1.25;
     m.currentBuy = Math.max(1, Math.round(m.buy * buyMult));
     m.currentSell = Math.max(1, Math.round(m.sell * sellMult));
+    const cityLevel = city ? city.fameReq || 0 : 0;
+    const variation = Phaser.Math.Between(-2, 2);
+    if (m.buy >= 20) {
+      m.stock = Math.max(0, Math.floor(cityLevel / 2) + 2 + variation);
+    } else if (m.buy <= 5) {
+      m.stock = Math.max(0, 10 - Math.floor(cityLevel / 2) + variation);
+    } else {
+      m.stock = Math.max(0, 6 + Math.floor(cityLevel / 3) + variation);
+    }
   });
 }
 
@@ -563,7 +572,6 @@ function advanceDays(days = 1) {
     }
   }
   if (dateText) dateText.setText(getDateString());
-  dailyMarketUpdate();
 }
 
 // Alias used by the day/night cycle to advance time
@@ -1355,77 +1363,39 @@ function create() {
   shopOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
     .setVisible(false)
     .setDepth(200);
-  shopContainer = scene.add.container(50, 50).setVisible(false).setDepth(201);
-  const shopBg = scene.add.rectangle(0, 0, 700, 500, 0x222222, 1).setOrigin(0, 0);
-  shopBg.setStrokeStyle(2, 0xffffff);
-  shopContainer.add(shopBg);
-
-  // Tab buttons
-  const weaponTab = scene.add.text(20, 10, 'Weapon Upgrades', { font: '18px monospace', fill: '#ffff00' })
-    .setInteractive()
-    .on('pointerdown', () => showShopTab(scene, 'weapons'));
-  const upgradeTab = scene.add.text(300, 10, 'Game Upgrades', { font: '18px monospace', fill: '#ffffff' })
-    .setInteractive()
-    .on('pointerdown', () => showShopTab(scene, 'upgrades'));
-  const marketTab = scene.add.text(520, 10, 'Trading Market', { font: '18px monospace', fill: '#ffffff' })
-    .setInteractive()
-    .on('pointerdown', () => showShopTab(scene, 'market'));
-  shopContainer.add([weaponTab, upgradeTab, marketTab]);
-
-  // Containers for each tab's contents
-  const weaponList = scene.add.container(0, 40);
-  const upgradeList = scene.add.container(0, 40).setVisible(false);
-  const marketList = scene.add.container(0, 60).setVisible(false);
-  shopContainer.add([weaponList, upgradeList, marketList]);
-
-  // Weapon upgrade items
-  let itemY = 0;
-  weapons.forEach((w, idx) => {
-    const title = scene.add.text(10, itemY, `${w.name} - ${w.type} - ${w.cost}g`, { font: '18px monospace', fill: '#ffffaa' });
-    const desc = scene.add.text(20, itemY + 20, w.desc, { font: '14px monospace', fill: '#ffffff', wordWrap: { width: 520 } });
-    const buy = scene.add.text(550, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
-      .setInteractive()
-      .on('pointerdown', () => { buyWeapon(scene, idx); });
-    weaponList.add([title, desc, buy]);
-    w.ui = { buy };
-    itemY += 70;
-  });
-
-  // Game upgrade items
-  itemY = 0;
-  gameUpgrades.forEach((g, idx) => {
-    const title = scene.add.text(10, itemY, `${g.name} - ${g.cost}g`, { font: '18px monospace', fill: '#ffffaa' });
-    const desc = scene.add.text(20, itemY + 20, g.desc, { font: '14px monospace', fill: '#ffffff', wordWrap: { width: 520 } });
-    const buy = scene.add.text(550, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
-      .setInteractive()
-      .on('pointerdown', () => { buyUpgrade(scene, idx); });
-    upgradeList.add([title, desc, buy]);
-    g.ui = { buy };
-    itemY += 70;
-  });
+  shopContainer = scene.add.container(0, 0).setVisible(false).setDepth(201);
+  const shopSky = scene.add.image(400, 300, 'backgroundSky')
+    .setDisplaySize(800, 600);
+  const shopBg = scene.add.image(400, 300, 'backgroundTravel')
+    .setDisplaySize(800, 600);
+  const marketList = scene.add.container(60, 80);
+  shopContainer.add([shopSky, shopBg, marketList]);
 
   // Market items displayed as a table
-  itemY = 0;
+  let itemY = 0;
   const cols = {
     name: 10,
     buy: 220,
     sell: 300,
-    qty: 370,
-    buyBtn: 440,
-    sellBtn: 520
+    stock: 370,
+    qty: 440,
+    buyBtn: 510,
+    sellBtn: 580
   };
   // Header row
   const headItem = scene.add.text(cols.name, itemY, 'Item', { font: '18px monospace', fill: '#ffffaa' });
   const headBuy = scene.add.text(cols.buy, itemY, 'Buy', { font: '18px monospace', fill: '#ffffaa' });
   const headSell = scene.add.text(cols.sell, itemY, 'Sell', { font: '18px monospace', fill: '#ffffaa' });
+  const headStock = scene.add.text(cols.stock, itemY, 'Stock', { font: '18px monospace', fill: '#ffffaa' });
   const headQty = scene.add.text(cols.qty, itemY, 'Qty', { font: '18px monospace', fill: '#ffffaa' });
-  marketList.add([headItem, headBuy, headSell, headQty]);
+  marketList.add([headItem, headBuy, headSell, headStock, headQty]);
   itemY += 25;
 
   marketItems.forEach((m, idx) => {
     const name = scene.add.text(cols.name, itemY, m.name, { font: '18px monospace', fill: '#ffffaa' });
     const buyPrice = scene.add.text(cols.buy, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
     const sellPrice = scene.add.text(cols.sell, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
+    const stockText = scene.add.text(cols.stock, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
     const qtyText = scene.add.text(cols.qty, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
     const buyBtn = scene.add.text(cols.buyBtn, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
@@ -1433,8 +1403,8 @@ function create() {
     const sellBtn = scene.add.text(cols.sellBtn, itemY, '[Sell]', { font: '18px monospace', fill: '#00ff00' })
       .setInteractive()
       .on('pointerdown', () => { showTradeMenu(scene, idx, 'sell'); });
-    marketList.add([name, buyPrice, sellPrice, qtyText, buyBtn, sellBtn]);
-    m.ui = { name, buyPrice, sellPrice, qtyText, buyBtn, sellBtn };
+    marketList.add([name, buyPrice, sellPrice, stockText, qtyText, buyBtn, sellBtn]);
+    m.ui = { name, buyPrice, sellPrice, stockText, qtyText, buyBtn, sellBtn };
     itemY += 25;
   });
   marketChatterText = scene.add.text(350, 400, '', {
@@ -1447,7 +1417,7 @@ function create() {
   marketPrisoner = scene.add.container(0, 0, [body, head]);
   marketList.add([marketChatterText, marketPrisoner]);
 
-  const closeBtn = scene.add.image(600, 0, 'signClose')
+  const closeBtn = scene.add.image(700, 0, 'signClose')
     .setOrigin(0, 0)
     .setDisplaySize(100, 100)
     .setInteractive()
@@ -1465,17 +1435,26 @@ function create() {
     .setOrigin(0.5, 0);
   const b1 = scene.add.text(20, 50, '[Buy 1]', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
-    .on('pointerdown', () => { buyMarketItem(scene, tradeItemIndex, 1); hideTradeMenu(scene); });
+    .on('pointerdown', () => {
+      const item = marketItems[tradeItemIndex];
+      if (item.stock > 0) buyMarketItem(scene, tradeItemIndex, 1);
+      hideTradeMenu(scene);
+    });
   const b10 = scene.add.text(140, 50, '[Buy 10]', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
-    .on('pointerdown', () => { buyMarketItem(scene, tradeItemIndex, 10); hideTradeMenu(scene); });
+    .on('pointerdown', () => {
+      const item = marketItems[tradeItemIndex];
+      const qty = Math.min(10, item.stock);
+      if (qty > 0) buyMarketItem(scene, tradeItemIndex, qty);
+      hideTradeMenu(scene);
+    });
   const bMax = scene.add.text(260, 50, '[Buy Max]', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
     .on('pointerdown', () => {
       const item = marketItems[tradeItemIndex];
       const goldMax = Math.floor(player.gold / item.currentBuy);
       const space = player.maxStorage - getInventoryCount();
-      const max = Math.min(goldMax, space);
+      const max = Math.min(goldMax, space, item.stock);
       if (max > 0) buyMarketItem(scene, tradeItemIndex, max);
       hideTradeMenu(scene);
     });
@@ -1502,19 +1481,8 @@ function create() {
   tradeBuyBtns = [b1, b10, bMax];
   tradeSellBtns = [s1, s10, sMax];
 
-  // Store references for later use
-  scene.weaponTab = weaponTab;
-  scene.upgradeTab = upgradeTab;
-  scene.marketTab = marketTab;
-  scene.weaponList = weaponList;
-  scene.upgradeList = upgradeList;
-  scene.marketList = marketList;
-
   // Set up first day's prices and gossip
   dailyMarketUpdate();
-
-  // Default to weapon tab
-  showShopTab(scene, 'weapons');
 
   // Text popup
   scene.popupText = scene.add.text(400, 250, '', { font: '24px serif', fill: '#ffffff' })
@@ -1595,7 +1563,8 @@ function toggleShop(scene) {
   if (visible) {
     // Fade the game behind the shop so it appears paused and dimmed
     fadeScreenOverlay(scene, 0.5);
-    showShopTab(scene, scene.activeTab || 'weapons');
+    updateMarketUI();
+    updateMarketChatter();
     if (hideMeterEvent) {
       hideMeterEvent.remove(false);
       hideMeterEvent = null;
@@ -1654,20 +1623,6 @@ function updateZones() {
 }
 
 // Switch between shop tabs and update highlights
-function showShopTab(scene, tab) {
-  scene.activeTab = tab;
-  scene.weaponList.setVisible(tab === 'weapons');
-  scene.upgradeList.setVisible(tab === 'upgrades');
-  scene.marketList.setVisible(tab === 'market');
-  scene.weaponTab.setFill(tab === 'weapons' ? '#ffff00' : '#ffffff');
-  scene.upgradeTab.setFill(tab === 'upgrades' ? '#ffff00' : '#ffffff');
-  scene.marketTab.setFill(tab === 'market' ? '#ffff00' : '#ffffff');
-  if (tab === 'market') {
-    updateMarketUI();
-    updateMarketChatter();
-  }
-}
-
 // Purchase a fame boosting upgrade
 function buyUpgrade(scene, index) {
   const u = gameUpgrades[index];
@@ -1687,11 +1642,13 @@ function buyUpgrade(scene, index) {
 function buyMarketItem(scene, index, qty = 1) {
   const item = marketItems[index];
   if (fame < item.fameReq) return;
+  qty = Math.min(qty, item.stock || 0);
   const cost = item.currentBuy * qty;
-  if (player.gold >= cost && getInventoryCount() + qty <= player.maxStorage) {
+  if (qty > 0 && player.gold >= cost && getInventoryCount() + qty <= player.maxStorage) {
     player.gold -= cost;
     goldText.setText(formatGold(player.gold));
     inventory[item.name] = (inventory[item.name] || 0) + qty;
+    item.stock -= qty;
     updateMarketUI();
   }
 }
@@ -1701,6 +1658,7 @@ function sellMarketItem(scene, index, qty = 1) {
   const item = marketItems[index];
   if ((inventory[item.name] || 0) >= qty) {
     inventory[item.name] -= qty;
+    item.stock = (item.stock || 0) + qty;
     addGold(scene, item.currentSell * qty);
     updateMarketUI();
   }
@@ -1716,8 +1674,9 @@ function updateMarketUI() {
     m.ui.name.setText(locked ? `${m.name} (F${m.fameReq})` : m.name);
     m.ui.buyPrice.setText(locked ? '-' : `${m.currentBuy}g`);
     m.ui.sellPrice.setText(locked ? '-' : `${m.currentSell}g`);
+    m.ui.stockText.setText(locked ? '-' : m.stock);
     m.ui.qtyText.setText(qty);
-    const canBuy = !locked && player.gold >= m.currentBuy && getInventoryCount() < player.maxStorage;
+    const canBuy = !locked && player.gold >= m.currentBuy && getInventoryCount() < player.maxStorage && m.stock > 0;
     const canSell = qty >= 1;
     m.ui.buyBtn.setFill(canBuy ? '#00ff00' : '#777777');
     m.ui.sellBtn.setFill(canSell ? '#00ff00' : '#777777');
@@ -1763,21 +1722,34 @@ function showTravelMenu(scene, region = travelRegion) {
     travelList.add([northPlaceholder, southPlaceholder, prompt]);
     return;
   }
-
-  let cityY = 10;
-  cities.filter(c => c.region === travelRegion).forEach(city => {
-    const title = scene.add.text(10, cityY, '', { font: '18px monospace', fill: '#ffffaa', wordWrap: { width: 420 } });
-    const btn = scene.add.text(500, cityY, '[Go]', { font: '18px monospace', fill: '#00ff00' })
+  const regionCities = cities.filter(c => c.region === travelRegion);
+  const perColumn = Math.ceil(regionCities.length / 2);
+  regionCities.forEach((city, idx) => {
+    const col = Math.floor(idx / perColumn);
+    const row = idx % perColumn;
+    const xOffset = col * 380;
+    const y = 20 + row * 40;
+    const title = scene.add.text(40 + xOffset, y, '', {
+      font: '18px monospace',
+      fill: '#ffffaa',
+      wordWrap: { width: 320 }
+    });
+    const btn = scene.add.text(240 + xOffset, y, '[Go]', {
+      font: '18px monospace',
+      fill: '#00ff00'
+    })
       .setInteractive()
       .on('pointerdown', () => {
         travelToCity(scene, city);
       });
     travelList.add([title, btn]);
     city.ui = { title, btn };
-    cityY += 30;
   });
 
-  const backBtn = scene.add.text(10, cityY + 10, '[Back]', { font: '18px monospace', fill: '#ffff00' })
+  const backBtn = scene.add.text(40, 20 + perColumn * 40 + 10, '[Back]', {
+    font: '18px monospace',
+    fill: '#ffff00'
+  })
     .setInteractive()
     .on('pointerdown', () => showTravelMenu(scene, null));
   travelList.add(backBtn);
@@ -3348,6 +3320,7 @@ class TravelScene extends Phaser.Scene {
   finish() {
     advanceDays(this.days);
     selectCity(this.mainScene, this.city);
+    dailyMarketUpdate();
     this.scene.stop();
     this.mainScene.scene.resume();
   }
