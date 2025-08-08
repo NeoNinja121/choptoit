@@ -73,6 +73,7 @@ let goldText;
 let fame = 0;
 let fameText;
 let lastGoldGain = 0;
+let pendingCoins = 0;
 let swingActive = false;
 let cursor;
 let redZone;
@@ -98,7 +99,7 @@ let cloudLayerFar;
 let cloudLayerNear;
 let missText;
 let missStreak = 0;
-const VERSION = 'Pre Alpha —v2.96';
+const VERSION = 'Pre Alpha —v2.97';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -561,16 +562,41 @@ function advanceDays(days = 1) {
   dailyMarketUpdate();
 }
 
+function isMenuOpen() {
+  return (shopContainer && shopContainer.visible) ||
+         (travelContainer && travelContainer.visible) ||
+         (storageContainer && storageContainer.visible) ||
+         (weaponsContainer && weaponsContainer.visible) ||
+         (tradeContainer && tradeContainer.visible);
+}
+
+function releaseQueuedCoins(scene) {
+  if (pendingCoins > 0 && !isMenuOpen()) {
+    for (let i = 0; i < pendingCoins; i++) {
+      scene.time.delayedCall(i * 100, () => spawnCoin(scene));
+    }
+    pendingCoins = 0;
+  }
+}
+
 function addGold(scene, amount) {
   if (amount <= 0) return;
   player.gold += amount;
   goldText.setText(formatGold(player.gold));
-  for (let i = 0; i < amount; i++) {
-    scene.time.delayedCall(i * 100, () => spawnCoin(scene));
+  if (isMenuOpen()) {
+    pendingCoins += amount;
+  } else {
+    for (let i = 0; i < amount; i++) {
+      scene.time.delayedCall(i * 100, () => spawnCoin(scene));
+    }
   }
 }
 
 function spawnCoin(scene) {
+  if (isMenuOpen()) {
+    pendingCoins++;
+    return;
+  }
   const coin = scene.add.circle(chest.x, -20, 8, 0xffd700).setDepth(101);
   scene.tweens.add({
     targets: coin,
@@ -1536,6 +1562,7 @@ function toggleShop(scene) {
     scene.tweens.resumeAll();
     // No need to unpause the Time plugin since we never fully pause it for the
     // shop overlay.
+    releaseQueuedCoins(scene);
     startSwingMeter(scene);
   }
 }
@@ -1739,6 +1766,7 @@ function toggleTravel(scene, resume = true, withFade = true) {
     scene.tweens.resumeAll();
     // Time was never paused for the travel overlay, so there is nothing to
     // resume beyond physics and tweens.
+    releaseQueuedCoins(scene);
     if (resume) startSwingMeter(scene);
   }
 }
@@ -1775,6 +1803,7 @@ function toggleStorage(scene) {
     shopButton.setInteractive();
     weaponsButton.setInteractive();
     travelButton.setInteractive();
+    releaseQueuedCoins(scene);
     startSwingMeter(scene);
   }
 }
@@ -1854,6 +1883,7 @@ function toggleWeapons(scene) {
     shopButton.setInteractive();
     weaponsButton.setInteractive();
     travelButton.setInteractive();
+    releaseQueuedCoins(scene);
     startSwingMeter(scene);
   }
 }
@@ -1986,6 +2016,7 @@ function hideTradeMenu(scene) {
     windParts.setVisible(true);
     windEmitter.start();
   }
+  releaseQueuedCoins(scene);
   startSwingMeter(scene);
 }
 
