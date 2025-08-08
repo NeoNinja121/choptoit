@@ -17,6 +17,7 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+  <script src="dayNightCycle.js"></script>
 </head>
 <body>
 
@@ -562,6 +563,11 @@ function advanceDays(days = 1) {
   dailyMarketUpdate();
 }
 
+// Alias used by the day/night cycle to advance time
+function advanceCalendarDays(days = 1) {
+  advanceDays(days);
+}
+
 function isMenuOpen() {
   return (shopContainer && shopContainer.visible) ||
          (travelContainer && travelContainer.visible) ||
@@ -691,7 +697,8 @@ function create() {
   // Background and stage art
   skyRect = scene.add.image(400, 300, 'backgroundSky');
   skyRect.setDisplaySize(800, 600);
-  skyRect.setDepth(-4);
+  // Render sky behind celestial bodies
+  skyRect.setDepth(-5);
 
   backgroundRect = scene.add.image(400, 300, 'background');
   backgroundRect.setDisplaySize(800, 600);
@@ -753,6 +760,12 @@ function create() {
       cloudLayerNear.add(cloud);
     }
   }
+
+  // Initialize day/night cycle
+  this.dayNight = new DayNightCycle({ dayLengthSeconds: 180 });
+  this.dayNight.init(scene, { backCloudsDepth: -3, overlayDepth: 28.9 });
+  this.dayNight.onFullDay(() => { advanceCalendarDays(1); });
+  this.dayNight.onHourlyExecution(() => { startExecutionRound(); });
 
   stage = scene.add.image(400, 520, 'platform').setDepth(0);
   stageBlood = scene.add.rectangle(400, 520, 1, 10, 0x770000)
@@ -2455,6 +2468,16 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
   scene.tweens.add({ targets: rightEscort, x: 450, duration: 1500, ease: 'Linear' });
 }
 
+// Wrapper for the hourly execution callback
+function startExecutionRound() {
+  if (game && game.scene && game.scene.scenes.length) {
+    const scene = game.scene.scenes[0];
+    // Randomize which side the prisoner enters from
+    const fromRight = Phaser.Math.Between(0, 1) === 1;
+    spawnPrisoner(scene, fromRight);
+  }
+}
+
 function startSwingMeter(scene) {
   if (hideMeterEvent) {
     hideMeterEvent.remove(false);
@@ -2972,6 +2995,10 @@ function onLevelUp(scene) {
 
 function update(time, delta) {
 
+  if (this.dayNight) {
+    this.dayNight.update(delta / 1000);
+  }
+
   if (FEATURES.clouds && cloudLayerFar && cloudLayerNear) {
     cloudLayerFar.getChildren().forEach(cloud => {
       cloud.x -= 0.2;
@@ -3044,7 +3071,7 @@ class TravelScene extends Phaser.Scene {
     const keys = travelBackgrounds.map((_, i) => `background-travel${i + 1}`);
     let bgKey = Phaser.Utils.Array.GetRandom(keys);
     if (!this.textures.exists(bgKey)) bgKey = 'background';
-    this.add.image(400, 300, 'backgroundSky').setDisplaySize(800, 600).setDepth(-4);
+    this.add.image(400, 300, 'backgroundSky').setDisplaySize(800, 600).setDepth(-5);
     this.add.image(400, 300, bgKey).setDisplaySize(800, 600).setDepth(-2);
     this.add.text(400, 40, `Travelling to ${this.city.name}`, { font: '32px serif', fill: '#ffff00' }).setOrigin(0.5);
     let d = currentDay;
