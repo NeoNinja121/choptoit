@@ -764,9 +764,9 @@ function create() {
 
   // Initialize day/night cycle
   this.dayNight = new DayNightCycle({ dayLengthSeconds: 180 });
-  // Place the lighting overlay behind the start screen so the logo remains
-  // unobstructed during the initial splash.
-  this.dayNight.init(scene, { backCloudsDepth: -3, overlayDepth: 11 });
+  // Place the lighting overlay just above the background so gameplay and
+  // UI elements remain on top and unaffected by the darkening effect.
+  this.dayNight.init(scene, { backCloudsDepth: -3, overlayDepth: -1.5 });
   this.dayNight.onFullDay(() => { advanceCalendarDays(1); });
   // Only begin a new execution round if the player isn't already interacting
   // with the swing meter. This prevents the meter from resetting unexpectedly
@@ -850,12 +850,20 @@ function create() {
     .setVisible(false);
   goldText = scene.add.text(chest.x, chest.y - chest.height - 10, formatGold(player.gold), { font: '20px monospace', fill: '#ffff88' })
     .setOrigin(0.5, 1)
+    .setDepth(101)
+    .setScrollFactor(0)
     .setVisible(false);
-  fameText = scene.add.text(16, 40, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' });
+  fameText = scene.add.text(16, 40, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' })
+    .setDepth(100)
+    .setScrollFactor(0);
   fameText.setY(fameText.y + 50);
-  missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
+  missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' })
+    .setDepth(100)
+    .setScrollFactor(0);
   missText.setY(missText.y + 50);
-  killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' });
+  killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' })
+    .setDepth(100)
+    .setScrollFactor(0);
   killText.setY(killText.y + 50);
   // Hide the old weather label at the top
   weatherText = scene.add.text(400, 96, '', { font: '20px monospace', fill: '#ffffff' })
@@ -908,8 +916,13 @@ function create() {
     .setVisible(false);
   dateText.setY(dateText.y + 50);
   xpText = scene.add.text(400, 580, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
-    .setOrigin(0.5, 1);
-  xpBarFill = scene.add.rectangle(250, 584, 0, 12, 0x00ff00).setOrigin(0, 1);
+    .setOrigin(0.5, 1)
+    .setDepth(100)
+    .setScrollFactor(0);
+  xpBarFill = scene.add.rectangle(250, 584, 0, 12, 0x00ff00)
+    .setOrigin(0, 1)
+    .setDepth(100)
+    .setScrollFactor(0);
   updateXPUI();
   streakMultiplierText = scene.add.text(460, 520, 'x0', { font: '48px monospace', fill: '#ff0000' })
     .setOrigin(0.5, 1)
@@ -2884,7 +2897,8 @@ function spawnTarget(scene) {
   const targetX = Phaser.Math.Between(100, 700);
   const poleHeight = Phaser.Math.Between(80, 180);
 
-  const jester = scene.add.container(startX, 460).setDepth(1);
+  // Ensure jesters render above the lighting overlay and other background elements.
+  const jester = scene.add.container(startX, 460).setDepth(20);
   jester.startFromRight = fromRight;
   const body = scene.add.image(0, 50, 'jesterBody1').setOrigin(0.5, 1);
   const pole = scene.add.rectangle(0, -20, 6, poleHeight, 0x8b4513)
