@@ -935,7 +935,7 @@ function create() {
 
   // Logo drop animation before showing the start screen
   // Ensure the logo appears above the start screen background
-  logoContainer = scene.add.container(400, -200).setDepth(13);
+  logoContainer = scene.add.container(400, -200).setDepth(200);
   const rope = scene.add.rectangle(0, 0, 12, 125, 0xffffff)
     .setOrigin(0.5, 0);
   const logo = scene.add.image(0, 125, 'logo')
@@ -2366,7 +2366,11 @@ function introExecutioner(scene, onComplete) {
     alpha: 1,
     duration: 1500,
     ease: "Linear",
-    onComplete: onComplete
+    onComplete: () => {
+      // Restore normal lighting once the executioner is in place
+      fadeBackgroundOverlay(scene, 0, 800);
+      if (onComplete) onComplete();
+    }
   });
 }
 
@@ -2468,6 +2472,9 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
     duration: 1500,
     ease: 'Linear',
     onComplete: () => {
+      // Ensure prisoner is exactly centered before starting the meter
+      scene.tweens.killTweensOf(prisoner);
+      prisoner.setPosition(400, 460);
       // Once the prisoner reaches the center, have the escorts walk off
       // screen to the left instead of simply disappearing.
       scene.tweens.add({
@@ -2515,6 +2522,15 @@ function startSwingMeter(scene) {
   swingActive = true;
   inputEnabled = false;
   scene.time.delayedCall(200, () => { inputEnabled = true; });
+  // Reset positions before making the meter visible to avoid visual jumps
+  cursor.x = 250;
+  const zoneX = Phaser.Math.Between(300, 500);
+  redZone.x = zoneX;
+  yellowZone.x = zoneX;
+  greenZone.x = zoneX;
+
+  updateZones();
+
   cursor.setVisible(true);
   swingBar.setVisible(true);
   redZone.setVisible(true);
@@ -2522,15 +2538,6 @@ function startSwingMeter(scene) {
   greenZone.setVisible(true);
   // leave bloodPool visible between swings
   scene.popupText.setVisible(false);
-
-  updateZones();
-
-  // Reset positions
-  cursor.x = 250;
-  const zoneX = Phaser.Math.Between(300, 500);
-  redZone.x = zoneX;
-  yellowZone.x = zoneX;
-  greenZone.x = zoneX;
 
   // Ensure head is attached and physics disabled
   resetHead(scene);
