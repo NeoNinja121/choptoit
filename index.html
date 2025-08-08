@@ -186,6 +186,7 @@ let swingSpeed = 5;
 let executioner;
 let executionerIntro = true;
 let executionerWeapon;
+let gameStarted = false;
 
 // Medieval calendar variables
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -765,7 +766,9 @@ function create() {
   this.dayNight = new DayNightCycle({ dayLengthSeconds: 180 });
   this.dayNight.init(scene, { backCloudsDepth: -3, overlayDepth: 28.9 });
   this.dayNight.onFullDay(() => { advanceCalendarDays(1); });
-  this.dayNight.onHourlyExecution(() => { startExecutionRound(); });
+  this.dayNight.onHourlyExecution(() => {
+    if (gameStarted) startExecutionRound();
+  });
 
   stage = scene.add.image(400, 520, 'platform').setDepth(0);
   stageBlood = scene.add.rectangle(400, 520, 1, 10, 0x770000)
@@ -962,6 +965,7 @@ function create() {
         dateBg.setVisible(true);
         dateText.setVisible(true);
         setGoldChestVisible(true);
+        gameStarted = true;
         if (executionerIntro) {
           introExecutioner(scene, () => spawnPrisoner(scene, false));
         } else {
@@ -2994,6 +2998,8 @@ function onLevelUp(scene) {
 }
 
 function update(time, delta) {
+
+  if (!gameStarted) return;
 
   if (this.dayNight) {
     this.dayNight.update(delta / 1000);
