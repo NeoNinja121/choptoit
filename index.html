@@ -1368,7 +1368,7 @@ function create() {
     .setDisplaySize(800, 600);
   const shopBg = scene.add.image(400, 300, 'backgroundTravel')
     .setDisplaySize(800, 600);
-  const marketList = scene.add.container(60, 80);
+  const marketList = scene.add.container(60, 180);
   shopContainer.add([shopSky, shopBg, marketList]);
 
   // Market items displayed as a table
@@ -1428,7 +1428,7 @@ function create() {
   tradeOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
     .setVisible(false)
     .setDepth(40);
-  tradeContainer = scene.add.container(210, 200).setVisible(false).setDepth(41);
+  tradeContainer = scene.add.container(210, 300).setVisible(false).setDepth(41);
   const tradeBg = scene.add.rectangle(0, 0, 380, 140, 0x222222, 1).setOrigin(0, 0);
   tradeBg.setStrokeStyle(2, 0xffffff);
   tradeTitle = scene.add.text(190, 10, '', { font: '18px monospace', fill: '#ffffaa' })
@@ -1728,7 +1728,7 @@ function showTravelMenu(scene, region = travelRegion) {
     const col = Math.floor(idx / perColumn);
     const row = idx % perColumn;
     const xOffset = col * 380;
-    const y = 20 + row * 40;
+    const y = 120 + row * 40;
     const title = scene.add.text(40 + xOffset, y, '', {
       font: '18px monospace',
       fill: '#ffffaa',
@@ -1746,7 +1746,7 @@ function showTravelMenu(scene, region = travelRegion) {
     city.ui = { title, btn };
   });
 
-  const backBtn = scene.add.text(40, 20 + perColumn * 40 + 10, '[Back]', {
+  const backBtn = scene.add.text(40, 120 + perColumn * 40 + 10, '[Back]', {
     font: '18px monospace',
     fill: '#ffff00'
   })
