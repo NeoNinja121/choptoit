@@ -1504,7 +1504,8 @@ function buyWeapon(scene, index) {
 }
 
 function updateZones() {
-  const baseYellow = baseSizes.yellow + (player.weaponLevel - 1) * 10;
+  // Increase total meter width by 4 pixels per level (2 per end)
+  const baseYellow = baseSizes.yellow + (player.weaponLevel - 1) * (4 / 3);
   const scale = baseYellow / baseSizes.yellow;
   const baseRed = baseSizes.red * scale;
   const baseGreen = baseSizes.green * scale;
