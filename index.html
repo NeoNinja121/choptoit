@@ -199,6 +199,11 @@ let bodyGroup;
 let targetGroup;
 let chest;
 
+function setGoldChestVisible(visible) {
+  if (chest) chest.setVisible(visible);
+  if (goldText) goldText.setVisible(visible);
+}
+
 let currentWeather = 'clear';
 let windForce = { x: 0, y: 0 };
 let roundCount = 0;
@@ -779,9 +784,11 @@ function create() {
   // Gold chest and counter
   chest = scene.add.rectangle(config.width - 60, config.height - 40, 80, 50, 0x8b4513)
     .setOrigin(0.5, 1)
-    .setDepth(100);
+    .setDepth(100)
+    .setVisible(false);
   goldText = scene.add.text(chest.x, chest.y - chest.height - 10, `Gold: ${player.gold}`, { font: '20px monospace', fill: '#ffff88' })
-    .setOrigin(0.5, 1);
+    .setOrigin(0.5, 1)
+    .setVisible(false);
   fameText = scene.add.text(16, 40, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' });
   fameText.setY(fameText.y + 50);
   missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
@@ -902,6 +909,7 @@ function create() {
         weatherIndicator.setVisible(true);
         dateBg.setVisible(true);
         dateText.setVisible(true);
+        setGoldChestVisible(true);
         if (executionerIntro) {
           introExecutioner(scene, () => spawnPrisoner(scene, false));
         } else {
@@ -1485,6 +1493,7 @@ function toggleShop(scene) {
   const visible = !shopContainer.visible;
   shopOverlay.setVisible(visible);
   shopContainer.setVisible(visible);
+  setGoldChestVisible(!visible);
   if (dateBg) dateBg.setVisible(!visible);
   if (dateText) dateText.setVisible(!visible);
   if (visible) {
@@ -1686,6 +1695,7 @@ function toggleTravel(scene, resume = true, withFade = true) {
   const visible = !travelContainer.visible;
   travelOverlay.setVisible(visible);
   travelContainer.setVisible(visible);
+  setGoldChestVisible(!visible);
   if (dateBg) dateBg.setVisible(!visible);
   if (dateText) dateText.setVisible(!visible);
   if (visible) {
@@ -1725,6 +1735,7 @@ function toggleStorage(scene) {
   const visible = !storageContainer.visible;
   storageOverlay.setVisible(visible);
   storageContainer.setVisible(visible);
+  setGoldChestVisible(!visible);
   if (dateBg) dateBg.setVisible(!visible);
   if (dateText) dateText.setVisible(!visible);
   if (visible) {
@@ -1801,6 +1812,7 @@ function toggleWeapons(scene) {
   const visible = !weaponsContainer.visible;
   weaponsOverlay.setVisible(visible);
   weaponsContainer.setVisible(visible);
+  setGoldChestVisible(!visible);
   if (dateBg) dateBg.setVisible(!visible);
   if (dateText) dateText.setVisible(!visible);
   if (visible) {
@@ -1892,6 +1904,7 @@ function getInventoryCount() {
 function travelToCity(scene, city) {
   const days = getTravelDays(currentCity, city.name);
   toggleTravel(scene, false, false);
+  setGoldChestVisible(false);
   // Clear any residual screen dim from the travel menu before pausing the scene
   if (screenFadeTween) {
     screenFadeTween.stop();
@@ -2028,6 +2041,7 @@ function selectCity(scene, city) {
   // Extra safety: hide the travel overlay again in case any async events
   // re-enabled it during the city transition.
   travelOverlay.setVisible(false);
+  setGoldChestVisible(true);
 }
 
 function savePrisoner(scene) {
