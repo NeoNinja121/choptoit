@@ -764,10 +764,17 @@ function create() {
 
   // Initialize day/night cycle
   this.dayNight = new DayNightCycle({ dayLengthSeconds: 180 });
-  this.dayNight.init(scene, { backCloudsDepth: -3, overlayDepth: 28.9 });
+  // Place the lighting overlay behind the start screen so the logo remains
+  // unobstructed during the initial splash.
+  this.dayNight.init(scene, { backCloudsDepth: -3, overlayDepth: 11 });
   this.dayNight.onFullDay(() => { advanceCalendarDays(1); });
+  // Only begin a new execution round if the player isn't already interacting
+  // with the swing meter. This prevents the meter from resetting unexpectedly
+  // while awaiting input.
   this.dayNight.onHourlyExecution(() => {
-    if (gameStarted) startExecutionRound();
+    if (gameStarted && !swingActive && !awaitingAngle && !awaitingPower) {
+      startExecutionRound();
+    }
   });
 
   stage = scene.add.image(400, 520, 'platform').setDepth(0);
