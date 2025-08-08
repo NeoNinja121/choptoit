@@ -650,6 +650,7 @@ function preload() {
   this.load.image('signClose', 'sign_close.png');
   this.load.image('mapNorth', 'map_north.png');
   this.load.image('mapSouth', 'map_south.png');
+  this.load.image('backgroundTravel', 'background_travel1.png');
   // Storage upgrade assets
   this.load.image('backgroundStorage', 'background_storage.png');
   this.load.image('upgradeButton', 'upgrade_button.png');
@@ -1333,15 +1334,16 @@ function create() {
   travelOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
     .setVisible(false)
     .setDepth(200);
-  travelContainer = scene.add.container(50, 50).setVisible(false).setDepth(201);
-  const travelBg = scene.add.rectangle(0, 0, 700, 500, 0x222222, 1).setOrigin(0, 0);
-  travelBg.setStrokeStyle(2, 0xffffff);
-  travelContainer.add(travelBg);
-  travelList = scene.add.container(0, 40);
-  travelContainer.add(travelList);
+  travelContainer = scene.add.container(0, 0).setVisible(false).setDepth(201);
+  const travelSky = scene.add.image(400, 300, 'backgroundSky')
+    .setDisplaySize(800, 600);
+  const travelBg = scene.add.image(400, 300, 'backgroundTravel')
+    .setDisplaySize(800, 600);
+  travelList = scene.add.container(0, 0);
+  travelContainer.add([travelSky, travelBg, travelList]);
   travelRegion = null;
   showTravelMenu(scene);
-  const travelClose = scene.add.image(600, 0, 'signClose')
+  const travelClose = scene.add.image(700, 0, 'signClose')
     .setOrigin(0, 0)
     .setDisplaySize(100, 100)
     .setInteractive()
@@ -1741,27 +1743,21 @@ function showTravelMenu(scene, region = travelRegion) {
   travelList.removeAll(true);
   cities.forEach(c => { if (c.ui) delete c.ui; });
 
-  // If no region selected, present North/South options first with placeholders
+  // If no region selected, present North/South options with placeholders
   if (!travelRegion) {
-    const northBtn = scene.add.text(10, 0, 'The North', { font: '18px monospace', fill: '#00ff00' })
-      .setInteractive()
-      .on('pointerdown', () => showTravelMenu(scene, 'north'));
-    const southBtn = scene.add.text(360, 0, 'The South', { font: '18px monospace', fill: '#00ff00' })
-      .setInteractive()
-      .on('pointerdown', () => showTravelMenu(scene, 'south'));
     const northPlaceholder = scene.add
-      .image(10, 30, 'mapNorth')
-      .setOrigin(0, 0)
+      .image(200, 300, 'mapNorth')
+      .setOrigin(0.5)
       .setDisplaySize(250, 400)
       .setInteractive()
       .on('pointerdown', () => showTravelMenu(scene, 'north'));
     const southPlaceholder = scene.add
-      .image(360, 30, 'mapSouth')
-      .setOrigin(0, 0)
+      .image(600, 300, 'mapSouth')
+      .setOrigin(0.5)
       .setDisplaySize(250, 400)
       .setInteractive()
       .on('pointerdown', () => showTravelMenu(scene, 'south'));
-    travelList.add([northBtn, southBtn, northPlaceholder, southPlaceholder]);
+    travelList.add([northPlaceholder, southPlaceholder]);
     return;
   }
 
@@ -1808,19 +1804,23 @@ function toggleTravel(scene, resume = true, withFade = true) {
     swingActive = false;
     inputEnabled = false;
     cursor.setVisible(false);
-    // backOverlayWasVisible = backOverlay.visible;
-    // backOverlay.setVisible(false);
     scene.physics.world.pause();
     scene.tweens.pauseAll();
+    storageButton.disableInteractive();
+    shopButton.disableInteractive();
+    weaponsButton.disableInteractive();
+    travelButton.disableInteractive();
     // Do not pause the global time system; doing so disables input events and
     // breaks the travel and shop interfaces.  Physics and tweens are paused to
     // freeze gameplay while menus are open.
   } else {
-    // backOverlay.setVisible(backOverlayWasVisible);
-    // Clear the dim when returning to gameplay
     if (withFade) fadeScreenOverlay(scene, 0);
     scene.physics.world.resume();
     scene.tweens.resumeAll();
+    storageButton.setInteractive();
+    shopButton.setInteractive();
+    weaponsButton.setInteractive();
+    travelButton.setInteractive();
     // Time was never paused for the travel overlay, so there is nothing to
     // resume beyond physics and tweens.
     releaseQueuedCoins(scene);
