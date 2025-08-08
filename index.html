@@ -1588,6 +1588,8 @@ function toggleShop(scene) {
   setGoldChestVisible(!visible);
   if (dateBg) dateBg.setVisible(!visible);
   if (dateText) dateText.setVisible(!visible);
+  if (xpText) xpText.setVisible(!visible);
+  if (xpBarFill) xpBarFill.setVisible(!visible);
   if (visible) {
     // Fade the game behind the shop so it appears paused and dimmed
     fadeScreenOverlay(scene, 0.5);
@@ -1791,6 +1793,8 @@ function toggleTravel(scene, resume = true, withFade = true) {
   setGoldChestVisible(!visible);
   if (dateBg) dateBg.setVisible(!visible);
   if (dateText) dateText.setVisible(!visible);
+  if (xpText) xpText.setVisible(!visible);
+  if (xpBarFill) xpBarFill.setVisible(!visible);
   if (visible) {
     // Dim the background while the travel menu is open
     if (withFade) fadeScreenOverlay(scene, 0.5);
@@ -1832,6 +1836,8 @@ function toggleStorage(scene) {
   setGoldChestVisible(!visible);
   if (dateBg) dateBg.setVisible(!visible);
   if (dateText) dateText.setVisible(!visible);
+  if (xpText) xpText.setVisible(!visible);
+  if (xpBarFill) xpBarFill.setVisible(!visible);
   if (visible) {
     fadeScreenOverlay(scene, 0.5);
     updateStorageUI();
@@ -1912,6 +1918,8 @@ function toggleWeapons(scene) {
   setGoldChestVisible(!visible);
   if (dateBg) dateBg.setVisible(!visible);
   if (dateText) dateText.setVisible(!visible);
+  if (xpText) xpText.setVisible(!visible);
+  if (xpBarFill) xpBarFill.setVisible(!visible);
   if (visible) {
     fadeScreenOverlay(scene, 0.5);
     updateWeaponsUI();
