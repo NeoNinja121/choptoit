@@ -47,6 +47,7 @@ const FEATURES = {
 };
 
 const CLOUD_AREA_HEIGHT = 200;
+const MAX_COIN_ANIMS = 150;
 
 // Core player state: gold, storage level, and carrying capacity
 const player = {
@@ -100,6 +101,7 @@ let cloudLayerFar;
 let cloudLayerNear;
 let missText;
 let missStreak = 0;
+let betweenSwings = false;
 const VERSION = 'Pre Alpha —v2.97';
 let versionText;
 let inputEnabled = true;
@@ -579,7 +581,8 @@ function isMenuOpen() {
 
 function releaseQueuedCoins(scene) {
   if (pendingCoins > 0 && !isMenuOpen()) {
-    for (let i = 0; i < pendingCoins; i++) {
+    const count = Math.min(pendingCoins, MAX_COIN_ANIMS);
+    for (let i = 0; i < count; i++) {
       scene.time.delayedCall(i * 100, () => spawnCoin(scene));
     }
     pendingCoins = 0;
@@ -591,9 +594,10 @@ function addGold(scene, amount) {
   player.gold += amount;
   goldText.setText(formatGold(player.gold));
   if (isMenuOpen()) {
-    pendingCoins += amount;
+    pendingCoins = Math.min(pendingCoins + amount, MAX_COIN_ANIMS);
   } else {
-    for (let i = 0; i < amount; i++) {
+    const count = Math.min(amount, MAX_COIN_ANIMS);
+    for (let i = 0; i < count; i++) {
       scene.time.delayedCall(i * 100, () => spawnCoin(scene));
     }
   }
@@ -601,7 +605,7 @@ function addGold(scene, amount) {
 
 function spawnCoin(scene) {
   if (isMenuOpen()) {
-    pendingCoins++;
+    pendingCoins = Math.min(pendingCoins + 1, MAX_COIN_ANIMS);
     return;
   }
   const coin = scene.add.circle(chest.x, -20, 8, 0xffd700).setDepth(101);
@@ -772,7 +776,7 @@ function create() {
   // with the swing meter. This prevents the meter from resetting unexpectedly
   // while awaiting input.
   this.dayNight.onHourlyExecution(() => {
-    if (gameStarted && !swingActive && !awaitingAngle && !awaitingPower) {
+    if (gameStarted && !swingActive && !awaitingAngle && !awaitingPower && !betweenSwings) {
       startExecutionRound();
     }
   });
@@ -2290,7 +2294,7 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
 
 function showAimArrow(scene, bloodAmount, nextSide) {
   pendingBlood = bloodAmount;
-  pendingSpawnSide = nextSide;
+  pendingSpawnSide = 'left';
   awaitingPower = false;
   if (arrowPowerTween) arrowPowerTween.stop();
   // Start the arrow pointing left and sweep over the top to the right
@@ -2467,7 +2471,7 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
   // Keep body aligned under the head when resetting for a new prisoner
   prisonerBody.y = 50;
   
-  const startX = fromRight ? 850 : -50;
+  const startX = -50;
   prisoner.setPosition(startX, 460);
   leftEscort.setPosition(startX - 50, 460);
   rightEscort.setPosition(startX + 50, 460);
@@ -2489,14 +2493,14 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
       scene.tweens.add({
         targets: leftEscort,
         x: -100,
-        duration: 1500,
+        duration: 800,
         ease: 'Linear',
         onComplete: () => leftEscort.setVisible(false)
       });
       scene.tweens.add({
         targets: rightEscort,
-        x: 0,
-        duration: 1500,
+        x: -100,
+        duration: 800,
         ease: 'Linear',
         onComplete: () => rightEscort.setVisible(false)
       });
@@ -2512,9 +2516,8 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
 function startExecutionRound() {
   if (game && game.scene && game.scene.scenes.length) {
     const scene = game.scene.scenes[0];
-    // Randomize which side the prisoner enters from
-    const fromRight = Phaser.Math.Between(0, 1) === 1;
-    spawnPrisoner(scene, fromRight);
+    // Prisoners now always enter from the left
+    spawnPrisoner(scene, false);
   }
 }
 
@@ -2529,11 +2532,12 @@ function startSwingMeter(scene) {
   awaitingAngle = false;
   awaitingPower = false;
   swingActive = true;
+  betweenSwings = false;
   inputEnabled = false;
   scene.time.delayedCall(200, () => { inputEnabled = true; });
   // Reset positions before making the meter visible to avoid visual jumps
   cursor.x = 250;
-  const zoneX = Phaser.Math.Between(300, 500);
+  const zoneX = 400;
   redZone.x = zoneX;
   yellowZone.x = zoneX;
   greenZone.x = zoneX;
@@ -2558,6 +2562,7 @@ function startSwingMeter(scene) {
 
 function endSwing(scene) {
   swingActive = false;
+  betweenSwings = true;
   cursor.setVisible(false);
   const accuracy = Math.abs(cursor.x - redZone.x);
   let payout = 0;
@@ -3187,7 +3192,7 @@ class TravelScene extends Phaser.Scene {
       }
       this.travelCloudLayerFar = this.add.group();
       this.travelCloudLayerNear = this.add.group();
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 1; i++) {
         const cloud = this.add.image(
           Phaser.Math.Between(0, config.width),
           Phaser.Math.Between(20, CLOUD_AREA_HEIGHT),
@@ -3199,7 +3204,7 @@ class TravelScene extends Phaser.Scene {
         cloud.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
         this.travelCloudLayerFar.add(cloud);
       }
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 1; i++) {
         const cloud = this.add.image(
           Phaser.Math.Between(0, config.width),
           Phaser.Math.Between(40, CLOUD_AREA_HEIGHT),
