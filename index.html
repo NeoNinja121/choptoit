@@ -564,7 +564,7 @@ function advanceDays(days = 1) {
 function addGold(scene, amount) {
   if (amount <= 0) return;
   player.gold += amount;
-  goldText.setText(`Gold: ${formatGold(player.gold)}`);
+  goldText.setText(formatGold(player.gold));
   const coins = Math.min(amount, 10);
   for (let i = 0; i < coins; i++) {
     scene.time.delayedCall(i * 100, () => spawnCoin(scene));
@@ -800,7 +800,7 @@ function create() {
     .setOrigin(0.5, 1)
     .setDepth(100)
     .setVisible(false);
-  goldText = scene.add.text(chest.x, chest.y - chest.height - 10, `Gold: ${formatGold(player.gold)}`, { font: '20px monospace', fill: '#ffff88' })
+  goldText = scene.add.text(chest.x, chest.y - chest.height - 10, formatGold(player.gold), { font: '20px monospace', fill: '#ffff88' })
     .setOrigin(0.5, 1)
     .setVisible(false);
   fameText = scene.add.text(16, 40, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' });
@@ -1546,7 +1546,7 @@ function buyWeapon(scene, index) {
   if (w.purchased) return;
   if (player.gold >= w.cost) {
     player.gold -= w.cost;
-    goldText.setText(`Gold: ${formatGold(player.gold)}`);
+    goldText.setText(formatGold(player.gold));
     zoneMods.red += w.effects.red || 0;
     zoneMods.yellow += w.effects.yellow || 0;
     zoneMods.green += w.effects.green || 0;
@@ -1591,7 +1591,7 @@ function buyUpgrade(scene, index) {
   if (u.purchased || fame < u.fameReq) return;
   if (player.gold >= u.cost) {
     player.gold -= u.cost;
-    goldText.setText(`Gold: ${formatGold(player.gold)}`);
+    goldText.setText(formatGold(player.gold));
     fameMultiplier = u.mult;
     u.purchased = true;
     if (u.ui && u.ui.buy) {
@@ -1607,7 +1607,7 @@ function buyMarketItem(scene, index, qty = 1) {
   const cost = item.currentBuy * qty;
   if (player.gold >= cost && getInventoryCount() + qty <= player.maxStorage) {
     player.gold -= cost;
-    goldText.setText(`Gold: ${formatGold(player.gold)}`);
+    goldText.setText(formatGold(player.gold));
     inventory[item.name] = (inventory[item.name] || 0) + qty;
     updateMarketUI();
   }
@@ -1805,7 +1805,7 @@ function upgradeStorage(scene) {
   const cost = getStorageUpgradeCost();
   if (player.gold >= cost) {
     player.gold -= cost;
-    goldText.setText(`Gold: ${formatGold(player.gold)}`);
+    goldText.setText(formatGold(player.gold));
     upgradeButton.disableInteractive();
     scene.tweens.add({
       targets: storageImage,
@@ -1883,7 +1883,7 @@ function upgradeWeapon(scene) {
   const cost = getWeaponUpgradeCost();
   if (player.gold >= cost) {
     player.gold -= cost;
-    goldText.setText(`Gold: ${formatGold(player.gold)}`);
+    goldText.setText(formatGold(player.gold));
     weaponUpgradeButton.disableInteractive();
     player.weaponLevel++;
     weaponsImage.setTexture(`weapons${player.weaponLevel}`);
