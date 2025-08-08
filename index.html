@@ -1757,7 +1757,10 @@ function showTravelMenu(scene, region = travelRegion) {
       .setDisplaySize(250, 400)
       .setInteractive()
       .on('pointerdown', () => showTravelMenu(scene, 'south'));
-    travelList.add([northPlaceholder, southPlaceholder]);
+    const prompt = scene.add.text(400, 560, 'Where would you like to go?', { font: '24px monospace', fill: '#ffd700' })
+      .setOrigin(0.5)
+      .setStroke('#000000', 3);
+    travelList.add([northPlaceholder, southPlaceholder, prompt]);
     return;
   }
 
