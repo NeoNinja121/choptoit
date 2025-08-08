@@ -197,6 +197,7 @@ let marketPrisoner;
 // Group to hold fallen bodies that pile up at the bottom
 let bodyGroup;
 let targetGroup;
+let chest;
 
 let currentWeather = 'clear';
 let windForce = { x: 0, y: 0 };
@@ -541,6 +542,35 @@ function advanceDays(days = 1) {
   dailyMarketUpdate();
 }
 
+function addGold(scene, amount) {
+  if (amount <= 0) return;
+  player.gold += amount;
+  goldText.setText(`Gold: ${player.gold}`);
+  const coins = Math.min(amount, 10);
+  for (let i = 0; i < coins; i++) {
+    scene.time.delayedCall(i * 100, () => spawnCoin(scene));
+  }
+}
+
+function spawnCoin(scene) {
+  const coin = scene.add.circle(chest.x, -20, 8, 0xffd700).setDepth(101);
+  scene.tweens.add({
+    targets: coin,
+    y: chest.y - chest.height / 2,
+    duration: 800,
+    ease: 'Cubic.easeIn',
+    onComplete: () => {
+      coin.destroy();
+      openChest(scene);
+    },
+  });
+}
+
+function openChest(scene) {
+  chest.setFillStyle(0xdaa520);
+  scene.time.delayedCall(300, () => chest.setFillStyle(0x8b4513));
+}
+
 function pickClass() {
   const total = classes.reduce((s, c) => s + c.weight, 0);
   let r = Phaser.Math.Between(1, total);
@@ -746,9 +776,12 @@ function create() {
   leftEscort.setVisible(false);
   rightEscort.setVisible(false);
 
-  // Gold text
-  goldText = scene.add.text(16, 16, `Gold: ${player.gold}`, { font: '20px monospace', fill: '#ffff88' });
-  goldText.setY(goldText.y + 50); // Avoid overlap with upgrade button
+  // Gold chest and counter
+  chest = scene.add.rectangle(config.width - 60, config.height - 40, 80, 50, 0x8b4513)
+    .setOrigin(0.5, 1)
+    .setDepth(100);
+  goldText = scene.add.text(chest.x, chest.y - chest.height - 10, `Gold: ${player.gold}`, { font: '20px monospace', fill: '#ffff88' })
+    .setOrigin(0.5, 1);
   fameText = scene.add.text(16, 40, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' });
   fameText.setY(fameText.y + 50);
   missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' });
@@ -783,8 +816,7 @@ function create() {
     icon.on('pointerdown', () => {
       cancelWeatherHold();
       weatherHoldEvent = scene.time.delayedCall(10000, () => {
-        player.gold += 1000000;
-        goldText.setText(`Gold: ${player.gold}`);
+        addGold(scene, 1000000);
         fame += 500;
         fameText.setText(`Fame: ${Math.floor(fame)}`);
         weatherHoldEvent = null;
@@ -1563,8 +1595,7 @@ function sellMarketItem(scene, index, qty = 1) {
   const item = marketItems[index];
   if ((inventory[item.name] || 0) >= qty) {
     inventory[item.name] -= qty;
-    player.gold += item.currentSell * qty;
-    goldText.setText(`Gold: ${player.gold}`);
+    addGold(scene, item.currentSell * qty);
     updateMarketUI();
   }
 }
@@ -2466,8 +2497,7 @@ function endSwing(scene) {
   missText.setText(`Misses: ${missStreak}`);
 
   const goldGain = missed ? payout : payout * killStreak;
-  player.gold += goldGain;
-  goldText.setText(`Gold: ${player.gold}`);
+  addGold(scene, goldGain);
   if (!missed && goldGain > 0) {
     lastGoldGain = goldGain;
   }
@@ -2558,8 +2588,7 @@ function handleTargetHit(scene, target, head) {
       fameGain = 0;
     } else {
       gainFame(scene, target, 1);
-      player.gold += 1;
-      goldText.setText(`Gold: ${player.gold}`);
+      addGold(scene, 1);
       fameGain = 0;
     }
     gainFame(scene, target, fameGain);
