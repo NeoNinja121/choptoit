@@ -855,15 +855,18 @@ function create() {
     .setVisible(false);
   fameText = scene.add.text(16, 40, 'Fame: 0', { font: '20px monospace', fill: '#88ffff' })
     .setDepth(100)
-    .setScrollFactor(0);
+    .setScrollFactor(0)
+    .setVisible(false);
   fameText.setY(fameText.y + 50);
   missText = scene.add.text(16, 64, 'Misses: 0', { font: '20px monospace', fill: '#ff8888' })
     .setDepth(100)
-    .setScrollFactor(0);
+    .setScrollFactor(0)
+    .setVisible(false);
   missText.setY(missText.y + 50);
   killText = scene.add.text(16, 88, 'Kills: 0', { font: '20px monospace', fill: '#ffffff' })
     .setDepth(100)
-    .setScrollFactor(0);
+    .setScrollFactor(0)
+    .setVisible(false);
   killText.setY(killText.y + 50);
   // Hide the old weather label at the top
   weatherText = scene.add.text(400, 96, '', { font: '20px monospace', fill: '#ffffff' })
@@ -903,7 +906,8 @@ function create() {
     icon.on('pointerout', cancelWeatherHold);
   });
   locationText = scene.add.text(400, 16, currentCity, { font: '20px monospace', fill: '#ffffff' })
-    .setOrigin(0.5, 0);
+    .setOrigin(0.5, 0)
+    .setVisible(false);
   locationText.setY(locationText.y + 50);
   dateBg = scene.add.rectangle(400, 52, 80, 28, 0xffffff)
     .setOrigin(0.5)
@@ -918,11 +922,13 @@ function create() {
   xpText = scene.add.text(400, 580, 'Level 1 - 0/10 XP', { font: '20px monospace', fill: '#88ff88' })
     .setOrigin(0.5, 1)
     .setDepth(100)
-    .setScrollFactor(0);
+    .setScrollFactor(0)
+    .setVisible(false);
   xpBarFill = scene.add.rectangle(250, 584, 0, 12, 0x00ff00)
     .setOrigin(0, 1)
     .setDepth(100)
-    .setScrollFactor(0);
+    .setScrollFactor(0)
+    .setVisible(false);
   updateXPUI();
   streakMultiplierText = scene.add.text(460, 520, 'x0', { font: '48px monospace', fill: '#ff0000' })
     .setOrigin(0.5, 1)
@@ -984,6 +990,12 @@ function create() {
         weatherIndicator.setVisible(true);
         dateBg.setVisible(true);
         dateText.setVisible(true);
+        locationText.setVisible(true);
+        fameText.setVisible(true);
+        missText.setVisible(true);
+        killText.setVisible(true);
+        xpText.setVisible(true);
+        xpBarFill.setVisible(true);
         setGoldChestVisible(true);
         gameStarted = true;
         if (executionerIntro) {
@@ -1316,8 +1328,8 @@ function create() {
   // Travel container and overlay
   travelOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
     .setVisible(false)
-    .setDepth(30);
-  travelContainer = scene.add.container(50, 50).setVisible(false).setDepth(31);
+    .setDepth(200);
+  travelContainer = scene.add.container(50, 50).setVisible(false).setDepth(201);
   const travelBg = scene.add.rectangle(0, 0, 700, 500, 0x222222, 1).setOrigin(0, 0);
   travelBg.setStrokeStyle(2, 0xffffff);
   travelContainer.add(travelBg);
@@ -1336,8 +1348,8 @@ function create() {
   // Shop container and overlay
   shopOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
     .setVisible(false)
-    .setDepth(30);
-  shopContainer = scene.add.container(50, 50).setVisible(false).setDepth(31);
+    .setDepth(200);
+  shopContainer = scene.add.container(50, 50).setVisible(false).setDepth(201);
   const shopBg = scene.add.rectangle(0, 0, 700, 500, 0x222222, 1).setOrigin(0, 0);
   shopBg.setStrokeStyle(2, 0xffffff);
   shopContainer.add(shopBg);
@@ -3111,6 +3123,11 @@ class TravelScene extends Phaser.Scene {
     let d = currentDay;
     let m = currentMonth;
     const date = this.add.text(400, 80, `${d} ${months[m]}`, { font: '28px monospace', fill: '#ffffff' }).setOrigin(0.5);
+    const duration = this.days * 700;
+    // Accelerate the day/night cycle so it completes one full day for each
+    // travel day, keeping the visuals in sync with the journey length.
+    this.dayNight = new DayNightCycle({ dayLengthSeconds: (duration / this.days) / 1000 });
+    this.dayNight.init(this, { backCloudsDepth: -3, overlayDepth: -0.5 });
     const pickWeather = () =>
       Math.random() < 0.5
         ? 'Clear'
@@ -3270,7 +3287,6 @@ class TravelScene extends Phaser.Scene {
       .setOrigin(0.5, 1)
       .setDepth(0);
 
-    const duration = this.days * 700;
     this.tweens.add({ targets: exec, x: 900, duration, ease: 'Linear' });
     this.tweens.add({ targets: upgrade, x: 750, duration, ease: 'Linear' });
     this.time.addEvent({
@@ -3289,7 +3305,10 @@ class TravelScene extends Phaser.Scene {
 
     this.time.delayedCall(duration, () => this.finish());
   }
-  update() {
+  update(time, delta) {
+    if (this.dayNight) {
+      this.dayNight.update(delta / 1000);
+    }
     if (FEATURES.clouds && this.travelCloudLayerFar && this.travelCloudLayerNear) {
       this.travelCloudLayerFar.getChildren().forEach(cloud => {
         cloud.x -= 0.2;
