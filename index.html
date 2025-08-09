@@ -1766,18 +1766,15 @@ function showTravelMenu(scene, region = travelRegion) {
     return;
   }
   const regionCities = cities.filter(c => c.region === travelRegion);
-  const perColumn = Math.ceil(regionCities.length / 2);
+  const totalCities = regionCities.length;
   regionCities.forEach((city, idx) => {
-    const col = Math.floor(idx / perColumn);
-    const row = idx % perColumn;
-    const xOffset = col * 380;
-    const y = 120 + row * 40;
-    const title = scene.add.text(40 + xOffset, y, '', {
+    const y = 120 + idx * 40;
+    const title = scene.add.text(40, y, '', {
       font: '18px monospace',
       fill: '#ffffaa',
       wordWrap: { width: 320 }
     });
-    const btn = scene.add.text(240 + xOffset, y, '[Go]', {
+    const btn = scene.add.text(240, y, '[Go]', {
       font: '18px monospace',
       fill: '#00ff00'
     })
@@ -1799,7 +1796,7 @@ function showTravelMenu(scene, region = travelRegion) {
     city.ui = { title, btn };
   });
 
-  const backBtn = scene.add.text(40, 120 + perColumn * 40 + 10, '[Back]', {
+  const backBtn = scene.add.text(40, 120 + totalCities * 40 + 10, '[Back]', {
     font: '18px monospace',
     fill: '#ffff00'
   })
