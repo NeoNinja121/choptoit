@@ -1444,8 +1444,9 @@ function create() {
   // Trade menu overlay for buying and selling quantities
   tradeOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
     .setVisible(false)
-    .setDepth(40);
-  tradeContainer = scene.add.container(190, 300).setVisible(false).setDepth(41);
+    // Use a depth above the shop container so this overlay appears on top
+    .setDepth(202);
+  tradeContainer = scene.add.container(190, 300).setVisible(false).setDepth(203);
   const tradeBg = scene.add.rectangle(0, 0, 420, 160, 0x222222, 1).setOrigin(0, 0);
   tradeBg.setStrokeStyle(2, 0xffffff);
   tradeTitle = scene.add.text(210, 10, '', { font: '18px monospace', fill: '#ffffaa' })
