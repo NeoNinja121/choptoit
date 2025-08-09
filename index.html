@@ -148,6 +148,9 @@ let weaponsContainer;
 let weaponsCostText;
 let weaponsImage;
 let weaponUpgradeButton;
+let weaponQuoteText;
+let weaponQuoteBubble;
+let weaponPeasant;
 let travelRegion = null;
 // The dimming overlay previously used during menu transitions caused a
 // distracting flash when switching cities. To remove it while keeping the
@@ -409,6 +412,213 @@ const buyingQuotes = [
   "I’ll keep it until the end.",
   "They’ll tell stories about this.",
   "With this, the world changes."
+];
+
+// Weapon upgrade quotes
+const weaponBeforeQuotes = [
+  "You again? What do you want now?",
+  "Can’t you see I’m busy ruining perfectly good metal?",
+  "Hope you’re not here to waste my time.",
+  "Great, another wannabe hero.",
+  "You couldn’t afford my scrap bin.",
+  "Try not to drool on the merchandise.",
+  "Why would I give you a sharp weapon?",
+  "You’d hurt yourself with a spoon.",
+  "These are for fighters, not… whatever you are.",
+  "You’ve got coin? Shocking.",
+  "I’d rather sell to a drunk rat.",
+  "Don’t touch anything, you’ll break it.",
+  "Hope your purse is fatter than your brain.",
+  "That blade’s worth more than you.",
+  "You’re not worthy of holding this.",
+  "Bet you’ll pawn it within a week.",
+  "Didn’t think you’d survive long enough to come back.",
+  "Your grip’s all wrong. Pathetic.",
+  "Fine. But I won’t be responsible for the mess you make.",
+  "You’re too soft for this steel.",
+  "Try not to cut yourself. Or do, I don’t care.",
+  "This weapon’s for killing, not showing off.",
+  "Go polish your wooden sword somewhere else.",
+  "You’ll ruin it in a day.",
+  "Why am I even talking to you?",
+  "Your coin smells funny.",
+  "I should charge extra for having to look at you.",
+  "This work deserves a better wielder.",
+  "Sure, if you promise not to cry when it’s heavy.",
+  "I’ve seen sharper rocks.",
+  "You couldn’t even lift my hammer.",
+  "Put that face away before it dents the steel.",
+  "You’re about as threatening as a wet rag.",
+  "I’d rather arm the enemy.",
+  "Do you even know which end to hold?",
+  "I should melt this down before you touch it.",
+  "You’ll only embarrass yourself with it.",
+  "What, you think this is a toy shop?",
+  "If it were up to me, you’d get a stick.",
+  "Your posture makes me want to weep.",
+  "Steel’s too good for you.",
+  "What are you compensating for with that?",
+  "Ever considered staying unarmed?",
+  "The forge groans when you walk in.",
+  "You’ve got the hands of a milkmaid.",
+  "This isn’t for parade work, you know.",
+  "You won’t last long enough to dull it.",
+  "Maybe stick to kitchen knives.",
+  "I should be paid to not sell you this.",
+  "Don’t bleed on the floor.",
+  "That coin better be real.",
+  "Weapons are wasted on the weak.",
+  "Hold still, you’re breathing on it.",
+  "If it bends, it’s your fault.",
+  "You’ve got the look of a man who’ll drop it in a puddle.",
+  "Can you even spell ‘sword’?",
+  "I could make something better blindfolded.",
+  "You reek of bad decisions.",
+  "This won’t make you a hero.",
+  "Ever thought of retiring before you start?",
+  "You’ve got that ‘dead in a week’ look.",
+  "What a waste of fine craftsmanship.",
+  "Don’t chip it on your first swing.",
+  "Bet you’ll lose it to a thief by sundown.",
+  "I should be forging for someone who matters.",
+  "Your coin purse looks like it’s about to cry.",
+  "Hope you’ve got armour to match. Or a coffin.",
+  "That’s too much weapon for you.",
+  "Even the tongs are laughing.",
+  "You’re lucky I’m bored.",
+  "Keep your grubby mitts off the blade.",
+  "You couldn’t dent a melon with that swing.",
+  "Might as well hand it straight to your enemy.",
+  "Don’t point it at me, fool.",
+  "I’ll have to scrub it after you touch it.",
+  "You’ve got no business owning steel like this.",
+  "Fine, take it before I change my mind.",
+  "Your face screams ‘first casualty.’",
+  "I forged this for someone better.",
+  "You’re not that someone.",
+  "Try not to disgrace it.",
+  "This won’t save you.",
+  "I’d rather sell nails to a coffin maker.",
+  "Don’t drag it, you’ll dull it.",
+  "Do you even know what you’re buying?",
+  "You’ll trip over it.",
+  "You’re going to break it, aren’t you?",
+  "Just don’t come crying when it goes wrong.",
+  "This is charity, really.",
+  "A sword’s only as good as its wielder. Poor thing.",
+  "At least it’ll look nice when they bury you.",
+  "I should make you sign a waiver.",
+  "Hope you’re better at fighting than talking.",
+  "Careful, it’s sharper than your wit.",
+  "You’ve got no idea how to use it, do you?",
+  "You’ll make me regret this.",
+  "This is a mistake.",
+  "Don’t prove me right.",
+  "This is the last time.",
+  "I said I wouldn’t sell to you again… and here we are."
+];
+
+const weaponAfterQuotes = [
+  "Try not to hurt yourself walking out.",
+  "Let’s see how long before you break it.",
+  "Watch out, it’s dangerous… unlike you.",
+  "I’ll start the pool on when you lose it.",
+  "Hope you know which end to point at the enemy.",
+  "Don’t come back for a refund.",
+  "Guess I’ll be seeing this in the pawn shop soon.",
+  "Look at you, all dangerous now.",
+  "Don’t scratch it before you get home.",
+  "Keep it shiny for the grave robbers.",
+  "Now you just need the skill to use it.",
+  "Bet it spends more time on your wall than in battle.",
+  "Don’t let the chickens laugh at you.",
+  "Remember: pointy end goes in the bad guy.",
+  "It’ll outlast you, easily.",
+  "Looks good… shame about the wielder.",
+  "The blade’s sharp. Your brain, less so.",
+  "Now go on, scare the neighbours.",
+  "A fine weapon wasted on a fool.",
+  "Try not to chip it on a loaf of bread.",
+  "You’ll be polishing it more than swinging it.",
+  "That’ll make a fine heirloom for someone else.",
+  "Maybe you’ll survive a whole day now.",
+  "I’ve seen milkmaids with better form.",
+  "It’s not magic, it won’t make you good.",
+  "Go ahead, pose in front of the mirror.",
+  "Don’t drop it… again.",
+  "You look ridiculous.",
+  "Now you’ve got the gear, still missing the guts.",
+  "Hope you’ve got armour to match. Or a will.",
+  "That’s the most dangerous thing you’ve ever owned.",
+  "Bet you’ll name it something stupid.",
+  "Don’t test it on the furniture.",
+  "The forge is weeping for its lost work.",
+  "You’ll make it look bad.",
+  "At least it’ll be easy to recover from your corpse.",
+  "A fine choice… for someone else.",
+  "Now you’re armed, still not dangerous.",
+  "The steel’s worth more than you are.",
+  "Make sure to tell everyone where you got it.",
+  "The metal’s better tempered than you.",
+  "That’s a fine piece of work. Shame about the buyer.",
+  "Go swing it at a tree, not people.",
+  "That’ll do… for decorative purposes.",
+  "It won’t fix your footwork.",
+  "You’ll dull it before the week’s out.",
+  "Maybe the enemy will die laughing.",
+  "You’re the worst thing that’ll happen to that blade.",
+  "Hope you enjoy polishing.",
+  "Try not to trip over it.",
+  "The scabbard’s smarter than you.",
+  "Even a rat could put it to better use.",
+  "You’ll lose it in a tavern bet.",
+  "Better watch out, you might look competent.",
+  "It’s heavier than your common sense.",
+  "Make sure you swing with the sharp side.",
+  "Try to keep it out of the mud.",
+  "Don’t get too attached.",
+  "You’ll have it bent in no time.",
+  "A masterpiece meets a disaster.",
+  "You’re holding it wrong already.",
+  "Maybe the shine will distract your enemies.",
+  "The blade’s perfect. You’re not.",
+  "It deserves a better owner.",
+  "Don’t nick it on the doorway.",
+  "You’ll break before it does.",
+  "Now all you need is courage.",
+  "It’s sharp enough to cut through your excuses.",
+  "You’ll ruin it.",
+  "It’s wasted on you.",
+  "The edge is fine. Yours isn’t.",
+  "Don’t wave it indoors.",
+  "The blacksmithing gods are laughing.",
+  "The handle has more spine than you.",
+  "Bet you’ll forget to oil it.",
+  "The sword’s ready. You’re not.",
+  "You’ve upgraded the weapon, not the wielder.",
+  "Try not to stab yourself.",
+  "You’re shaking already.",
+  "I’ll see it again when someone brings it back.",
+  "You’ll lose to a farmer.",
+  "It’s as ready as it’ll ever be. You’re not.",
+  "At least it’ll look nice at your funeral.",
+  "The steel’s pure. Your soul, not so much.",
+  "You’re the weakest part of that weapon.",
+  "Try to keep the blood on the enemy.",
+  "The forge didn’t work this hard for you.",
+  "Careful, you’ll poke your eye out.",
+  "The edge is wasted.",
+  "It’s a weapon, not a walking stick.",
+  "It’s worth more than your horse.",
+  "The blade’s clean. You’re filthy.",
+  "Try not to name it something stupid.",
+  "Hope you’ve got insurance.",
+  "You’re breathing too close to it.",
+  "The weapon’s perfect. The wielder’s hopeless.",
+  "It’ll never forgive you.",
+  "You’ve made a terrible mistake.",
+  "You’ll regret this purchase before I do.",
+  "Don’t prove me right."
 ];
 
 let marketChatterText;
@@ -805,6 +1015,26 @@ function showMarketQuote(quotes) {
   }
   const quote = Phaser.Utils.Array.GetRandom(quotes);
   typeMarketQuote(quote);
+}
+
+function updateWeaponQuoteBubble() {
+  if (!weaponQuoteText || !weaponQuoteBubble) return;
+  const padding = 10;
+  const width = weaponQuoteText.width + padding * 2;
+  const height = weaponQuoteText.height + padding * 2;
+  weaponQuoteBubble.setSize(width, height);
+  weaponQuoteBubble.setPosition(weaponQuoteText.x, weaponQuoteText.y);
+  if (weaponPeasant) {
+    weaponPeasant.x = weaponQuoteText.x + width / 2 + 10;
+    weaponPeasant.y = weaponQuoteText.y + height / 2;
+  }
+}
+
+function showWeaponQuote(quotes) {
+  if (!weaponQuoteText) return;
+  const quote = Phaser.Utils.Array.GetRandom(quotes);
+  weaponQuoteText.setText(quote);
+  updateWeaponQuoteBubble();
 }
 
 // Refresh prices, specials and chatter at the start of a new day
@@ -1612,12 +1842,24 @@ function create() {
     .setScale(0.5)
     .setInteractive()
     .on('pointerdown', () => { upgradeWeapon(scene); });
+  weaponQuoteText = scene.add.text(170, 120, '', {
+    font: '20px monospace',
+    fill: '#ffaaaa',
+    wordWrap: { width: 300 }
+  }).setOrigin(0.5)
+    .setStroke('#000000', 3);
+  weaponQuoteBubble = scene.add.rectangle(170, 120, 10, 10, 0xffffff, 1)
+    .setOrigin(0.5)
+    .setStrokeStyle(2, 0x000000);
+  const wqBody = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
+  const wqHead = scene.add.image(0, -80, 'prisonerHead1').setOrigin(0.5).setScale(1);
+  weaponPeasant = scene.add.container(0, 0, [wqBody, wqHead]);
   const weaponsClose = scene.add.image(700, 0, 'signClose')
     .setOrigin(0, 0)
     .setDisplaySize(100, 100)
     .setInteractive()
     .on('pointerdown', () => { toggleWeapons(scene); });
-  weaponsContainer.add([weaponsSky, weaponsBg, weaponsImage, weaponUpgradeButton, weaponsCostText, weaponsClose]);
+  weaponsContainer.add([weaponsSky, weaponsBg, weaponsImage, weaponUpgradeButton, weaponsCostText, weaponQuoteBubble, weaponQuoteText, weaponPeasant, weaponsClose]);
   updateWeaponsUI();
 
   // Travel container and overlay
@@ -2224,6 +2466,7 @@ function toggleWeapons(scene) {
   if (visible) {
     fadeScreenOverlay(scene, 0.5);
     updateWeaponsUI();
+    showWeaponQuote(weaponBeforeQuotes);
     if (hideMeterEvent) {
       hideMeterEvent.remove(false);
       hideMeterEvent = null;
@@ -2293,6 +2536,7 @@ function upgradeWeapon(scene) {
       ease: 'Cubic.easeOut',
       onComplete: () => {
         updateWeaponsUI();
+        showWeaponQuote(weaponAfterQuotes);
       }
     });
   }
