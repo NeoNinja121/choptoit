@@ -778,16 +778,20 @@ function updateSpeechBubble() {
 function typeMarketQuote(quote) {
   if (!marketChatterText) return;
   if (marketTypeEvent) marketTypeEvent.remove(false);
-  marketChatterText.setText('');
-  updateSpeechBubble();
-  let i = 0;
   const scene = marketChatterText.scene;
+
+  // Size the speech bubble and position the peasant based on the full quote
+  // before the typing effect starts so they remain stationary.
+  marketChatterText.setText(quote);
+  updateSpeechBubble();
+  marketChatterText.setText('');
+
+  let i = 0;
   marketTypeEvent = scene.time.addEvent({
     delay: 40,
     repeat: quote.length - 1,
     callback: () => {
       marketChatterText.setText(marketChatterText.text + quote[i]);
-      updateSpeechBubble();
       i++;
     }
   });
@@ -1646,7 +1650,8 @@ function create() {
     .setDisplaySize(800, 600);
   const shopBg = scene.add.image(400, 300, 'backgroundTravel')
     .setDisplaySize(800, 600);
-  const marketList = scene.add.container(60, 180);
+  // Position the market items list a bit higher so all entries are visible
+  const marketList = scene.add.container(60, 130);
   shopContainer.add([shopSky, shopBg, marketList]);
 
   // Market items displayed as a table
