@@ -204,16 +204,215 @@ let dateBg;
 let dailyBuySpecial = null;
 let dailySellSpecial = null;
 
-// Market chatter
-const marketQuotes = [
-  "Oooh I'm desperate for turnips to help with me piles!",
-  "A pox upon high prices, I say!",
-  "Bring forth more mead, my throat be parched!",
-  "Rumour says the plague's back, stock up on salt!",
-  "I swapped me cow for beans once, ne'er again!"
+// Market chatter quotes
+const sellingQuotes = [
+  "Fresh from the gallows!",
+  "No questions asked… or answered.",
+  "You didn’t get this from me.",
+  "Blood’s barely dry.",
+  "Straight from the king’s own stores.",
+  "Hope you’ve got a strong stomach.",
+  "They’ll never know it was you.",
+  "A bargain for a friend of the axe.",
+  "Found it after the last beheading.",
+  "Careful… it’s still cursed.",
+  "Straight from the battlefield.",
+  "Don’t look inside the sack.",
+  "One careful owner… well, mostly careful.",
+  "Don’t tell the guards.",
+  "Ah, a fellow collector of the macabre.",
+  "This one’s got a story… but you don’t want to hear it.",
+  "Cheaper than life, more expensive than death.",
+  "Pulled it right out of the dungeon.",
+  "Worth its weight in gold… or heads.",
+  "I’m risking my neck here.",
+  "Straight from the Inquisition’s vault.",
+  "The last owner didn’t need it anymore.",
+  "You’ve got the look of someone who appreciates quality doom.",
+  "Perfect for when subtlety’s overrated.",
+  "Handle with gloves… or regret.",
+  "Found in a chest… next to a chest.",
+  "A relic of a darker age.",
+  "Some say it whispers at night.",
+  "A true hero’s choice… if you believe the tales.",
+  "Looted legally. Sort of.",
+  "Half price if you don’t ask where it came from.",
+  "May or may not be haunted.",
+  "Just like grandma used to sell.",
+  "A staple of any villain’s pantry.",
+  "Better than bread. Lasts longer too.",
+  "This one survived the plague.",
+  "Straight from the king’s table.",
+  "Careful, it bites back.",
+  "A merchant’s gotta eat, you know.",
+  "Part of a limited beheading edition.",
+  "It’s more fun if you don’t check the expiration date.",
+  "Once owned by a knight… or a jester.",
+  "Guaranteed to impress… or distress.",
+  "A fine piece for your collection of questionable goods.",
+  "Whisper its name under a full moon.",
+  "Found between the ribs of a dragon.",
+  "Imported… in the dead of night.",
+  "It’s been cleaned. Mostly.",
+  "Straight from the dark lands.",
+  "You won’t find better. Or worse.",
+  "The last buyer never came back.",
+  "May bring fortune… or plague.",
+  "Blessed by a priest. Cursed by a witch.",
+  "An executioner’s favourite.",
+  "Good for trading, terrible for eating.",
+  "They say it’s worth a kingdom.",
+  "Hurry before the guards see.",
+  "Straight from the realm of nightmares.",
+  "Don’t ask. Just buy.",
+  "Rare as mercy in this land.",
+  "Part of a prophecy, probably.",
+  "Better than gold… to the right buyer.",
+  "Found in a cave… under a pile of bones.",
+  "Sharp enough to cut a soul.",
+  "The last owner was… indisposed.",
+  "Perfect for the discerning tyrant.",
+  "An heirloom from a forgotten war.",
+  "It’s got history. Lots of it’s blood.",
+  "The bards sing of it… badly.",
+  "Straight from the loot chest.",
+  "Careful, it’s still warm.",
+  "This deal won’t survive the night.",
+  "An adventurer dropped it… along with their head.",
+  "Treasured in three kingdoms, banned in four.",
+  "May attract unwanted spirits.",
+  "It’s practically screaming to be sold.",
+  "Straight from the final boss.",
+  "One use only. Make it count.",
+  "Handle with care… or don’t.",
+  "I’ve seen wars started over less.",
+  "A relic of a doomed hero.",
+  "Could tip the scales of destiny.",
+  "Recovered from a lich’s hoard.",
+  "Looks innocent enough, doesn’t it?",
+  "Careful, it’s got a mind of its own.",
+  "You’ll sleep lighter knowing you own this.",
+  "The guild won’t like me selling it to you.",
+  "May cause visions. Or madness.",
+  "Straight from the loot goblin’s sack.",
+  "You didn’t hear about this from me.",
+  "It’s rarer than a bard’s honest song.",
+  "Once touched by the Dark Lord himself.",
+  "Careful, it hungers.",
+  "One of a kind… until I find another.",
+  "Perfect for settling grudges.",
+  "It’s been waiting for you.",
+  "Found in a locked chest in the catacombs.",
+  "May change the course of your fate.",
+  "They’ll write ballads about this purchase.",
+  "Worth more than your life… and probably will cost it."
 ];
-let currentQuote = '';
+
+const buyingQuotes = [
+  "Finally, I’ve been looking for one of these.",
+  "I’ll take it… before someone else does.",
+  "Been saving for this day.",
+  "Worth every coin.",
+  "I shouldn’t… but I will.",
+  "This will fetch a good price in the next town.",
+  "Looks… cleaner than most.",
+  "I don’t care if it’s cursed.",
+  "Perfect for what I’ve got planned.",
+  "A fine addition to my hoard.",
+  "Been hunting one of these for years.",
+  "It’s heavier than I expected.",
+  "Not a bad deal for something so illegal.",
+  "This will go nicely with the others.",
+  "They’ll never know it was me.",
+  "Finally, I can complete the set.",
+  "Hope it’s as sharp as it looks.",
+  "I’ll hide this before the guards see.",
+  "Exactly what I needed for… reasons.",
+  "It’s perfect. And probably stolen.",
+  "Worth more than the last three villages I passed through.",
+  "At last, my collection grows.",
+  "They’ll pay triple for this in the capital.",
+  "My enemies won’t know what hit them.",
+  "This feels… dangerous.",
+  "I can smell the history on it.",
+  "My associates will be pleased.",
+  "Ah, I’ve been expecting you to offer this.",
+  "It’s not for me… it’s for a friend.",
+  "Finally, something worth my gold.",
+  "It’ll look good on my mantle… or my victim.",
+  "I’ll take it before someone changes their mind.",
+  "Yes… this will do nicely.",
+  "You have no idea how useful this will be.",
+  "I’ll sleep easier knowing this is mine.",
+  "Can you wrap it? No? Thought not.",
+  "It’s exactly as I imagined… unsettling.",
+  "I’ll hide it with the others.",
+  "No one else is brave enough to buy this.",
+  "I’ll take two. No reason.",
+  "My rivals will envy me.",
+  "I’ve waited a lifetime for this.",
+  "Finally, my luck has turned.",
+  "The guild will hear of this.",
+  "It’s more beautiful than the legends say.",
+  "I’ll treasure it… for a while.",
+  "Can’t wait to see their faces.",
+  "I’ll take it before the inquisition sees.",
+  "It’ll be worth ten times as much tomorrow.",
+  "My collection is almost complete.",
+  "Finally, I can finish what I started.",
+  "I’ll keep this one close.",
+  "A bargain for such a dangerous thing.",
+  "I’ll pay whatever it takes.",
+  "Been after this since the war.",
+  "It’ll serve me well in the trials ahead.",
+  "I’ll take it before fate changes her mind.",
+  "Perfect… absolutely perfect.",
+  "No one will suspect a thing.",
+  "It belongs with me now.",
+  "I’ll hide it in the old chest.",
+  "My master will be most pleased.",
+  "The others will be jealous.",
+  "This is exactly what I needed.",
+  "It’s more dangerous than I expected.",
+  "I’ll keep it safe… maybe.",
+  "It’s almost too perfect to use.",
+  "The prophecy spoke of this day.",
+  "I can’t believe you’re selling this.",
+  "I’ll take it off your hands… before trouble starts.",
+  "This will make them remember my name.",
+  "The bards will sing of this.",
+  "No one else could handle this.",
+  "I’ll use it wisely… or not.",
+  "I’ve seen one of these before. Ended badly.",
+  "They’ll never see it coming.",
+  "This will change everything.",
+  "I’ll keep it hidden until the time is right.",
+  "A rare find indeed.",
+  "The last time I saw one, it was on a corpse.",
+  "Finally, I can even the score.",
+  "This will seal my victory.",
+  "They’ll regret crossing me.",
+  "It’s mine now. Forever.",
+  "This will fetch a fortune abroad.",
+  "I’ll guard it with my life.",
+  "No one else is worthy of it.",
+  "I’ve been dreaming of this moment.",
+  "I’ll pay extra for the bloodstains.",
+  "It’s more powerful than I hoped.",
+  "It belongs in my vault.",
+  "No one will dare challenge me now.",
+  "It’s perfect… in a terrible way.",
+  "I’ll take it and the curse that comes with it.",
+  "The council will never approve… good.",
+  "It’s more dangerous than you know.",
+  "Finally, I have the upper hand.",
+  "I’ll keep it until the end.",
+  "They’ll tell stories about this.",
+  "With this, the world changes."
+];
+
 let marketChatterText;
+let marketChatterBubble;
 let marketPrisoner;
 
 // Group to hold fallen bodies that pile up at the bottom
@@ -561,18 +760,47 @@ function arrowForWind(x, y) {
   return arrows[idx % 8];
 }
 
-// Display the day's market chatter
-function updateMarketChatter() {
-  if (marketChatterText) {
-    marketChatterText.setText(`"${currentQuote}"`);
-    if (marketPrisoner) {
-      const color = Phaser.Utils.Array.GetRandom(classes).color;
-      marketPrisoner.list[0].setTint(color);
-      const txt = marketChatterText;
-      marketPrisoner.x = txt.x + txt.width / 2 + 10;
-      marketPrisoner.y = txt.y + txt.height / 2;
-    }
+// Display a market quote with typing effect
+let marketTypeEvent;
+function updateSpeechBubble() {
+  if (!marketChatterText || !marketChatterBubble) return;
+  const padding = 10;
+  const width = marketChatterText.width + padding * 2;
+  const height = marketChatterText.height + padding * 2;
+  marketChatterBubble.setSize(width, height);
+  marketChatterBubble.setPosition(marketChatterText.x, marketChatterText.y);
+  if (marketPrisoner) {
+    marketPrisoner.x = marketChatterText.x + width / 2 + 10;
+    marketPrisoner.y = marketChatterText.y + height / 2;
   }
+}
+
+function typeMarketQuote(quote) {
+  if (!marketChatterText) return;
+  if (marketTypeEvent) marketTypeEvent.remove(false);
+  marketChatterText.setText('');
+  updateSpeechBubble();
+  let i = 0;
+  const scene = marketChatterText.scene;
+  marketTypeEvent = scene.time.addEvent({
+    delay: 40,
+    repeat: quote.length - 1,
+    callback: () => {
+      marketChatterText.setText(marketChatterText.text + quote[i]);
+      updateSpeechBubble();
+      i++;
+    }
+  });
+}
+
+function showMarketQuote(quotes) {
+  if (!marketChatterText) return;
+  if (marketPrisoner) {
+    const color = Phaser.Utils.Array.GetRandom(classes).color;
+    marketPrisoner.list[0].setTint(color);
+  }
+  const quote = Phaser.Utils.Array.GetRandom(quotes);
+  typeMarketQuote(quote);
 }
 
 // Refresh prices, specials and chatter at the start of a new day
@@ -583,10 +811,9 @@ function dailyMarketUpdate() {
   do {
     dailySellSpecial = Phaser.Utils.Array.GetRandom(availableItems).name;
   } while (dailySellSpecial === dailyBuySpecial);
-  currentQuote = Phaser.Utils.Array.GetRandom(marketQuotes);
   refreshMarketPrices();
   updateMarketUI();
-  updateMarketChatter();
+  showMarketQuote(sellingQuotes);
 }
 
 // Advance the calendar by a number of days
@@ -1477,10 +1704,13 @@ function create() {
     wordWrap: { width: 640 }
   }).setOrigin(0.5)
     .setStroke('#000000', 3);
+  marketChatterBubble = scene.add.rectangle(350, 400, 10, 10, 0xffffff, 1)
+    .setOrigin(0.5)
+    .setStrokeStyle(2, 0x000000);
   const body = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
   const head = scene.add.image(0, -80, 'prisonerHead1').setOrigin(0.5).setScale(1);
   marketPrisoner = scene.add.container(0, 0, [body, head]);
-  marketList.add([marketChatterText, marketPrisoner]);
+  marketList.add([marketChatterBubble, marketChatterText, marketPrisoner]);
 
   const closeBtn = scene.add.image(700, 0, 'signClose')
     .setOrigin(0, 0)
@@ -1637,7 +1867,7 @@ function toggleShop(scene) {
     // Fade the game behind the shop so it appears paused and dimmed
     fadeScreenOverlay(scene, 0.5);
     updateMarketUI();
-    updateMarketChatter();
+    showMarketQuote(sellingQuotes);
     if (hideMeterEvent) {
       hideMeterEvent.remove(false);
       hideMeterEvent = null;
@@ -1723,6 +1953,7 @@ function buyMarketItem(scene, index, qty = 1) {
     inventory[item.name] = (inventory[item.name] || 0) + qty;
     item.stock -= qty;
     updateMarketUI();
+    showMarketQuote(sellingQuotes);
   }
 }
 
@@ -1734,6 +1965,7 @@ function sellMarketItem(scene, index, qty = 1) {
     item.stock = (item.stock || 0) + qty;
     addGold(scene, item.currentSell * qty);
     updateMarketUI();
+    showMarketQuote(buyingQuotes);
   }
 }
 
