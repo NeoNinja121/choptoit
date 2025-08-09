@@ -768,10 +768,10 @@ function updateSpeechBubble() {
   const width = marketChatterText.width + padding * 2;
   const height = marketChatterText.height + padding * 2;
   marketChatterBubble.setSize(width, height);
-  marketChatterBubble.setPosition(marketChatterText.x, marketChatterText.y);
+  marketChatterBubble.setPosition(marketChatterText.x - 200, marketChatterText.y);
   if (marketPrisoner) {
-    marketPrisoner.x = marketChatterText.x + width / 2 + 10;
-    marketPrisoner.y = marketChatterText.y + height / 2;
+    marketPrisoner.x = marketChatterBubble.x + width / 2 + 10;
+    marketPrisoner.y = marketChatterBubble.y + height / 2;
   }
 }
 
@@ -1709,7 +1709,7 @@ function create() {
     wordWrap: { width: 640 }
   }).setOrigin(0.5)
     .setStroke('#000000', 3);
-  marketChatterBubble = scene.add.rectangle(350, 400, 10, 10, 0xffffff, 1)
+  marketChatterBubble = scene.add.rectangle(150, 400, 10, 10, 0xffffff, 1)
     .setOrigin(0.5)
     .setStrokeStyle(2, 0x000000);
   const body = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
