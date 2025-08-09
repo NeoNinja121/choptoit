@@ -74,6 +74,7 @@ function formatGold(amount) {
 let goldText;
 let fame = 0;
 let fameText;
+let nextCityKeyCost = 10;
 let lastGoldGain = 0;
 let pendingCoins = 0;
 let swingActive = false;
@@ -327,6 +328,11 @@ const cities = [
   { name: 'Gloucester', desc: 'Historic Roman city.', fameReq: 14, region: 'south', /* bgColor: 0x34342d, */
     modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } }
 ];
+
+// Track which cities have been unlocked; start with the current city
+cities.forEach(c => {
+  c.unlocked = c.name === currentCity;
+});
 
 // Mapping of cities to their background image files. Keys are the city names
 // and values are the corresponding PNG filenames.
@@ -926,9 +932,17 @@ function create() {
     icon.on('pointerdown', () => {
       cancelWeatherHold();
       weatherHoldEvent = scene.time.delayedCall(10000, () => {
-        addGold(scene, 1000000);
-        fame += 500;
+        addGold(scene, 3000000);
+        fame += 10000;
         fameText.setText(formatGold(Math.floor(fame)));
+        level = 100;
+        xp = 0;
+        xpThreshold = 10;
+        for (let i = 1; i < level; i++) {
+          xpThreshold = Math.floor(xpThreshold * 1.15);
+        }
+        updateXPUI();
+        updateTravelUI(scene);
         weatherHoldEvent = null;
       });
     });
@@ -1706,14 +1720,21 @@ function updateMarketUI() {
 function updateTravelUI(scene) {
   cities.forEach(c => {
     if (!c.ui) return;
-    const locked = c.fameReq && fame < c.fameReq;
+    const locked = !c.unlocked;
     const days = getTravelDays(currentCity, c.name);
     const title = c.name === currentCity ? c.name : `${c.name} — ${days} days`;
     c.ui.title.setText(title);
-    const label = c.name === currentCity ? '[Here]' : locked ? '[Locked]' : '[Go]';
-    c.ui.btn.setText(label);
-    const color = c.name === currentCity || locked ? '#777777' : '#00ff00';
-    c.ui.btn.setFill(color);
+    if (c.name === currentCity) {
+      c.ui.btn.setText('[Here]');
+      c.ui.btn.setFill('#777777');
+    } else if (locked) {
+      const affordable = fame >= nextCityKeyCost;
+      c.ui.btn.setText(`[Buy Key: ${nextCityKeyCost} Fame]`);
+      c.ui.btn.setFill(affordable ? '#ffff00' : '#777777');
+    } else {
+      c.ui.btn.setText('[Go]');
+      c.ui.btn.setFill('#00ff00');
+    }
   });
 }
 
@@ -1760,6 +1781,16 @@ function showTravelMenu(scene, region = travelRegion) {
     })
       .setInteractive()
       .on('pointerdown', () => {
+        if (!city.unlocked) {
+          if (fame >= nextCityKeyCost) {
+            fame -= nextCityKeyCost;
+            fameText.setText(formatGold(Math.floor(fame)));
+            city.unlocked = true;
+            nextCityKeyCost += 10;
+            updateTravelUI(scene);
+          }
+          return;
+        }
         travelToCity(scene, city);
       });
     travelList.add([title, btn]);
@@ -2120,7 +2151,7 @@ function updateBackground(scene) {
 }
 
 function selectCity(scene, city) {
-  if (city.fameReq && fame < city.fameReq) return;
+  if (!city.unlocked) return;
   if (city.name === currentCity) return;
   currentCity = city.name;
   // backgroundRect.setTint(city.bgColor); // disabled per request
