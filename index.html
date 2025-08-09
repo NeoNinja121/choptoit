@@ -1836,21 +1836,21 @@ function create() {
     .setDisplaySize(800, 600);
   weaponsImage = scene.add.image(400, 300, `weapons${player.weaponLevel}`)
     .setOrigin(0.5);
-  weaponsCostText = scene.add.text(400, 460, '', { font: '24px monospace', fill: '#ffd700' })
+  weaponsCostText = scene.add.text(400, 360, '', { font: '24px monospace', fill: '#ffd700' })
     .setOrigin(0.5)
     .setStroke('#000000', 3);
-  weaponUpgradeButton = scene.add.image(400, 500, 'upgradeButton')
+  weaponUpgradeButton = scene.add.image(400, 420, 'upgradeButton')
     .setOrigin(0.5, 0)
     .setScale(0.5)
     .setInteractive()
     .on('pointerdown', () => { upgradeWeapon(scene); });
-  weaponQuoteText = scene.add.text(170, 120, '', {
+  weaponQuoteText = scene.add.text(400, 300, '', {
     font: '20px monospace',
     fill: '#ffaaaa',
     wordWrap: { width: 300 }
   }).setOrigin(0.5)
     .setStroke('#000000', 3);
-  weaponQuoteBubble = scene.add.rectangle(170, 120, 10, 10, 0xffffff, 1)
+  weaponQuoteBubble = scene.add.rectangle(400, 300, 10, 10, 0xffffff, 1)
     .setOrigin(0.5)
     .setStrokeStyle(2, 0x000000);
   const wqBody = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
@@ -1947,13 +1947,13 @@ function create() {
     m.ui = { name, buyPrice, sellPrice, stockText, qtyText, buyBtn, sellBtn };
     itemY += 25;
   });
-  marketChatterText = scene.add.text(350, 400, '', {
+  marketChatterText = scene.add.text(400, 300, '', {
     font: '20px monospace',
     fill: '#ffaaaa',
     wordWrap: { width: 640 }
   }).setOrigin(0.5)
     .setStroke('#000000', 3);
-  marketChatterBubble = scene.add.rectangle(150, 400, 10, 10, 0xffffff, 1)
+  marketChatterBubble = scene.add.rectangle(400, 300, 10, 10, 0xffffff, 1)
     .setOrigin(0.5)
     .setStrokeStyle(2, 0x000000);
   const body = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
