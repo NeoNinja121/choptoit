@@ -290,11 +290,21 @@ const gameUpgrades = [
 
 // Items available in the trading market
 const marketItems = [
-  { name: 'Potatoes', buy: 2, sell: 1, fameReq: 0 },
-  { name: 'Mead', buy: 5, sell: 3, fameReq: 0 },
-  { name: 'Salt', buy: 8, sell: 4, fameReq: 3 },
-  { name: 'Silver Cup', buy: 20, sell: 10, fameReq: 5 },
-  { name: 'Gemstones', buy: 50, sell: 25, fameReq: 8 }
+  { name: 'Turnips', buy: 1, sell: 1, fameReq: 0, regions: ['north', 'south'] },
+  { name: 'Potatoes', buy: 2, sell: 1, fameReq: 0, regions: ['north', 'south'] },
+  { name: 'Salt', buy: 8, sell: 4, fameReq: 1, regions: ['north', 'south'] },
+  { name: 'Mead', buy: 5, sell: 3, fameReq: 0, regions: ['north', 'south'] },
+  { name: 'Wool', buy: 9, sell: 4, fameReq: 2, regions: ['north', 'south'] },
+  { name: 'Iron Ore', buy: 12, sell: 6, fameReq: 3, regions: ['north', 'south'] },
+  { name: 'Ale Barrels', buy: 15, sell: 7, fameReq: 4, regions: ['north', 'south'] },
+  { name: 'Tanned Leather', buy: 16, sell: 8, fameReq: 5, regions: ['north', 'south'] },
+  { name: 'Spices', buy: 18, sell: 9, fameReq: 6, regions: ['south'] },
+  { name: 'Silver Cups', buy: 20, sell: 10, fameReq: 7, regions: ['south'] },
+  { name: 'Gemstones', buy: 50, sell: 25, fameReq: 8, regions: ['south'] },
+  { name: 'Obsidian Shards', buy: 80, sell: 40, fameReq: 9, regions: ['south'] },
+  { name: 'Blood Runes', buy: 120, sell: 60, fameReq: 10, regions: ['south'] },
+  { name: 'Cursed Guillotine Blades', buy: 200, sell: 100, fameReq: 11, regions: ['south'] },
+  { name: 'Dragon Eggs', buy: 400, sell: 200, fameReq: 12, regions: ['south'] }
 ];
 
 // Places the player can visit
@@ -304,9 +314,9 @@ const cities = [
   { name: 'Durham', desc: 'Northern cathedral city.', fameReq: 1, region: 'north', /* bgColor: 0x34342d, */
     modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } },
   { name: 'Chester', desc: 'Fortified Roman town.', fameReq: 2, region: 'north', /* bgColor: 0x342d34, */
-    modifiers: { 'Silver Cup': { buy: 0.85, sell: 1.15 } } },
+    modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
   { name: 'Hull', desc: 'North Sea trading port.', fameReq: 3, region: 'north', /* bgColor: 0x2d342d, */
-    modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
+    modifiers: { 'Iron Ore': { buy: 0.85, sell: 1.15 } } },
   { name: 'Newcastle', desc: 'City on the Tyne.', fameReq: 4, region: 'north', /* bgColor: 0x2d2d34, */
     modifiers: { Potatoes: { buy: 0.9, sell: 1.1 } } },
   { name: 'Lincoln', desc: 'Cathedral and castle city.', fameReq: 5, region: 'north', /* bgColor: 0x342d2d, */
@@ -324,7 +334,7 @@ const cities = [
   { name: 'Colchester', desc: 'Ancient Roman city.', fameReq: 11, region: 'south', /* bgColor: 0x34342d, */
     modifiers: { Mead: { buy: 0.9, sell: 1.1 } } },
   { name: 'Oxford', desc: 'Home of great learning.', fameReq: 12, region: 'south', /* bgColor: 0x2d3434, */
-    modifiers: { 'Silver Cup': { buy: 0.85, sell: 1.15 } } },
+    modifiers: { 'Silver Cups': { buy: 0.85, sell: 1.15 } } },
   { name: 'Southampton', desc: 'Southern port city.', fameReq: 13, region: 'south', /* bgColor: 0x2d2d34, */
     modifiers: { Gemstones: { buy: 0.8, sell: 1.2 } } },
   { name: 'Gloucester', desc: 'Historic Roman city.', fameReq: 14, region: 'south', /* bgColor: 0x34342d, */
@@ -408,6 +418,12 @@ function getDateString() {
 function refreshMarketPrices() {
   const city = cities.find(c => c.name === currentCity);
   marketItems.forEach(m => {
+    if (city && m.regions && !m.regions.includes(city.region)) {
+      m.currentBuy = m.buy;
+      m.currentSell = m.sell;
+      m.stock = 0;
+      return;
+    }
     let buyMult = Phaser.Math.FloatBetween(0.9, 1.1);
     let sellMult = Phaser.Math.FloatBetween(0.9, 1.1);
     if (city && city.modifiers && city.modifiers[m.name]) {
@@ -561,9 +577,11 @@ function updateMarketChatter() {
 
 // Refresh prices, specials and chatter at the start of a new day
 function dailyMarketUpdate() {
-  dailyBuySpecial = Phaser.Utils.Array.GetRandom(marketItems).name;
+  const city = cities.find(c => c.name === currentCity);
+  const availableItems = marketItems.filter(m => !m.regions || (city && m.regions.includes(city.region)));
+  dailyBuySpecial = Phaser.Utils.Array.GetRandom(availableItems).name;
   do {
-    dailySellSpecial = Phaser.Utils.Array.GetRandom(marketItems).name;
+    dailySellSpecial = Phaser.Utils.Array.GetRandom(availableItems).name;
   } while (dailySellSpecial === dailyBuySpecial);
   currentQuote = Phaser.Utils.Array.GetRandom(marketQuotes);
   refreshMarketPrices();
@@ -1428,8 +1446,9 @@ function create() {
     .setStroke('#000000', 3);
   marketList.add([headItem, headBuy, headSell, headStock, headQty]);
   itemY += 25;
-
+  const city = cities.find(c => c.name === currentCity);
   marketItems.forEach((m, idx) => {
+    if (city && m.regions && !m.regions.includes(city.region)) return;
     const name = scene.add.text(cols.name, itemY, m.name, { font: '18px monospace', fill: '#ffffaa' })
       .setStroke('#000000', 3);
     const buyPrice = scene.add.text(cols.buy, itemY, '', { font: '18px monospace', fill: '#ffffaa' })
