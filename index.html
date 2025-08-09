@@ -102,7 +102,7 @@ let cloudLayerNear;
 let missText;
 let missStreak = 0;
 let betweenSwings = false;
-const VERSION = 'Pre Alpha —v2.97';
+const VERSION = 'Pre Alpha —v2.98';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -876,13 +876,13 @@ function create() {
     .setOrigin(0.5, 1)
     .setDepth(100)
     .setVisible(false);
-  goldText = scene.add.text(chest.x, chest.y - 5, formatGold(player.gold), { font: '20px monospace', fill: '#ffff88' })
+  goldText = scene.add.text(chest.x, chest.y - 2, formatGold(player.gold), { font: '20px monospace', fill: '#ffff88' })
     .setOrigin(0.5, 1)
     .setDepth(101)
     .setScrollFactor(0)
     .setVisible(false);
   goldText.setStroke('#000000', 4);
-  fameText = scene.add.text(chest.x, goldText.y - 24, '0', { font: '20px monospace', fill: '#88ffff' })
+  fameText = scene.add.text(chest.x, chest.y - 26, '0', { font: '20px monospace', fill: '#88ffff' })
     .setOrigin(0.5, 1)
     .setDepth(101)
     .setScrollFactor(0)
