@@ -975,12 +975,14 @@ let marketTypeEvent;
 function updateSpeechBubble() {
   if (!marketChatterText || !marketChatterBubble) return;
   const padding = 10;
-  const width = marketChatterText.width + padding * 2;
-  const height = marketChatterText.height + padding * 2;
+  const bounds = marketChatterText.getBounds();
+  const width = bounds.width + padding * 2;
+  const height = bounds.height + padding * 2;
   marketChatterBubble.setSize(width, height);
-  marketChatterBubble.setPosition(marketChatterText.x - 200, marketChatterText.y);
+  marketChatterBubble.setPosition(marketChatterText.x, marketChatterText.y);
   if (marketPrisoner) {
-    marketPrisoner.x = marketChatterBubble.x + width / 2 + 10;
+    const peasantWidth = marketPrisoner.width || 0;
+    marketPrisoner.x = marketChatterBubble.x + width / 2 + peasantWidth / 2 + 10;
     marketPrisoner.y = marketChatterBubble.y + height / 2;
   }
 }
