@@ -1416,25 +1416,36 @@ function create() {
     sellBtn: 580
   };
   // Header row
-  const headItem = scene.add.text(cols.name, itemY, 'Item', { font: '18px monospace', fill: '#ffffaa' });
-  const headBuy = scene.add.text(cols.buy, itemY, 'Buy', { font: '18px monospace', fill: '#ffffaa' });
-  const headSell = scene.add.text(cols.sell, itemY, 'Sell', { font: '18px monospace', fill: '#ffffaa' });
-  const headStock = scene.add.text(cols.stock, itemY, 'Stock', { font: '18px monospace', fill: '#ffffaa' });
-  const headQty = scene.add.text(cols.qty, itemY, 'Qty', { font: '18px monospace', fill: '#ffffaa' });
+  const headItem = scene.add.text(cols.name, itemY, 'Item', { font: '18px monospace', fill: '#ffffaa' })
+    .setStroke('#000000', 3);
+  const headBuy = scene.add.text(cols.buy, itemY, 'Buy', { font: '18px monospace', fill: '#ffffaa' })
+    .setStroke('#000000', 3);
+  const headSell = scene.add.text(cols.sell, itemY, 'Sell', { font: '18px monospace', fill: '#ffffaa' })
+    .setStroke('#000000', 3);
+  const headStock = scene.add.text(cols.stock, itemY, 'Stock', { font: '18px monospace', fill: '#ffffaa' })
+    .setStroke('#000000', 3);
+  const headQty = scene.add.text(cols.qty, itemY, 'Qty', { font: '18px monospace', fill: '#ffffaa' })
+    .setStroke('#000000', 3);
   marketList.add([headItem, headBuy, headSell, headStock, headQty]);
   itemY += 25;
 
   marketItems.forEach((m, idx) => {
     const name = scene.add.text(cols.name, itemY, m.name, { font: '18px monospace', fill: '#ffffaa' })
       .setStroke('#000000', 3);
-    const buyPrice = scene.add.text(cols.buy, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
-    const sellPrice = scene.add.text(cols.sell, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
-    const stockText = scene.add.text(cols.stock, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
-    const qtyText = scene.add.text(cols.qty, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
+    const buyPrice = scene.add.text(cols.buy, itemY, '', { font: '18px monospace', fill: '#ffffaa' })
+      .setStroke('#000000', 3);
+    const sellPrice = scene.add.text(cols.sell, itemY, '', { font: '18px monospace', fill: '#ffffaa' })
+      .setStroke('#000000', 3);
+    const stockText = scene.add.text(cols.stock, itemY, '', { font: '18px monospace', fill: '#ffffaa' })
+      .setStroke('#000000', 3);
+    const qtyText = scene.add.text(cols.qty, itemY, '', { font: '18px monospace', fill: '#ffffaa' })
+      .setStroke('#000000', 3);
     const buyBtn = scene.add.text(cols.buyBtn, itemY, '[Buy]', { font: '18px monospace', fill: '#00ff00' })
+      .setStroke('#000000', 3)
       .setInteractive()
       .on('pointerdown', () => { showTradeMenu(scene, idx, 'buy'); });
     const sellBtn = scene.add.text(cols.sellBtn, itemY, '[Sell]', { font: '18px monospace', fill: '#00ff00' })
+      .setStroke('#000000', 3)
       .setInteractive()
       .on('pointerdown', () => { showTradeMenu(scene, idx, 'sell'); });
     marketList.add([name, buyPrice, sellPrice, stockText, qtyText, buyBtn, sellBtn]);
@@ -1445,7 +1456,8 @@ function create() {
     font: '20px monospace',
     fill: '#ffaaaa',
     wordWrap: { width: 640 }
-  }).setOrigin(0.5);
+  }).setOrigin(0.5)
+    .setStroke('#000000', 3);
   const body = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
   const head = scene.add.image(0, -80, 'prisonerHead1').setOrigin(0.5).setScale(1);
   marketPrisoner = scene.add.container(0, 0, [body, head]);
@@ -1470,6 +1482,7 @@ function create() {
     .setOrigin(0.5, 0)
     .setStroke('#000000', 3);
   const b1 = scene.add.text(20, 50, '[Buy 1]', { font: '18px monospace', fill: '#00ff00' })
+    .setStroke('#000000', 3)
     .setInteractive()
     .on('pointerdown', () => {
       const item = marketItems[tradeItemIndex];
@@ -1477,6 +1490,7 @@ function create() {
       hideTradeMenu(scene);
     });
   const b10 = scene.add.text(180, 50, '[Buy 10]', { font: '18px monospace', fill: '#00ff00' })
+    .setStroke('#000000', 3)
     .setInteractive()
     .on('pointerdown', () => {
       const item = marketItems[tradeItemIndex];
@@ -1485,6 +1499,7 @@ function create() {
       hideTradeMenu(scene);
     });
   const bMax = scene.add.text(340, 50, '[Buy Max]', { font: '18px monospace', fill: '#00ff00' })
+    .setStroke('#000000', 3)
     .setInteractive()
     .on('pointerdown', () => {
       const item = marketItems[tradeItemIndex];
@@ -1495,12 +1510,15 @@ function create() {
       hideTradeMenu(scene);
     });
   const s1 = scene.add.text(20, 90, '[Sell 1]', { font: '18px monospace', fill: '#00ff00' })
+    .setStroke('#000000', 3)
     .setInteractive()
     .on('pointerdown', () => { sellMarketItem(scene, tradeItemIndex, 1); hideTradeMenu(scene); });
   const s10 = scene.add.text(180, 90, '[Sell 10]', { font: '18px monospace', fill: '#00ff00' })
+    .setStroke('#000000', 3)
     .setInteractive()
     .on('pointerdown', () => { sellMarketItem(scene, tradeItemIndex, 10); hideTradeMenu(scene); });
   const sMax = scene.add.text(340, 90, '[Sell Max]', { font: '18px monospace', fill: '#00ff00' })
+    .setStroke('#000000', 3)
     .setInteractive()
     .on('pointerdown', () => {
       const item = marketItems[tradeItemIndex];
@@ -1773,11 +1791,12 @@ function showTravelMenu(scene, region = travelRegion) {
       font: '18px monospace',
       fill: '#ffffaa',
       wordWrap: { width: 320 }
-    });
+    }).setStroke('#000000', 3);
     const btn = scene.add.text(240, y, '[Go]', {
       font: '18px monospace',
       fill: '#00ff00'
     })
+      .setStroke('#000000', 3)
       .setInteractive()
       .on('pointerdown', () => {
         if (!city.unlocked) {
@@ -1800,6 +1819,7 @@ function showTravelMenu(scene, region = travelRegion) {
     font: '18px monospace',
     fill: '#ffff00'
   })
+    .setStroke('#000000', 3)
     .setInteractive()
     .on('pointerdown', () => showTravelMenu(scene, null));
   travelList.add(backBtn);
