@@ -1409,7 +1409,8 @@ function create() {
   itemY += 25;
 
   marketItems.forEach((m, idx) => {
-    const name = scene.add.text(cols.name, itemY, m.name, { font: '18px monospace', fill: '#ffffaa' });
+    const name = scene.add.text(cols.name, itemY, m.name, { font: '18px monospace', fill: '#ffffaa' })
+      .setStroke('#000000', 3);
     const buyPrice = scene.add.text(cols.buy, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
     const sellPrice = scene.add.text(cols.sell, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
     const stockText = scene.add.text(cols.stock, itemY, '', { font: '18px monospace', fill: '#ffffaa' });
@@ -1450,7 +1451,8 @@ function create() {
   const tradeBg = scene.add.rectangle(0, 0, 560, 200, 0x222222, 1).setOrigin(0, 0);
   tradeBg.setStrokeStyle(2, 0xffffff);
   tradeTitle = scene.add.text(280, 10, '', { font: '18px monospace', fill: '#ffffaa' })
-    .setOrigin(0.5, 0);
+    .setOrigin(0.5, 0)
+    .setStroke('#000000', 3);
   const b1 = scene.add.text(20, 50, '[Buy 1]', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
     .on('pointerdown', () => {
