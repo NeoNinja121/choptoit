@@ -1445,10 +1445,10 @@ function create() {
   tradeOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
     .setVisible(false)
     .setDepth(40);
-  tradeContainer = scene.add.container(210, 300).setVisible(false).setDepth(41);
-  const tradeBg = scene.add.rectangle(0, 0, 380, 140, 0x222222, 1).setOrigin(0, 0);
+  tradeContainer = scene.add.container(190, 300).setVisible(false).setDepth(41);
+  const tradeBg = scene.add.rectangle(0, 0, 420, 160, 0x222222, 1).setOrigin(0, 0);
   tradeBg.setStrokeStyle(2, 0xffffff);
-  tradeTitle = scene.add.text(190, 10, '', { font: '18px monospace', fill: '#ffffaa' })
+  tradeTitle = scene.add.text(210, 10, '', { font: '18px monospace', fill: '#ffffaa' })
     .setOrigin(0.5, 0);
   const b1 = scene.add.text(20, 50, '[Buy 1]', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
@@ -1457,7 +1457,7 @@ function create() {
       if (item.stock > 0) buyMarketItem(scene, tradeItemIndex, 1);
       hideTradeMenu(scene);
     });
-  const b10 = scene.add.text(140, 50, '[Buy 10]', { font: '18px monospace', fill: '#00ff00' })
+  const b10 = scene.add.text(160, 50, '[Buy 10]', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
     .on('pointerdown', () => {
       const item = marketItems[tradeItemIndex];
@@ -1465,7 +1465,7 @@ function create() {
       if (qty > 0) buyMarketItem(scene, tradeItemIndex, qty);
       hideTradeMenu(scene);
     });
-  const bMax = scene.add.text(260, 50, '[Buy Max]', { font: '18px monospace', fill: '#00ff00' })
+  const bMax = scene.add.text(300, 50, '[Buy Max]', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
     .on('pointerdown', () => {
       const item = marketItems[tradeItemIndex];
@@ -1478,10 +1478,10 @@ function create() {
   const s1 = scene.add.text(20, 90, '[Sell 1]', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
     .on('pointerdown', () => { sellMarketItem(scene, tradeItemIndex, 1); hideTradeMenu(scene); });
-  const s10 = scene.add.text(140, 90, '[Sell 10]', { font: '18px monospace', fill: '#00ff00' })
+  const s10 = scene.add.text(160, 90, '[Sell 10]', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
     .on('pointerdown', () => { sellMarketItem(scene, tradeItemIndex, 10); hideTradeMenu(scene); });
-  const sMax = scene.add.text(260, 90, '[Sell Max]', { font: '18px monospace', fill: '#00ff00' })
+  const sMax = scene.add.text(300, 90, '[Sell Max]', { font: '18px monospace', fill: '#00ff00' })
     .setInteractive()
     .on('pointerdown', () => {
       const item = marketItems[tradeItemIndex];
@@ -1489,7 +1489,7 @@ function create() {
       if (max > 0) sellMarketItem(scene, tradeItemIndex, max);
       hideTradeMenu(scene);
     });
-  const tradeClose = scene.add.image(280, 0, 'signClose')
+  const tradeClose = scene.add.image(300, 0, 'signClose')
     .setOrigin(0, 0)
     .setDisplaySize(100, 100)
     .setInteractive()
