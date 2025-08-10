@@ -2064,11 +2064,12 @@ function create() {
     if (swingActive && inputEnabled) endSwing(scene);
   });
   scene.input.on('pointerdown', () => {
+    if (!inputEnabled) return;
     if (awaitingAngle) {
       chooseAngle(scene);
     } else if (awaitingPower) {
       choosePower(scene);
-    } else if (swingActive && inputEnabled) {
+    } else if (swingActive) {
       endSwing(scene);
     }
   });
