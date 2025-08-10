@@ -1246,12 +1246,30 @@ function updateWeaponQuoteBubble() {
   weaponQuoteBubble.setPosition(bubbleX, bubbleY);
   weaponQuoteText.setPosition(bubbleX, bubbleY);
 }
+let weaponTypeEvent;
+function typeWeaponQuote(quote) {
+  if (!weaponQuoteText) return;
+  if (weaponTypeEvent) weaponTypeEvent.remove(false);
+  const scene = weaponQuoteText.scene;
+  weaponQuoteText.setText(quote);
+  updateWeaponQuoteBubble();
+  weaponQuoteText.setText('');
+
+  let i = 0;
+  weaponTypeEvent = scene.time.addEvent({
+    delay: 40,
+    repeat: quote.length - 1,
+    callback: () => {
+      weaponQuoteText.setText(weaponQuoteText.text + quote[i]);
+      i++;
+    }
+  });
+}
 
 function showWeaponQuote(quotes) {
   if (!weaponQuoteText) return;
   const quote = Phaser.Utils.Array.GetRandom(quotes);
-  weaponQuoteText.setText(quote);
-  updateWeaponQuoteBubble();
+  typeWeaponQuote(quote);
 }
 
 function updateStorageQuoteBubble() {
@@ -1270,11 +1288,30 @@ function updateStorageQuoteBubble() {
   storageQuoteText.setPosition(bubbleX, bubbleY);
 }
 
+let storageTypeEvent;
+function typeStorageQuote(quote) {
+  if (!storageQuoteText) return;
+  if (storageTypeEvent) storageTypeEvent.remove(false);
+  const scene = storageQuoteText.scene;
+  storageQuoteText.setText(quote);
+  updateStorageQuoteBubble();
+  storageQuoteText.setText('');
+
+  let i = 0;
+  storageTypeEvent = scene.time.addEvent({
+    delay: 40,
+    repeat: quote.length - 1,
+    callback: () => {
+      storageQuoteText.setText(storageQuoteText.text + quote[i]);
+      i++;
+    }
+  });
+}
+
 function showStorageQuote(quotes) {
   if (!storageQuoteText) return;
   const quote = Phaser.Utils.Array.GetRandom(quotes);
-  storageQuoteText.setText(quote);
-  updateStorageQuoteBubble();
+  typeStorageQuote(quote);
 }
 
 // Refresh prices, specials and chatter at the start of a new day
@@ -2056,12 +2093,12 @@ function create() {
     .setStroke('#000000', 3);
   storageQuoteText = scene.add.text(0, 0, '', {
     font: '20px monospace',
-    fill: '#000000',
+    fill: '#ffaaaa',
     wordWrap: { width: 300 },
     align: 'center'
   }).setOrigin(0.5)
     .setStroke('#000000', 3);
-  storageQuoteBubble = scene.add.rectangle(0, 0, 10, 10, 0xffe5b4, 1)
+  storageQuoteBubble = scene.add.rectangle(0, 0, 10, 10, 0xffffff, 1)
     .setOrigin(0.5)
     .setStrokeStyle(2, 0x000000);
   const sqBody = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
