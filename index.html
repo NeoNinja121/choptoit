@@ -979,7 +979,7 @@ function updateSpeechBubble() {
   const width = bounds.width + padding * 2;
   const height = bounds.height + padding * 2;
   marketChatterBubble.setSize(width, height);
-  marketChatterBubble.setPosition(marketChatterText.x - 200, marketChatterText.y);
+  marketChatterBubble.setPosition(marketChatterText.x - 300, marketChatterText.y - 15);
   if (marketPrisoner) {
     const peasantWidth = marketPrisoner.width || 0;
     marketPrisoner.x = marketChatterText.x + width / 2 + peasantWidth / 2 + 10;
@@ -1953,7 +1953,7 @@ function create() {
     wordWrap: { width: 640 }
   }).setOrigin(0.5)
     .setStroke('#000000', 3);
-  marketChatterBubble = scene.add.rectangle(marketChatterText.x - 200, marketChatterText.y, 10, 10, 0xffffff, 1)
+  marketChatterBubble = scene.add.rectangle(marketChatterText.x - 300, marketChatterText.y - 15, 10, 10, 0xffffff, 1)
     .setOrigin(0.5)
     .setStrokeStyle(2, 0x000000);
   const body = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
