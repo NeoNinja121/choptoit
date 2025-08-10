@@ -1138,8 +1138,8 @@ function spawnFameCoin(scene) {
 }
 
 function openChest(scene) {
-  chest.setFillStyle(0xdaa520);
-  scene.time.delayedCall(300, () => chest.setFillStyle(0x8b4513));
+  chest.setTexture('chestOpen');
+  scene.time.delayedCall(300, () => chest.setTexture('chestClosed'));
 }
 
 function pickClass() {
@@ -1167,6 +1167,9 @@ function preload() {
   this.load.image('mapNorth', 'map_north.png');
   this.load.image('mapSouth', 'map_south.png');
   this.load.image('backgroundTravel', 'background_travel1.png');
+  this.load.image('backgroundTravelMenu', 'background_travelmenu.png');
+  this.load.image('chestOpen', 'goldchest_open.png');
+  this.load.image('chestClosed', 'goldchest_closed.png');
   // Storage upgrade assets
   this.load.image('backgroundStorage', 'background_storage.png');
   this.load.image('upgradeButton', 'upgrade_button.png');
@@ -1365,8 +1368,9 @@ function create() {
   rightEscort.setVisible(false);
 
   // Gold chest and counters
-  chest = scene.add.rectangle(config.width - 60, config.height - 40, 80, 50, 0x8b4513)
+  chest = scene.add.image(config.width - 60, config.height - 40, 'chestClosed')
     .setOrigin(0.5, 1)
+    .setDisplaySize(80, 80)
     .setDepth(100)
     .setVisible(false);
   goldText = scene.add.text(chest.x, chest.y - 2, formatGold(player.gold), { font: '20px monospace', fill: '#ffff88' })
@@ -1861,7 +1865,7 @@ function create() {
   const wqBody = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
   const wqHead = scene.add.image(0, -80, 'prisonerHead1').setOrigin(0.5).setScale(1);
   weaponPeasant = scene.add.container(0, 0, [wqBody, wqHead]);
-  weaponPeasant.setPosition(400, 460);
+  weaponPeasant.setPosition(400, 550);
   const weaponsClose = scene.add.image(700, 0, 'signClose')
     .setOrigin(0, 0)
     .setDisplaySize(100, 100)
@@ -1881,7 +1885,7 @@ function create() {
   travelContainer = scene.add.container(0, 0).setVisible(false).setDepth(201);
   const travelSky = scene.add.image(400, 300, 'backgroundSky')
     .setDisplaySize(800, 600);
-  const travelBg = scene.add.image(400, 300, 'backgroundTravel')
+  const travelBg = scene.add.image(400, 300, 'backgroundTravelMenu')
     .setDisplaySize(800, 600);
   travelList = scene.add.container(0, 0);
   travelContainer.add([travelSky, travelBg, travelList]);
@@ -1969,7 +1973,7 @@ function create() {
     .setStrokeStyle(2, 0x000000);
   const body = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
   const head = scene.add.image(0, -80, 'prisonerHead1').setOrigin(0.5).setScale(1);
-  marketPrisoner = scene.add.container(400, 460, [body, head]);
+  marketPrisoner = scene.add.container(400, 550, [body, head]);
   shopContainer.add(marketChatterBubble);
   shopContainer.add(marketChatterText);
   shopContainer.add(marketPrisoner);
