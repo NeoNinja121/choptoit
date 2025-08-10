@@ -1020,16 +1020,18 @@ function showMarketQuote(quotes) {
 }
 
 function updateWeaponQuoteBubble() {
-  if (!weaponQuoteText || !weaponQuoteBubble) return;
+  if (!weaponQuoteText || !weaponQuoteBubble || !weaponPeasant) return;
   const padding = 10;
   const width = weaponQuoteText.width + padding * 2;
   const height = weaponQuoteText.height + padding * 2;
   weaponQuoteBubble.setSize(width, height);
-  weaponQuoteBubble.setPosition(weaponQuoteText.x, weaponQuoteText.y);
-  if (weaponPeasant) {
-    weaponPeasant.x = weaponQuoteText.x + width / 2 + 10;
-    weaponPeasant.y = weaponQuoteText.y + height / 2;
-  }
+
+  const peasantBounds = weaponPeasant.getBounds();
+  const bubbleX = peasantBounds.centerX;
+  const bubbleY = peasantBounds.top - 20 - height / 2;
+
+  weaponQuoteBubble.setPosition(bubbleX, bubbleY);
+  weaponQuoteText.setPosition(bubbleX, bubbleY);
 }
 
 function showWeaponQuote(quotes) {
@@ -1857,6 +1859,7 @@ function create() {
   const wqBody = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
   const wqHead = scene.add.image(0, -80, 'prisonerHead1').setOrigin(0.5).setScale(1);
   weaponPeasant = scene.add.container(0, 0, [wqBody, wqHead]);
+  weaponPeasant.setPosition(400, 460);
   const weaponsClose = scene.add.image(700, 0, 'signClose')
     .setOrigin(0, 0)
     .setDisplaySize(100, 100)
