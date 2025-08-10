@@ -105,6 +105,7 @@ let cloudLayerNear;
 let missText;
 let missStreak = 0;
 let betweenSwings = false;
+let menuOpen = false;
 const VERSION = 'Pre Alpha —v2.98';
 let versionText;
 let inputEnabled = true;
@@ -1296,7 +1297,7 @@ function create() {
   // with the swing meter. This prevents the meter from resetting unexpectedly
   // while awaiting input.
   this.dayNight.onHourlyExecution(() => {
-    if (gameStarted && !swingActive && !awaitingAngle && !awaitingPower && !betweenSwings) {
+    if (gameStarted && !menuOpen && !swingActive && !awaitingAngle && !awaitingPower && !betweenSwings) {
       startExecutionRound();
     }
   });
@@ -2124,6 +2125,7 @@ function fadeBackgroundOverlay(scene, alpha, duration = 300, onComplete) {
 
 function toggleShop(scene) {
   const visible = !shopContainer.visible;
+  menuOpen = visible;
   shopOverlay.setVisible(visible);
   shopContainer.setVisible(visible);
   setGoldChestVisible(!visible);
@@ -2348,6 +2350,7 @@ function showTravelMenu(scene, region = travelRegion) {
 
 function toggleTravel(scene, resume = true, withFade = true) {
   const visible = !travelContainer.visible;
+  menuOpen = visible;
   travelOverlay.setVisible(visible);
   travelContainer.setVisible(visible);
   setGoldChestVisible(!visible);
@@ -2395,6 +2398,7 @@ function toggleTravel(scene, resume = true, withFade = true) {
 // Toggle the storage upgrade screen
 function toggleStorage(scene) {
   const visible = !storageContainer.visible;
+  menuOpen = visible;
   storageOverlay.setVisible(visible);
   storageContainer.setVisible(visible);
   setGoldChestVisible(!visible);
@@ -2477,6 +2481,7 @@ function upgradeStorage(scene) {
 // Toggle the weapons upgrade screen
 function toggleWeapons(scene) {
   const visible = !weaponsContainer.visible;
+  menuOpen = visible;
   weaponsOverlay.setVisible(visible);
   weaponsContainer.setVisible(visible);
   setGoldChestVisible(!visible);
@@ -2595,6 +2600,7 @@ function showTradeMenu(scene, index, mode = 'buy') {
   tradeItemIndex = index;
   tradeMode = mode;
   tradeTitle.setText(marketItems[index].name);
+  menuOpen = true;
   const showBuy = mode === 'buy';
   tradeBuyBtns.forEach(btn => btn.setVisible(showBuy));
   tradeSellBtns.forEach(btn => btn.setVisible(!showBuy));
@@ -2630,6 +2636,7 @@ function showTradeMenu(scene, index, mode = 'buy') {
 function hideTradeMenu(scene) {
   tradeOverlay.setVisible(false);
   tradeContainer.setVisible(false);
+  menuOpen = false;
   // backOverlay.setVisible(backOverlayWasVisible);
   scene.physics.world.resume();
   scene.tweens.resumeAll();
