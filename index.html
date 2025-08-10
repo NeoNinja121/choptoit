@@ -3860,16 +3860,17 @@ function spawnTarget(scene) {
     ease: 'Linear',
     onComplete: () => {
       scene.physics.world.enable(target);
-      if (type === 'explodingBarrel') {
-        // Include the fuse above the barrel in the hitbox
-        target.body.setSize(30, 46);
-        target.body.setOffset(-15, -26);
-      } else {
-        target.body.setCircle(20);
-        target.body.setOffset(-20, -20);
-        target.body.x = target.x - target.body.halfWidth;
-        target.body.y = target.y - target.body.halfHeight;
-      }
+        if (type === 'explodingBarrel') {
+          // Include the fuse above the barrel in the hitbox and widen it slightly
+          // so the barrels are a bit easier to hit.
+          target.body.setSize(40, 56);
+          target.body.setOffset(-20, -30);
+        } else {
+          target.body.setCircle(20);
+          target.body.setOffset(-20, -20);
+          target.body.x = target.x - target.body.halfWidth;
+          target.body.y = target.y - target.body.halfHeight;
+        }
       target.body.setAllowGravity(false);
       target.body.setImmovable(true);
       if (FEATURES.birds && Phaser.Math.Between(1, 10) === 1) {
