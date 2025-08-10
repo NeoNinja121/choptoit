@@ -973,18 +973,18 @@ function arrowForWind(x, y) {
 // Display a market quote with typing effect
 let marketTypeEvent;
 function updateSpeechBubble() {
-  if (!marketChatterText || !marketChatterBubble) return;
+  if (!marketChatterText || !marketChatterBubble || !marketPrisoner) return;
   const padding = 10;
-  const bounds = marketChatterText.getBounds();
-  const width = bounds.width + padding * 2;
-  const height = bounds.height + padding * 2;
+  const width = marketChatterText.width + padding * 2;
+  const height = marketChatterText.height + padding * 2;
   marketChatterBubble.setSize(width, height);
-  marketChatterBubble.setPosition(marketChatterText.x, marketChatterText.y);
-  if (marketPrisoner) {
-    const peasantWidth = marketPrisoner.width || 0;
-    marketPrisoner.x = marketChatterText.x + width / 2 + peasantWidth / 2 + 10;
-    marketPrisoner.y = marketChatterBubble.y + height / 2 + 100;
-  }
+
+  const peasantBounds = marketPrisoner.getBounds();
+  const bubbleX = peasantBounds.centerX;
+  const bubbleY = peasantBounds.top - 20 - height / 2;
+
+  marketChatterBubble.setPosition(bubbleX, bubbleY);
+  marketChatterText.setPosition(bubbleX, bubbleY);
 }
 
 function typeMarketQuote(quote) {
@@ -1958,13 +1958,13 @@ function create() {
     align: 'center'
   }).setOrigin(0.5)
     .setStroke('#000000', 3);
-  marketChatterBubble = scene.add.rectangle(marketChatterText.x, marketChatterText.y, 10, 10, 0xffffff, 1)
+  marketChatterBubble = scene.add.rectangle(400, 300, 10, 10, 0xffffff, 1)
     .setOrigin(0.5)
     .setStrokeStyle(2, 0x000000);
   const body = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
   const head = scene.add.image(0, -80, 'prisonerHead1').setOrigin(0.5).setScale(1);
-  marketPrisoner = scene.add.container(0, 0, [body, head]);
-  marketList.add([marketChatterBubble, marketChatterText, marketPrisoner]);
+  marketPrisoner = scene.add.container(400, 460, [body, head]);
+  shopContainer.add([marketChatterBubble, marketChatterText, marketPrisoner]);
 
   const closeBtn = scene.add.image(700, 0, 'signClose')
     .setOrigin(0, 0)
