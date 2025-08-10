@@ -152,6 +152,9 @@ let weaponUpgradeButton;
 let weaponQuoteText;
 let weaponQuoteBubble;
 let weaponPeasant;
+let storageQuoteText;
+let storageQuoteBubble;
+let storagePeasant;
 let travelRegion = null;
 // The dimming overlay previously used during menu transitions caused a
 // distracting flash when switching cities. To remove it while keeping the
@@ -622,6 +625,213 @@ const weaponAfterQuotes = [
   "Don’t prove me right."
 ];
 
+// Storage upgrade quotes
+const storageBeforeQuotes = [
+  "Ah! You're just in time to test my latest... probably safe... device.",
+  "Behold! The future... if the future smells like burning.",
+  "Don't mind the sparks, that's how you know it's working.",
+  "A marvel of engineering and occasional explosions.",
+  "Fresh from the workbench and only slightly cursed!",
+  "One of a kind! Unless you count the prototype... which exploded.",
+  "It's never been tested on humans... until now.",
+  "Ignore the scorch marks — cosmetic only!",
+  "I call it progress! My neighbours call it a fire hazard.",
+  "Straight from the annals of history... with a few improvements.",
+  "It's part crossbow, part kettle. Trust me, it makes sense.",
+  "Every great invention begins with a questionable decision.",
+  "Leonardo would be jealous... and slightly afraid.",
+  "They said I was mad! They were right, but still...",
+  "Guaranteed to work!... at least once.",
+  "It runs on steam, ambition, and mild panic.",
+  "The latest in medieval convenience.",
+  "It's practically magic — just with more screaming.",
+  "Inspired by the siege of Camelot and my breakfast.",
+  "You won't find this in any armoury... for legal reasons.",
+  "I made this while half-asleep. It's better that way.",
+  "Warning: side effects may include fame, fortune, and fire.",
+  "History in the making — or unmaking.",
+  "It's the pinnacle of progress! Or the pit, depending.",
+  "Ah, you have an eye for dangerously impractical things.",
+  "I modelled it on a dream I had after too much mead.",
+  "Some assembly required. No refunds.",
+  "A steal at twice the price! A hazard at any price.",
+  "Medieval warfare meets questionable science!",
+  "Forged in the fires of innovation... and my shed.",
+  "Clockwork precision... and occasional seizures.",
+  "Perfect for defending a castle... or starting a bonfire.",
+  "Made with cutting-edge... well, rusty-edge tools.",
+  "The king wouldn't approve. The queen might.",
+  "It's banned in three realms, which means it's good.",
+  "More moving parts than a bard's love life.",
+  "I once used this to win a tournament... by accident.",
+  "Built with love. And a worrying amount of nails.",
+  "Inspired by a siege engine and a soup ladle.",
+  "As reliable as a dragon in a pottery shop.",
+  "It's light, fast, and only sometimes explodes.",
+  "Every inventor needs a brave fool... I mean customer.",
+  "Sharper than your wit!",
+  "Powered by ingenuity, and sometimes squirrels.",
+  "A masterpiece of form and mild chaos.",
+  "Perfect for the battlefield, the kitchen, or the stage.",
+  "From my mind to your hands... via a lot of trial and error.",
+  "I present to you: The Thing! Name pending.",
+  "Not available in stores because they kicked me out.",
+  "An improvement over the last model... which killed a goat.",
+  "All the rage in distant lands I may have dreamed of.",
+  "Gears, levers, springs — all the important bits.",
+  "Made to withstand war, weather, and whining.",
+  "Even the guild doesn't know about this one.",
+  "Ideal for adventurers, lunatics, and you.",
+  "I could explain how it works... but you'd be on fire by the end.",
+  "I call it science. My rivals call it witchcraft.",
+  "It's the pride of my workshop!",
+  "You'll be the envy of knights and jesters alike.",
+  "Bigger boom, smaller chance of survival.",
+  "Tested on wild boars and one angry noble.",
+  "Perfect for solving problems violently.",
+  "Comes with a manual... that's mostly doodles.",
+  "It'll change your life... or end it.",
+  "An engineering marvel, if I do say so myself.",
+  "All the precision of a trebuchet, but portable!",
+  "Bards will sing of you... or your accident.",
+  "The guild blacklisted me for making this.",
+  "It's mostly legal!",
+  "It's not a weapon, it's a conversation starter.",
+  "The future of combat, today!",
+  "Forged in secrecy, unveiled in style.",
+  "Guaranteed to impress — or distress.",
+  "More moving parts than a noble's banquet.",
+  "Custom-built for someone far more important... but they died.",
+  "You're about to own history's biggest 'oops.'",
+  "I once traded this for a castle... for about a day.",
+  "The only one in existence, for now.",
+  "It's had... minor malfunctions.",
+  "Perfect for intimidating, obliterating, and aggravating.",
+  "You won't regret it... probably.",
+  "Why yes, it is smoking. Good eye!",
+  "Better than the last invention I sold you.",
+  "The pinnacle of progress — until I top it.",
+  "It hums. That's normal.",
+  "You look like someone who could use this irresponsibly.",
+  "The crown will want it back eventually.",
+  "Careful, it bites.",
+  "A marvel of design and recklessness.",
+  "It's never killed me, so that's good.",
+  "What it lacks in subtlety, it makes up for in noise.",
+  "Inspired by a bard's drunken ramblings.",
+  "No two are alike — the others all exploded.",
+  "Ah, my crowning achievement this week.",
+  "It's perfect for your particular... skill level.",
+  "You'll want to insure your limbs first.",
+  "It's genius! Or madness. Or both.",
+  "The perfect upgrade for someone dangerously curious.",
+  "It's whispering to me again...",
+  "Step right up and be part of history!"
+];
+
+const storageAfterQuotes = [
+  "Congratulations! You now own the future... if it lasts that long.",
+  "Try not to break it before sundown.",
+  "There goes my masterpiece... into your hands.",
+  "Remember, it's not a toy... unless you want it to be.",
+  "Treat it gently, it has feelings.",
+  "If it starts smoking, you're doing great.",
+  "Now you're armed with science!",
+  "Bards will sing of you... or laugh at you.",
+  "And there goes my best work... good luck!",
+  "If it blows up, you didn't get it from me.",
+  "Don't forget to wind it up.",
+  "The warranty expires when you walk out.",
+  "You've just bought more trouble than you can handle.",
+  "Ah, my creation meets its test.",
+  "Don't let the gears bite you.",
+  "Take care of it... or don't. I'll make another.",
+  "Now go change the world, or destroy it.",
+  "You look more dangerous already.",
+  "Just remember, red lever first.",
+  "You're now part of my experiment.",
+  "If it talks back, ignore it.",
+  "The guild will want to see you now.",
+  "It's more temperamental than you are.",
+  "It'll outlive you.",
+  "Handle with care — or chaos.",
+  "Every scratch tells a story. Don't make yours boring.",
+  "Don't use it indoors... trust me.",
+  "Keep it away from chickens.",
+  "If you smell burning, that's normal.",
+  "May it serve you well... or at least noisily.",
+  "Don't drop it in water unless you want fireworks.",
+  "Now you're a walking hazard. Welcome to the club.",
+  "The king will be jealous.",
+  "Remember: safety third.",
+  "It'll make you famous... or infamous.",
+  "Take a bow, the crowd will love you.",
+  "You've got yourself a legend in the making.",
+  "If you break it, bring back the pieces.",
+  "It's bonded to you now... for better or worse.",
+  "That sound it's making is normal... mostly.",
+  "Don't feed it after midnight.",
+  "It may try to run away. Hold tight.",
+  "I'd tell you how it works, but you'd cry.",
+  "Consider yourself upgraded.",
+  "Now you're truly a danger to yourself and others.",
+  "I'll start writing your ballad.",
+  "You're welcome... and I'm sorry.",
+  "Enjoy! And watch your eyebrows.",
+  "I'll drink to your survival.",
+  "The neighbours will hear about this.",
+  "Go forth and cause... progress.",
+  "It suits you. In a worrying way.",
+  "You'll be unstoppable... if it doesn't stop first.",
+  "Remember, you paid for this madness.",
+  "If you see smoke, run.",
+  "The cogs spin for you now.",
+  "You're officially my favourite test subject.",
+  "Wear it like you mean it.",
+  "That hum means it's ready. Probably.",
+  "You look like you'll regret this... eventually.",
+  "Don't worry, it only backfires sometimes.",
+  "History will remember you... or your crater.",
+  "Don't get it wet... unless you want steam.",
+  "If it starts glowing, step back.",
+  "Go make me proud, or at least amused.",
+  "There's no going back now.",
+  "It's yours now, every squeak and spark.",
+  "Go test it on something expendable.",
+  "You've joined the ranks of the dangerously equipped.",
+  "I'll be taking bets on how long you last.",
+  "You've bought the best... and the riskiest.",
+  "You'll thank me later... maybe.",
+  "That look in your eye worries me.",
+  "Give it a name, it deserves it.",
+  "If it explodes, aim it at the enemy.",
+  "The guild won't be happy you have this.",
+  "I'll expect a full report... or a note from your next of kin.",
+  "Go forth, chaos-bringer!",
+  "If it rattles, it's thinking.",
+  "Don't listen to the voices it makes.",
+  "Enjoy your new reputation.",
+  "Now you're armed with pure genius... and danger.",
+  "That smell means it's working.",
+  "It's alive! Oh wait... that's you.",
+  "Treat it like royalty. Mad royalty.",
+  "Remember, every invention has a learning curve... usually straight down.",
+  "I'll see you in the history books... or the obituaries.",
+  "Go forth and terrify.",
+  "It's more loyal than your friends.",
+  "You'll either love it or fear it.",
+  "I've outdone myself this time.",
+  "It's as unstable as you are.",
+  "Show it off, scare your enemies.",
+  "Go make me proud... or infamous.",
+  "You're now a walking experiment.",
+  "The crown will be furious you own this.",
+  "Handle it like it might explode. Because it might.",
+  "That click means it's ready... or doomed.",
+  "Enjoy the chaos!",
+  "You'll be the talk of the realm... for better or worse."
+];
+
 let marketChatterText;
 let marketChatterBubble;
 let marketPrisoner;
@@ -1042,6 +1252,29 @@ function showWeaponQuote(quotes) {
   const quote = Phaser.Utils.Array.GetRandom(quotes);
   weaponQuoteText.setText(quote);
   updateWeaponQuoteBubble();
+}
+
+function updateStorageQuoteBubble() {
+  if (!storageQuoteText || !storageQuoteBubble || !storagePeasant) return;
+  const padding = 10;
+  const width = storageQuoteText.width + padding * 2;
+  const height = storageQuoteText.height + padding * 2;
+  storageQuoteBubble.setSize(width, height);
+  storageQuoteBubble.setOrigin(0.5);
+
+  const peasantBounds = storagePeasant.getBounds();
+  const bubbleX = config.width / 2;
+  const bubbleY = peasantBounds.top - 20 - height / 2;
+
+  storageQuoteBubble.setPosition(bubbleX, bubbleY);
+  storageQuoteText.setPosition(bubbleX, bubbleY);
+}
+
+function showStorageQuote(quotes) {
+  if (!storageQuoteText) return;
+  const quote = Phaser.Utils.Array.GetRandom(quotes);
+  storageQuoteText.setText(quote);
+  updateStorageQuoteBubble();
 }
 
 // Refresh prices, specials and chatter at the start of a new day
@@ -1821,6 +2054,20 @@ function create() {
   storageCostText = scene.add.text(400, 250, '', { font: '24px monospace', fill: '#ffd700' })
     .setOrigin(0.5)
     .setStroke('#000000', 3);
+  storageQuoteText = scene.add.text(0, 0, '', {
+    font: '20px monospace',
+    fill: '#000000',
+    wordWrap: { width: 300 },
+    align: 'center'
+  }).setOrigin(0.5)
+    .setStroke('#000000', 3);
+  storageQuoteBubble = scene.add.rectangle(0, 0, 10, 10, 0xffe5b4, 1)
+    .setOrigin(0.5)
+    .setStrokeStyle(2, 0x000000);
+  const sqBody = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
+  const sqHead = scene.add.image(0, -80, 'prisonerHead1').setOrigin(0.5).setScale(1);
+  storagePeasant = scene.add.container(0, 0, [sqBody, sqHead]);
+  storagePeasant.setPosition(400, 550);
   upgradeButton = scene.add.image(400, 290, 'upgradeButton')
     .setOrigin(0.5, 0)
     .setScale(0.5)
@@ -1831,7 +2078,11 @@ function create() {
     .setDisplaySize(100, 100)
     .setInteractive()
     .on('pointerdown', () => { toggleStorage(scene); });
-  storageContainer.add([storageSky, storageBg, storageImage, upgradeButton, storageCostText, storageClose]);
+  storageContainer.add([storageSky, storageBg, storageImage, upgradeButton, storageCostText]);
+  storageContainer.add(storageQuoteBubble);
+  storageContainer.add(storageQuoteText);
+  storageContainer.add(storagePeasant);
+  storageContainer.add(storageClose);
   updateStorageUI();
 
   // Weapons upgrade container and overlay
@@ -2409,6 +2660,7 @@ function toggleStorage(scene) {
   if (visible) {
     fadeScreenOverlay(scene, 0.5);
     updateStorageUI();
+    showStorageQuote(storageBeforeQuotes);
     if (hideMeterEvent) {
       hideMeterEvent.remove(false);
       hideMeterEvent = null;
@@ -2473,6 +2725,7 @@ function upgradeStorage(scene) {
         player.storageLevel++;
         player.maxStorage = player.storageLevel * 10;
         updateStorageUI();
+        showStorageQuote(storageAfterQuotes);
       },
     });
   }
