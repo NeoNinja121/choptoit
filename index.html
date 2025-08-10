@@ -978,9 +978,10 @@ function updateSpeechBubble() {
   const width = marketChatterText.width + padding * 2;
   const height = marketChatterText.height + padding * 2;
   marketChatterBubble.setSize(width, height);
+  marketChatterBubble.setOrigin(0.5);
 
   const peasantBounds = marketPrisoner.getBounds();
-  const bubbleX = peasantBounds.centerX;
+  const bubbleX = config.width / 2;
   const bubbleY = peasantBounds.top - 20 - height / 2;
 
   marketChatterBubble.setPosition(bubbleX, bubbleY);
@@ -1025,9 +1026,10 @@ function updateWeaponQuoteBubble() {
   const width = weaponQuoteText.width + padding * 2;
   const height = weaponQuoteText.height + padding * 2;
   weaponQuoteBubble.setSize(width, height);
+  weaponQuoteBubble.setOrigin(0.5);
 
   const peasantBounds = weaponPeasant.getBounds();
-  const bubbleX = peasantBounds.centerX;
+  const bubbleX = config.width / 2;
   const bubbleY = peasantBounds.top - 20 - height / 2;
 
   weaponQuoteBubble.setPosition(bubbleX, bubbleY);
@@ -1846,14 +1848,14 @@ function create() {
     .setScale(0.5)
     .setInteractive()
     .on('pointerdown', () => { upgradeWeapon(scene); });
-  weaponQuoteText = scene.add.text(400, 300, '', {
+  weaponQuoteText = scene.add.text(0, 0, '', {
     font: '20px monospace',
     fill: '#ffaaaa',
     wordWrap: { width: 300 },
     align: 'center'
   }).setOrigin(0.5)
     .setStroke('#000000', 3);
-  weaponQuoteBubble = scene.add.rectangle(400, 300, 10, 10, 0xffffff, 1)
+  weaponQuoteBubble = scene.add.rectangle(0, 0, 10, 10, 0xffffff, 1)
     .setOrigin(0.5)
     .setStrokeStyle(2, 0x000000);
   const wqBody = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
@@ -1865,7 +1867,11 @@ function create() {
     .setDisplaySize(100, 100)
     .setInteractive()
     .on('pointerdown', () => { toggleWeapons(scene); });
-  weaponsContainer.add([weaponsSky, weaponsBg, weaponsImage, weaponUpgradeButton, weaponsCostText, weaponQuoteBubble, weaponQuoteText, weaponPeasant, weaponsClose]);
+  weaponsContainer.add([weaponsSky, weaponsBg, weaponsImage, weaponUpgradeButton, weaponsCostText]);
+  weaponsContainer.add(weaponQuoteBubble);
+  weaponsContainer.add(weaponQuoteText);
+  weaponsContainer.add(weaponPeasant);
+  weaponsContainer.add(weaponsClose);
   updateWeaponsUI();
 
   // Travel container and overlay
@@ -1951,20 +1957,22 @@ function create() {
     m.ui = { name, buyPrice, sellPrice, stockText, qtyText, buyBtn, sellBtn };
     itemY += 25;
   });
-  marketChatterText = scene.add.text(400, 300, '', {
+  marketChatterText = scene.add.text(0, 0, '', {
     font: '20px monospace',
     fill: '#ffaaaa',
     wordWrap: { width: 640 },
     align: 'center'
   }).setOrigin(0.5)
     .setStroke('#000000', 3);
-  marketChatterBubble = scene.add.rectangle(400, 300, 10, 10, 0xffffff, 1)
+  marketChatterBubble = scene.add.rectangle(0, 0, 10, 10, 0xffffff, 1)
     .setOrigin(0.5)
     .setStrokeStyle(2, 0x000000);
   const body = scene.add.image(0, 0, 'prisonerBody1').setOrigin(0.5, 1).setScale(1);
   const head = scene.add.image(0, -80, 'prisonerHead1').setOrigin(0.5).setScale(1);
   marketPrisoner = scene.add.container(400, 460, [body, head]);
-  shopContainer.add([marketChatterBubble, marketChatterText, marketPrisoner]);
+  shopContainer.add(marketChatterBubble);
+  shopContainer.add(marketChatterText);
+  shopContainer.add(marketPrisoner);
 
   const closeBtn = scene.add.image(700, 0, 'signClose')
     .setOrigin(0, 0)
