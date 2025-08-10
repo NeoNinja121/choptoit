@@ -1842,12 +1842,13 @@ function create() {
     .setDisplaySize(800, 600);
   const weaponsBg = scene.add.image(400, 300, 'backgroundWeapons')
     .setDisplaySize(800, 600);
-  weaponsImage = scene.add.image(400, 300, `weapons${player.weaponLevel}`)
+  // Raise weapon image, cost text, and upgrade button for better layout
+  weaponsImage = scene.add.image(400, 250, `weapons${player.weaponLevel}`)
     .setOrigin(0.5);
-  weaponsCostText = scene.add.text(400, 360, '', { font: '24px monospace', fill: '#ffd700' })
+  weaponsCostText = scene.add.text(400, 310, '', { font: '24px monospace', fill: '#ffd700' })
     .setOrigin(0.5)
     .setStroke('#000000', 3);
-  weaponUpgradeButton = scene.add.image(400, 420, 'upgradeButton')
+  weaponUpgradeButton = scene.add.image(400, 370, 'upgradeButton')
     .setOrigin(0.5, 0)
     .setScale(0.5)
     .setInteractive()
@@ -2267,7 +2268,7 @@ function updateTravelUI(scene) {
     } else if (locked) {
       const affordable = fame >= nextCityKeyCost;
       c.ui.btn.setText(`[Buy Key: ${nextCityKeyCost} Fame]`);
-      c.ui.btn.setFill(affordable ? '#ffff00' : '#777777');
+      c.ui.btn.setFill(affordable ? '#00ff00' : '#777777');
     } else {
       c.ui.btn.setText('[Go]');
       c.ui.btn.setFill('#00ff00');
