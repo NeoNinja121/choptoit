@@ -1455,7 +1455,7 @@ function preload() {
   }
   this.load.image('background', 'background.png');
   this.load.image('backgroundSky', 'background_bluesky.png');
-  for (let i = 1; i <= 20; i++) {
+  for (let i = 1; i <= 87; i++) {
     const headKey = `prisonerHead${i}`;
     const headFile = i === 1 ? 'prisonerhead.png' : `prisonerhead${i}.png`;
     this.load.image(headKey, headFile);
@@ -1465,7 +1465,11 @@ function preload() {
     const bodyFile = i === 1 ? 'prisonerbody.png' : `prisonerbody${i}.png`;
     this.load.image(bodyKey, bodyFile);
   }
-  this.load.image('priestHead', 'prisonerhead_priest.png');
+  for (let i = 1; i <= 4; i++) {
+    const headKey = `priestHead${i}`;
+    const headFile = i === 1 ? 'prisonerhead_priest.png' : `prisonerhead_priest${i}.png`;
+    this.load.image(headKey, headFile);
+  }
   this.load.image('priestBody', 'prisonerbody_priest.png');
   this.load.image('jesterHead1', 'jesterhead.png');
   this.load.image('jesterBody1', 'jesterbody.png');
@@ -2113,7 +2117,7 @@ function create() {
     .setOrigin(0.5)
     .setStrokeStyle(2, 0x000000);
   const sqBodyKey = `prisonerBody${Phaser.Math.Between(1, 3)}`;
-  const sqHeadKey = `prisonerHead${Phaser.Math.Between(1, 20)}`;
+  const sqHeadKey = `prisonerHead${Phaser.Math.Between(1, 87)}`;
   const sqBody = scene.add.image(0, 0, sqBodyKey).setOrigin(0.5, 1).setScale(1);
   const sqHead = scene.add.image(0, -80, sqHeadKey).setOrigin(0.5).setScale(1);
   storagePeasant = scene.add.container(0, 0, [sqBody, sqHead]);
@@ -2166,7 +2170,7 @@ function create() {
     .setOrigin(0.5)
     .setStrokeStyle(2, 0x000000);
   const wqBodyKey = `prisonerBody${Phaser.Math.Between(1, 3)}`;
-  const wqHeadKey = `prisonerHead${Phaser.Math.Between(1, 20)}`;
+  const wqHeadKey = `prisonerHead${Phaser.Math.Between(1, 87)}`;
   const wqBody = scene.add.image(0, 0, wqBodyKey).setOrigin(0.5, 1).setScale(1);
   const wqHead = scene.add.image(0, -80, wqHeadKey).setOrigin(0.5).setScale(1);
   weaponPeasant = scene.add.container(0, 0, [wqBody, wqHead]);
@@ -2277,7 +2281,7 @@ function create() {
     .setOrigin(0.5)
     .setStrokeStyle(2, 0x000000);
   const bodyKey = `prisonerBody${Phaser.Math.Between(1, 3)}`;
-  const headKey = `prisonerHead${Phaser.Math.Between(1, 20)}`;
+  const headKey = `prisonerHead${Phaser.Math.Between(1, 87)}`;
   const body = scene.add.image(0, 0, bodyKey).setOrigin(0.5, 1).setScale(1);
   const head = scene.add.image(0, -80, headKey).setOrigin(0.5).setScale(1);
   marketPrisoner = scene.add.container(400, 550, [body, head]);
@@ -3339,10 +3343,11 @@ function spawnPrisoner(scene, fromRight, withTarget = true) {
   resetHead(scene);
   prisonerClass = pickClass();
   if (prisonerClass.name === 'Clergy') {
-    prisonerHeadKey = 'priestHead';
+    const headVariant = Phaser.Math.Between(1, 4);
+    prisonerHeadKey = `priestHead${headVariant}`;
     prisonerBodyKey = 'priestBody';
   } else {
-    const headVariant = Phaser.Math.Between(1, 20);
+    const headVariant = Phaser.Math.Between(1, 87);
     const bodyVariant = Phaser.Math.Between(1, 3);
     prisonerHeadKey = `prisonerHead${headVariant}`;
     prisonerBodyKey = `prisonerBody${bodyVariant}`;
