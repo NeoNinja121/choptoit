@@ -854,11 +854,152 @@ let weatherText;
 let weatherIndicator;
 let weatherIndicatorBg;
 let menuIcon;
+let saveMenuContainer;
 
 // Inventory for trading market items
 let inventory = {};
 // Multiplier applied to fame gains
 let fameMultiplier = 1;
+
+const SAVE_VERSION = 1;
+const SaveManager = {
+  key: 'choptoit-save',
+  saveVersion: SAVE_VERSION,
+  disabled: false,
+  warned: false,
+  saveTimeout: null,
+  load() {
+    if (this.disabled) return;
+    try {
+      const raw = localStorage.getItem(this.key);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (!this.validate(data)) return;
+      this.apply(data);
+    } catch (e) {
+      this.handleError(e);
+    }
+  },
+  getData() {
+    return {
+      saveVersion: this.saveVersion,
+      gold: player.gold,
+      fame,
+      xp,
+      level,
+      citiesUnlocked: cities.filter(c => c.unlocked).map(c => c.name),
+      itemsOwned: inventory,
+      upgradesOwned: {
+        storageLevel: player.storageLevel,
+        weaponLevel: player.weaponLevel,
+        purchasedUpgrades: gameUpgrades.map(u => !!u.purchased),
+      },
+    };
+  },
+  save() {
+    if (this.disabled) return;
+    if (this.saveTimeout) clearTimeout(this.saveTimeout);
+    this.saveTimeout = setTimeout(() => this.performSave(), 500);
+  },
+  performSave() {
+    this.saveTimeout = null;
+    if (this.disabled) return;
+    try {
+      localStorage.setItem(this.key, JSON.stringify(this.getData()));
+    } catch (e) {
+      this.handleError(e);
+    }
+  },
+  handleError(e) {
+    if (!this.warned) {
+      console.warn('Saving disabled: localStorage unavailable.', e);
+      this.warned = true;
+    }
+    this.disabled = true;
+  },
+  validate(data) {
+    return data && typeof data.gold === 'number' && typeof data.fame === 'number' &&
+      typeof data.xp === 'number' && typeof data.level === 'number' &&
+      Array.isArray(data.citiesUnlocked) && typeof data.itemsOwned === 'object' &&
+      data.upgradesOwned && typeof data.upgradesOwned.storageLevel === 'number' &&
+      typeof data.upgradesOwned.weaponLevel === 'number';
+  },
+  apply(data, updateUI = false) {
+    player.gold = data.gold || 0;
+    fame = data.fame || 0;
+    xp = data.xp || 0;
+    level = data.level || 1;
+    inventory = data.itemsOwned || {};
+    if (Array.isArray(data.citiesUnlocked)) {
+      cities.forEach(c => { c.unlocked = data.citiesUnlocked.includes(c.name); });
+    }
+    if (data.upgradesOwned) {
+      player.storageLevel = data.upgradesOwned.storageLevel || 1;
+      player.maxStorage = player.storageLevel * 10;
+      player.weaponLevel = data.upgradesOwned.weaponLevel || 1;
+      const purchased = data.upgradesOwned.purchasedUpgrades || [];
+      gameUpgrades.forEach((u, i) => { u.purchased = !!purchased[i]; });
+    }
+    xpThreshold = 10;
+    for (let i = 1; i < level; i++) {
+      xpThreshold = Math.floor(xpThreshold * 1.15);
+    }
+    if (updateUI) {
+      if (goldText) goldText.setText(formatGold(player.gold));
+      if (fameText) fameText.setText(formatGold(Math.floor(fame)));
+      updateXPUI && updateXPUI();
+      updateStorageUI && updateStorageUI();
+      updateWeaponsUI && updateWeaponsUI();
+      updateMarketUI && updateMarketUI();
+      const scene = game.scene.scenes[0];
+      if (scene && typeof updateTravelUI === 'function') updateTravelUI(scene);
+      updateExecutionerWeaponTexture && updateExecutionerWeaponTexture();
+    }
+  },
+  export() {
+    return JSON.stringify(this.getData(), null, 2);
+  },
+  download() {
+    const dataStr = this.export();
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'choptoit-save.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+  promptImport() {
+    const str = prompt('Paste your save JSON:');
+    if (!str) return;
+    let data;
+    try {
+      data = JSON.parse(str);
+    } catch (e) {
+      alert('Invalid save data');
+      return;
+    }
+    if (!this.validate(data)) {
+      alert('Invalid save data');
+      return;
+    }
+    this.apply(data, true);
+    this.save();
+  },
+  clear() {
+    if (this.disabled) return;
+    try { localStorage.removeItem(this.key); } catch (e) {}
+  },
+  newGame() {
+    if (confirm('Start a new game?')) {
+      this.clear();
+      location.reload();
+    }
+  },
+  startAutoSave() {
+    setInterval(() => this.save(), 30000);
+  }
+};
 
 const baseSizes = { red: 60, yellow: 40, green: 20 };
 let zoneMods = { red: 0, yellow: 0, green: 0 };
@@ -966,6 +1107,8 @@ const cities = [
 cities.forEach(c => {
   c.unlocked = c.name === currentCity;
 });
+
+SaveManager.load();
 
 // Mapping of cities to their background image files. Keys are the city names
 // and values are the corresponding PNG filenames.
@@ -1693,7 +1836,40 @@ function create() {
     .setOrigin(0.5)
     .setDepth(1000)
     .setScrollFactor(0)
-    .setVisible(false);
+    .setVisible(false)
+    .setInteractive()
+    .on('pointerdown', () => { toggleSaveMenu(scene); });
+
+  saveMenuContainer = scene.add.container(400, 300).setDepth(1001).setVisible(false);
+  const saveMenuBg = scene.add.rectangle(0, 0, 200, 150, 0x000000, 0.8).setOrigin(0.5);
+  const saveBtn = scene.add.text(0, -40, 'Save', { font: '24px monospace', fill: '#ffffff' })
+    .setOrigin(0.5)
+    .setInteractive()
+    .on('pointerdown', () => { SaveManager.download(); toggleSaveMenu(scene); });
+  const importBtn = scene.add.text(0, 0, 'Import Save', { font: '24px monospace', fill: '#ffffff' })
+    .setOrigin(0.5)
+    .setInteractive()
+    .on('pointerdown', () => { SaveManager.promptImport(); toggleSaveMenu(scene); });
+  const newBtn = scene.add.text(0, 40, 'New Game', { font: '24px monospace', fill: '#ff8888' })
+    .setOrigin(0.5)
+    .setInteractive()
+    .on('pointerdown', () => { SaveManager.newGame(); });
+  saveMenuContainer.add([saveMenuBg, saveBtn, importBtn, newBtn]);
+
+  function toggleSaveMenu(scene) {
+    const visible = !saveMenuContainer.visible;
+    menuOpen = visible;
+    saveMenuContainer.setVisible(visible);
+    if (visible) {
+      fadeScreenOverlay(scene, 0.5);
+      scene.physics.world.pause();
+      scene.tweens.pauseAll();
+    } else {
+      fadeScreenOverlay(scene, 0);
+      scene.physics.world.resume();
+      scene.tweens.resumeAll();
+    }
+  }
 
   // Debug cheat: hold the weather icon for 10 seconds to gain resources
   let weatherHoldEvent = null;
@@ -2364,6 +2540,8 @@ function create() {
   // Set up first day's prices and gossip
   dailyMarketUpdate();
 
+  SaveManager.startAutoSave();
+
   // Text popup
   scene.popupText = scene.add.text(400, 250, '', { font: '24px serif', fill: '#ffffff' })
     .setOrigin(0.5)
@@ -2517,6 +2695,7 @@ function buyUpgrade(scene, index) {
     if (u.ui && u.ui.buy) {
       u.ui.buy.setText('Bought').disableInteractive();
     }
+    SaveManager.save();
   }
 }
 
@@ -2533,6 +2712,7 @@ function buyMarketItem(scene, index, qty = 1) {
     item.stock -= qty;
     updateMarketUI();
     showMarketQuote(sellingQuotes);
+    SaveManager.save();
   }
 }
 
@@ -2545,6 +2725,7 @@ function sellMarketItem(scene, index, qty = 1) {
     addGold(scene, item.currentSell * qty);
     updateMarketUI();
     showMarketQuote(buyingQuotes);
+    SaveManager.save();
   }
 }
 
@@ -2784,6 +2965,7 @@ function upgradeStorage(scene) {
         player.maxStorage = player.storageLevel * 10;
         updateStorageUI();
         showStorageQuote(storageAfterQuotes);
+        SaveManager.save();
       },
     });
   }
@@ -2874,6 +3056,7 @@ function upgradeWeapon(scene) {
       onComplete: () => {
         updateWeaponsUI();
         showWeaponQuote(weaponAfterQuotes);
+        SaveManager.save();
       }
     });
   }
@@ -3546,6 +3729,8 @@ function endSwing(scene) {
   scene.popupText.setText(message);
   scene.popupText.setVisible(true);
 
+  SaveManager.save();
+
   // Leave the meter visible briefly so players can see the result
   hideMeterEvent = scene.time.delayedCall(1000, () => {
     swingBar.setVisible(false);
@@ -3570,6 +3755,7 @@ function gainFame(scene, npc, amount = 1) {
   fame += fameGain;
   fameText.setText(formatGold(Math.floor(fame)));
   addXP(scene, 5 * amount);
+  SaveManager.save();
   const coinsToSpawn = Math.max(0, Math.floor(fameGain));
   for (let i = 0; i < coinsToSpawn; i++) {
     scene.time.delayedCall(i * 100, () => spawnFameCoin(scene));
@@ -3923,6 +4109,7 @@ function addXP(scene, amount) {
     onLevelUp(scene);
   }
   updateXPUI();
+  SaveManager.save();
 }
 
 function updateXPUI() {
@@ -4244,6 +4431,7 @@ class TravelScene extends Phaser.Scene {
     advanceDays(this.days);
     selectCity(this.mainScene, this.city);
     dailyMarketUpdate();
+    SaveManager.save();
     this.scene.stop();
     this.mainScene.scene.resume();
   }
