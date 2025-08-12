@@ -106,7 +106,7 @@ let missText;
 let missStreak = 0;
 let betweenSwings = false;
 let menuOpen = false;
-const VERSION = 'Alpha - V1.1';
+const VERSION = 'Alpha - V1.2';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -1868,20 +1868,16 @@ function create() {
     .on('pointerdown', () => { toggleSaveMenu(scene); });
 
   saveMenuContainer = scene.add.container(400, 300).setDepth(1001).setVisible(false);
-  const saveMenuBg = scene.add.rectangle(0, 0, 200, 150, 0x000000, 0.8).setOrigin(0.5);
-  const saveBtn = scene.add.text(0, -40, 'Save', { font: '24px monospace', fill: '#ffffff' })
+  const saveMenuBg = scene.add.rectangle(0, 0, 200, 100, 0x000000, 0.8).setOrigin(0.5);
+  const saveBtn = scene.add.text(0, -20, 'Save', { font: '24px monospace', fill: '#ffffff' })
     .setOrigin(0.5)
     .setInteractive()
     .on('pointerdown', () => { SaveManager.download(); toggleSaveMenu(scene); });
-  const importBtn = scene.add.text(0, 0, 'Import Save', { font: '24px monospace', fill: '#ffffff' })
-    .setOrigin(0.5)
-    .setInteractive()
-    .on('pointerdown', () => { SaveManager.promptImport(); toggleSaveMenu(scene); });
-  const newBtn = scene.add.text(0, 40, 'New Game', { font: '24px monospace', fill: '#ff8888' })
+  const newBtn = scene.add.text(0, 20, 'New Game', { font: '24px monospace', fill: '#ff8888' })
     .setOrigin(0.5)
     .setInteractive()
     .on('pointerdown', () => { SaveManager.newGame(); });
-  saveMenuContainer.add([saveMenuBg, saveBtn, importBtn, newBtn]);
+  saveMenuContainer.add([saveMenuBg, saveBtn, newBtn]);
 
   function toggleSaveMenu(scene) {
     const visible = !saveMenuContainer.visible;
