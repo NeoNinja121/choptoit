@@ -175,6 +175,7 @@ let introContainer;
 let introTimer;
 let skipIntroHandler;
 let logoContainer;
+let logoTimer;
 let hideMeterEvent;
 let headResetEvent;
 let neckPumpEvent;
@@ -1972,7 +1973,7 @@ function create() {
           { angle: { from: -15, to: 15 }, duration: 300, yoyo: true, ease: 'Sine.easeInOut' },
           { angle: { from: -10, to: 10 }, duration: 400, yoyo: true, ease: 'Sine.easeInOut' },
           { angle: { from: -5, to: 5 }, duration: 500, yoyo: true, ease: 'Sine.easeInOut' },
-          { angle: 0, duration: 600, ease: 'Sine.easeInOut', onComplete: playIntro }
+          { angle: 0, duration: 600, ease: 'Sine.easeInOut', onComplete: showIntroAfterLogo }
         ]
       });
     }
@@ -1990,7 +1991,7 @@ function create() {
         onComplete: () => introContainer.destroy()
       });
     }
-    logoContainer.setVisible(false);
+    if (logoContainer) logoContainer.setVisible(false);
     weatherIndicatorBg.setVisible(true);
     weatherIndicator.setVisible(true);
     menuIcon.setVisible(true);
@@ -2009,6 +2010,27 @@ function create() {
     } else {
       spawnPrisoner(scene, false);
     }
+  }
+
+  function showIntroAfterLogo() {
+    let revealed = false;
+    const reveal = () => {
+      if (revealed) return;
+      revealed = true;
+      if (logoTimer) logoTimer.remove();
+      scene.input.off('pointerdown', reveal);
+      scene.tweens.add({
+        targets: logoContainer,
+        alpha: 0,
+        duration: 500,
+        onComplete: () => {
+          logoContainer.destroy();
+          playIntro();
+        }
+      });
+    };
+    logoTimer = scene.time.delayedCall(2000, reveal);
+    scene.input.once('pointerdown', reveal);
   }
 
   function playIntro() {
