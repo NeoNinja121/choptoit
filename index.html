@@ -176,6 +176,8 @@ let introTimer;
 let skipIntroHandler;
 let logoContainer;
 let logoTimer;
+let introTypeEvent;
+let logoBg;
 let hideMeterEvent;
 let headResetEvent;
 let neckPumpEvent;
@@ -1954,6 +1956,7 @@ function create() {
 
   // Logo drop animation before showing the intro
   // Ensure the logo appears above the intro
+  logoBg = scene.add.rectangle(400, 300, 800, 600, 0x000000).setDepth(199);
   logoContainer = scene.add.container(400, -200).setDepth(200);
   const rope = scene.add.rectangle(0, 0, 12, 125, 0xffffff)
     .setOrigin(0.5, 0);
@@ -1992,6 +1995,7 @@ function create() {
       });
     }
     if (logoContainer) logoContainer.setVisible(false);
+    if (logoBg) logoBg.destroy();
     weatherIndicatorBg.setVisible(true);
     weatherIndicator.setVisible(true);
     menuIcon.setVisible(true);
@@ -2020,11 +2024,12 @@ function create() {
       if (logoTimer) logoTimer.remove();
       scene.input.off('pointerdown', reveal);
       scene.tweens.add({
-        targets: logoContainer,
+        targets: [logoContainer, logoBg],
         alpha: 0,
         duration: 500,
         onComplete: () => {
           logoContainer.destroy();
+          if (logoBg) logoBg.destroy();
           playIntro();
         }
       });
@@ -2049,22 +2054,31 @@ function create() {
     let index = 0;
     introContainer = scene.add.container(0, 0).setDepth(150);
     const img = scene.add.image(400, 300, 'intro1').setDisplaySize(800, 600);
-    const bubble = scene.add.container(0, 0);
-    const bubbleG = scene.add.graphics();
-    bubbleG.fillStyle(0xffffff, 1);
-    bubbleG.fillRoundedRect(100, 60, 600, 120, 20);
-    bubbleG.fillTriangle(360, 180, 440, 180, 400, 220);
-    const bubbleText = scene.add.text(400, 120, '', { font: '20px serif', fill: '#000', wordWrap: { width: 560 } }).setOrigin(0.5);
-    bubble.add([bubbleG, bubbleText]);
-    bubble.setAlpha(0);
-    introContainer.add([img, bubble]);
+    const introText = scene.add.text(400, 480, '', {
+      font: '20px serif',
+      fill: '#880000',
+      stroke: '#000000',
+      strokeThickness: 4,
+      wordWrap: { width: 760 },
+      align: 'center',
+    }).setOrigin(0.5, 0);
+    introContainer.add([img, introText]);
 
     function showSlide() {
       img.setTexture(`intro${index + 1}`);
-      bubbleText.setText(texts[index]);
-      bubble.setAlpha(0);
-      scene.tweens.add({ targets: bubble, alpha: 1, duration: 500 });
-      introTimer = scene.time.delayedCall(2000, () => {
+      if (introTypeEvent) introTypeEvent.remove();
+      introText.setText('');
+      const fullText = texts[index];
+      let charIdx = 0;
+      introTypeEvent = scene.time.addEvent({
+        delay: 40,
+        repeat: fullText.length - 1,
+        callback: () => {
+          introText.setText(introText.text + fullText[charIdx]);
+          charIdx++;
+        },
+      });
+      introTimer = scene.time.delayedCall(6000, () => {
         index++;
         if (index < texts.length) {
           showSlide();
@@ -2077,6 +2091,7 @@ function create() {
 
     skipIntroHandler = () => {
       if (introTimer) introTimer.remove();
+      if (introTypeEvent) introTypeEvent.remove();
       startGame();
     };
     scene.input.once('pointerdown', skipIntroHandler);
