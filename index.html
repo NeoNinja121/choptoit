@@ -171,7 +171,9 @@ let skyRect;
 let backgroundRect;
 let stage;
 let travelList;
-let startContainer;
+let introContainer;
+let introTimer;
+let skipIntroHandler;
 let logoContainer;
 let hideMeterEvent;
 let headResetEvent;
@@ -1569,6 +1571,9 @@ function pickClass() {
 
 function preload() {
   this.load.image('logo', 'logo.png');
+  for (let i = 1; i <= 10; i++) {
+    this.load.image(`intro${i}`, `intro${i}.png`);
+  }
   this.load.image('shop', 'shop.png');
   this.load.image('platform', 'platform.png');
   this.load.image('executionerHead', 'executionerhead.png');
@@ -1946,8 +1951,8 @@ function create() {
     .setDepth(11);
 
 
-  // Logo drop animation before showing the start screen
-  // Ensure the logo appears above the start screen background
+  // Logo drop animation before showing the intro
+  // Ensure the logo appears above the intro
   logoContainer = scene.add.container(400, -200).setDepth(200);
   const rope = scene.add.rectangle(0, 0, 12, 125, 0xffffff)
     .setOrigin(0.5, 0);
@@ -1967,62 +1972,94 @@ function create() {
           { angle: { from: -15, to: 15 }, duration: 300, yoyo: true, ease: 'Sine.easeInOut' },
           { angle: { from: -10, to: 10 }, duration: 400, yoyo: true, ease: 'Sine.easeInOut' },
           { angle: { from: -5, to: 5 }, duration: 500, yoyo: true, ease: 'Sine.easeInOut' },
-          { angle: 0, duration: 600, ease: 'Sine.easeInOut' }
+          { angle: 0, duration: 600, ease: 'Sine.easeInOut', onComplete: playIntro }
         ]
       });
     }
   });
 
-  // Start screen
-  startContainer = scene.add.container(0, 0).setDepth(12);
-  const startBg = scene.add.rectangle(400, 300, 800, 600, 0x000000, 1)
-    .setDepth(10)
-    .setInteractive();
-  const startText = scene.add.text(400, 560, '[ CLICK TO PLAY ]', { font: '32px monospace', fill: '#ffffff' })
-    .setOrigin(0.5)
-    .setDepth(10)
-    .setVisible(false)
-    .setInteractive();
-
-  function beginGame() {
-    scene.tweens.add({
-      targets: startContainer,
-      alpha: 0,
-      duration: 500,
-      onComplete: () => {
-        startContainer.setVisible(false);
-        startContainer.setAlpha(1);
-        logoContainer.setVisible(false);
-        weatherIndicatorBg.setVisible(true);
-        weatherIndicator.setVisible(true);
-        menuIcon.setVisible(true);
-        dateBg.setVisible(true);
-        dateText.setVisible(true);
-        locationText.setVisible(true);
-        fameText.setVisible(true);
-        missText.setVisible(true);
-        killText.setVisible(true);
-        xpText.setVisible(true);
-        xpBarFill.setVisible(true);
-        setGoldChestVisible(true);
-        gameStarted = true;
-        if (executionerIntro) {
-          introExecutioner(scene, () => spawnPrisoner(scene, false));
-        } else {
-          spawnPrisoner(scene, false);
-        }
-      }
-    });
+  function startGame() {
+    if (gameStarted) return;
+    if (introTimer) introTimer.remove();
+    scene.input.off('pointerdown', skipIntroHandler);
+    if (introContainer) {
+      scene.tweens.add({
+        targets: introContainer,
+        alpha: 0,
+        duration: 500,
+        onComplete: () => introContainer.destroy()
+      });
+    }
+    logoContainer.setVisible(false);
+    weatherIndicatorBg.setVisible(true);
+    weatherIndicator.setVisible(true);
+    menuIcon.setVisible(true);
+    dateBg.setVisible(true);
+    dateText.setVisible(true);
+    locationText.setVisible(true);
+    fameText.setVisible(true);
+    missText.setVisible(true);
+    killText.setVisible(true);
+    xpText.setVisible(true);
+    xpBarFill.setVisible(true);
+    setGoldChestVisible(true);
+    gameStarted = true;
+    if (executionerIntro) {
+      introExecutioner(scene, () => spawnPrisoner(scene, false));
+    } else {
+      spawnPrisoner(scene, false);
+    }
   }
 
-  startBg.on('pointerdown', beginGame);
-  startText.on('pointerdown', beginGame);
-  startContainer.add([startBg, startText]);
-  startContainer.setVisible(true);
+  function playIntro() {
+    const texts = [
+      "The prisons were full. The kingdom was broke. Parliament held a vote... and blamed crime.",
+      "They passed the Swift Justice Mandate. No trial, no appeal. Just... chopping.",
+      "But executioners were slow, squeamish, and unionised.",
+      "Then... came the one. The man born with the Gift of the Chop.",
+      "His first swing was so clean, the head blinked twice before it hit the ground.",
+      "He became a sensation. The axe-man of the age. Justice with showmanship.",
+      "But while others clapped, he counted. Every coin. Every kill. Up to... one million and one.",
+      "Some said he needed the gold for a pardon. Others said revenge. He never said anything.",
+      "All we know is this: he has one year. One goal. One axe.",
+      "So sharpen your blade... and CHOP TO IT."
+    ];
+    let index = 0;
+    introContainer = scene.add.container(0, 0).setDepth(150);
+    const img = scene.add.image(400, 300, 'intro1').setDisplaySize(800, 600);
+    const bubble = scene.add.container(0, 0);
+    const bubbleG = scene.add.graphics();
+    bubbleG.fillStyle(0xffffff, 1);
+    bubbleG.fillRoundedRect(100, 60, 600, 120, 20);
+    bubbleG.fillTriangle(360, 180, 440, 180, 400, 220);
+    const bubbleText = scene.add.text(400, 120, '', { font: '20px serif', fill: '#000', wordWrap: { width: 560 } }).setOrigin(0.5);
+    bubble.add([bubbleG, bubbleText]);
+    bubble.setAlpha(0);
+    introContainer.add([img, bubble]);
 
-  scene.time.delayedCall(3000, () => {
-    startText.setVisible(true);
-  });
+    function showSlide() {
+      img.setTexture(`intro${index + 1}`);
+      bubbleText.setText(texts[index]);
+      bubble.setAlpha(0);
+      scene.tweens.add({ targets: bubble, alpha: 1, duration: 500 });
+      introTimer = scene.time.delayedCall(2000, () => {
+        index++;
+        if (index < texts.length) {
+          showSlide();
+        } else {
+          scene.input.off('pointerdown', skipIntroHandler);
+          startGame();
+        }
+      });
+    }
+
+    skipIntroHandler = () => {
+      if (introTimer) introTimer.remove();
+      startGame();
+    };
+    scene.input.once('pointerdown', skipIntroHandler);
+    showSlide();
+  }
 
   // Swing meter base
   const meterY = 550;
