@@ -1862,12 +1862,23 @@ function create() {
     saveMenuContainer.setVisible(visible);
     if (visible) {
       fadeScreenOverlay(scene, 0.5);
+      swingActive = false;
+      inputEnabled = false;
+      cursor.setVisible(false);
       scene.physics.world.pause();
       scene.tweens.pauseAll();
+      if (rainEmitter) rainEmitter.pause();
+      if (fogEmitter) fogEmitter.pause();
+      if (windEmitter) windEmitter.pause();
     } else {
       fadeScreenOverlay(scene, 0);
       scene.physics.world.resume();
       scene.tweens.resumeAll();
+      if (rainEmitter) rainEmitter.resume();
+      if (fogEmitter) fogEmitter.resume();
+      if (windEmitter) windEmitter.resume();
+      releaseQueuedCoins(scene);
+      startSwingMeter(scene);
     }
   }
 
@@ -2552,7 +2563,7 @@ function create() {
     if (swingActive && inputEnabled) endSwing(scene);
   });
   scene.input.on('pointerdown', () => {
-    if (!inputEnabled) return;
+    if (!inputEnabled || menuOpen) return;
     if (awaitingAngle) {
       chooseAngle(scene);
     } else if (awaitingPower) {
@@ -4134,7 +4145,7 @@ function onLevelUp(scene) {
 
 function update(time, delta) {
 
-  if (!gameStarted) return;
+  if (!gameStarted || menuOpen) return;
 
   if (this.dayNight) {
     this.dayNight.update(delta / 1000);
