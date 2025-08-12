@@ -205,26 +205,19 @@ let executioner;
 let executionerIntro = true;
 let executionerWeapon;
 let gameStarted = false;
-let executionCounterEl;
+let visitorCounterEl;
 
-function updateExecutionCounterDisplay(value) {
-  if (executionCounterEl) {
-    executionCounterEl.textContent = `Total Prisoners Executed ${value}`;
+function updateVisitorCounterDisplay(value) {
+  if (visitorCounterEl) {
+    visitorCounterEl.textContent = `Total Visitors ${value}`;
   }
 }
 
-function fetchExecutionCount() {
-  fetch('https://api.countapi.xyz/get/choptoit/prisoners')
+function fetchVisitorCount() {
+  fetch('https://api.countapi.xyz/update/choptoit/visitors?amount=1')
     .then(r => r.json())
-    .then(data => updateExecutionCounterDisplay(data.value))
-    .catch(() => updateExecutionCounterDisplay(0));
-}
-
-function incrementExecutionCount() {
-  fetch('https://api.countapi.xyz/update/choptoit/prisoners?amount=1')
-    .then(r => r.json())
-    .then(data => updateExecutionCounterDisplay(data.value))
-    .catch(() => {});
+    .then(data => updateVisitorCounterDisplay(data.value))
+    .catch(() => updateVisitorCounterDisplay(1));
 }
 
 // Medieval calendar variables
@@ -2082,18 +2075,20 @@ function create() {
       "So sharpen your blade... and CHOP TO IT."
     ];
     let index = 0;
-    introContainer = scene.add.container(0, 0).setDepth(1000);
+    introContainer = scene.add.container(0, 0).setDepth(10000);
     const img = scene.add.image(400, 300, 'intro1').setDisplaySize(800, 600);
-    const introTextBg = scene.add.rectangle(400, 480, 760, 300, 0x000000, 0.5)
-      .setOrigin(0.5, 0);
-    const introText = scene.add.text(400, 630, '', {
+    const introTextBg = scene.add.rectangle(400, 420, 760, 160, 0x000000, 0.5)
+      .setOrigin(0.5, 0)
+      .setDepth(1);
+    const introText = scene.add.text(400, 500, '', {
       font: '20px serif',
       fill: '#ff0000',
       stroke: '#000000',
       strokeThickness: 4,
       wordWrap: { width: 760 },
       align: 'center',
-    }).setOrigin(0.5, 0.5);
+    }).setOrigin(0.5, 0.5)
+      .setDepth(2);
     introContainer.add([img, introTextBg, introText]);
 
     function showSlide() {
@@ -3489,7 +3484,6 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   headEmitter.setFrequency(20);
   headEmitter.setQuantity(Math.max(5, bloodAmount / 30));
   headEmitter.start();
-  incrementExecutionCount();
 }
 
 function showAimArrow(scene, bloodAmount, nextSide) {
@@ -4612,12 +4606,12 @@ window.addEventListener('load', () => {
   `;
 
   document.body.appendChild(instructions);
-  executionCounterEl = document.createElement('div');
-  executionCounterEl.style.textAlign = 'center';
-  executionCounterEl.style.margin = '40px 0';
-  executionCounterEl.style.fontFamily = 'Georgia, serif';
-  document.body.appendChild(executionCounterEl);
-  fetchExecutionCount();
+  visitorCounterEl = document.createElement('div');
+  visitorCounterEl.style.textAlign = 'center';
+  visitorCounterEl.style.margin = '40px 0';
+  visitorCounterEl.style.fontFamily = 'Georgia, serif';
+  document.body.appendChild(visitorCounterEl);
+  fetchVisitorCount();
 });
 </script>
 
