@@ -4255,27 +4255,29 @@ function onLevelUp(scene) {
   updateUnlockButtons(scene, true);
 }
 
-function showUnlockMessage(scene, text) {
-  const msg = scene.add.text(400, 300, text, { font: '48px monospace', fill: '#ff0000' })
-    .setOrigin(0.5)
-    .setDepth(25);
-  scene.tweens.add({
-    targets: msg,
-    y: 250,
-    alpha: 0,
-    duration: 1000,
-    onComplete: () => msg.destroy()
+function showUnlockMessage(scene, text, delay = 0) {
+  scene.time.delayedCall(delay, () => {
+    const msg = scene.add.text(400, 300, text, { font: '48px monospace', fill: '#ff0000' })
+      .setOrigin(0.5)
+      .setDepth(25);
+    scene.tweens.add({
+      targets: msg,
+      y: 250,
+      alpha: 0,
+      duration: 1000,
+      onComplete: () => msg.destroy()
+    });
   });
 }
 
 function updateUnlockButtons(scene, fromLevelUp = false) {
   if (level >= 2 && !weaponsButton.visible) {
     weaponsButton.setVisible(true).setInteractive();
-    if (fromLevelUp) showUnlockMessage(scene, 'Weapons Unlocked');
+    if (fromLevelUp) showUnlockMessage(scene, 'Weapons Unlocked', 500);
   }
   if (level >= 5 && !travelButton.visible) {
     travelButton.setVisible(true).setInteractive();
-    if (fromLevelUp) showUnlockMessage(scene, 'Travel Unlocked');
+    if (fromLevelUp) showUnlockMessage(scene, 'Travel Unlocked', 500);
   }
   if (level >= 10) {
     let newlyVisible = false;
@@ -4287,7 +4289,7 @@ function updateUnlockButtons(scene, fromLevelUp = false) {
       storageButton.setVisible(true).setInteractive();
       newlyVisible = true;
     }
-    if (fromLevelUp && newlyVisible) showUnlockMessage(scene, 'Shopping Unlocked');
+    if (fromLevelUp && newlyVisible) showUnlockMessage(scene, 'Shopping Unlocked', 500);
   }
 }
 
