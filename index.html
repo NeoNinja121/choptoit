@@ -947,7 +947,7 @@ const SaveManager = {
     }
     xpThreshold = 10;
     for (let i = 1; i < level; i++) {
-      xpThreshold = Math.floor(xpThreshold * 1.15);
+      xpThreshold = Math.floor(xpThreshold * 1.33);
     }
     if (updateUI) {
       if (goldText) goldText.setText(formatGold(player.gold));
@@ -1722,6 +1722,9 @@ function create() {
   // Place the lighting overlay just above the background so gameplay and
   // UI elements remain on top and unaffected by the darkening effect.
   this.dayNight.init(scene, { backCloudsDepth: -3, overlayDepth: -1.5 });
+  // Start the calendar at sunrise on January 1st
+  this.dayNight.timeOfDay = this.dayNight.config.sunriseStart;
+  this.dayNight.update(0);
   this.dayNight.onFullDay(() => { advanceCalendarDays(1); });
   // Only begin a new execution round if the player isn't already interacting
   // with the swing meter. This prevents the meter from resetting unexpectedly
@@ -1910,7 +1913,7 @@ function create() {
         xp = 0;
         xpThreshold = 10;
         for (let i = 1; i < level; i++) {
-          xpThreshold = Math.floor(xpThreshold * 1.15);
+          xpThreshold = Math.floor(xpThreshold * 1.33);
         }
         updateXPUI();
         updateTravelUI(scene);
@@ -2024,17 +2027,22 @@ function create() {
       if (logoTimer) logoTimer.remove();
       scene.input.off('pointerdown', reveal);
       scene.tweens.add({
-        targets: [logoContainer, logoBg],
+        targets: logoContainer,
         alpha: 0,
         duration: 500,
         onComplete: () => {
           logoContainer.destroy();
-          if (logoBg) logoBg.destroy();
           playIntro();
+          scene.tweens.add({
+            targets: logoBg,
+            alpha: 0,
+            duration: 500,
+            onComplete: () => logoBg.destroy()
+          });
         }
       });
     };
-    logoTimer = scene.time.delayedCall(2000, reveal);
+    logoTimer = scene.time.delayedCall(1000, reveal);
     scene.input.once('pointerdown', reveal);
   }
 
@@ -2054,15 +2062,17 @@ function create() {
     let index = 0;
     introContainer = scene.add.container(0, 0).setDepth(150);
     const img = scene.add.image(400, 300, 'intro1').setDisplaySize(800, 600);
+    const introTextBg = scene.add.rectangle(400, 480, 760, 100, 0x000000, 0.5)
+      .setOrigin(0.5, 0);
     const introText = scene.add.text(400, 480, '', {
       font: '20px serif',
-      fill: '#880000',
+      fill: '#ff0000',
       stroke: '#000000',
       strokeThickness: 4,
       wordWrap: { width: 760 },
       align: 'center',
     }).setOrigin(0.5, 0);
-    introContainer.add([img, introText]);
+    introContainer.add([img, introTextBg, introText]);
 
     function showSlide() {
       img.setTexture(`intro${index + 1}`);
@@ -4190,7 +4200,7 @@ function addXP(scene, amount) {
   if (xp >= xpThreshold) {
     xp -= xpThreshold;
     level++;
-    xpThreshold = Math.floor(xpThreshold * 1.15);
+    xpThreshold = Math.floor(xpThreshold * 1.33);
     onLevelUp(scene);
   }
   updateXPUI();
