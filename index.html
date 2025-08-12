@@ -974,6 +974,7 @@ const SaveManager = {
       const scene = game.scene.scenes[0];
       if (scene && typeof updateTravelUI === 'function') updateTravelUI(scene);
       updateExecutionerWeaponTexture && updateExecutionerWeaponTexture();
+      if (scene) updateUnlockButtons(scene);
     }
   },
   export() {
@@ -2357,11 +2358,13 @@ function create() {
     .setDisplaySize(107, 71)
     .setInteractive()
     .on('pointerdown', () => { toggleStorage(scene); });
+  storageButton.setVisible(false).disableInteractive();
   weaponsButton = scene.add.image(120, 0, 'signWeapons')
     .setOrigin(0, 0)
     .setDisplaySize(107, 71)
     .setInteractive()
     .on('pointerdown', () => { toggleWeapons(scene); });
+  weaponsButton.setVisible(false).disableInteractive();
 
   // Shop button
   // Move the shop button slightly right to make room for the travel sign
@@ -2372,6 +2375,7 @@ function create() {
     .on('pointerdown', () => {
       toggleShop(scene);
     });
+  shopButton.setVisible(false).disableInteractive();
 
   // Travel button
   travelButton = scene.add.image(680, 0, 'signTravel')
@@ -2379,6 +2383,7 @@ function create() {
     .setDisplaySize(107, 71)
     .setInteractive()
     .on('pointerdown', () => { toggleTravel(scene); });
+  travelButton.setVisible(false).disableInteractive();
 
   // Storage upgrade container and overlay
   storageOverlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0)
@@ -2656,6 +2661,7 @@ function create() {
   dailyMarketUpdate();
 
   SaveManager.startAutoSave();
+  updateUnlockButtons(scene);
 
   // Text popup
   scene.popupText = scene.add.text(400, 250, '', { font: '24px serif', fill: '#ffffff' })
@@ -4246,6 +4252,43 @@ function onLevelUp(scene) {
     duration: 1000,
     onComplete: () => msg.destroy()
   });
+  updateUnlockButtons(scene, true);
+}
+
+function showUnlockMessage(scene, text) {
+  const msg = scene.add.text(400, 300, text, { font: '48px monospace', fill: '#ff0000' })
+    .setOrigin(0.5)
+    .setDepth(25);
+  scene.tweens.add({
+    targets: msg,
+    y: 250,
+    alpha: 0,
+    duration: 1000,
+    onComplete: () => msg.destroy()
+  });
+}
+
+function updateUnlockButtons(scene, fromLevelUp = false) {
+  if (level >= 2 && !weaponsButton.visible) {
+    weaponsButton.setVisible(true).setInteractive();
+    if (fromLevelUp) showUnlockMessage(scene, 'Weapons Unlocked');
+  }
+  if (level >= 5 && !travelButton.visible) {
+    travelButton.setVisible(true).setInteractive();
+    if (fromLevelUp) showUnlockMessage(scene, 'Travel Unlocked');
+  }
+  if (level >= 10) {
+    let newlyVisible = false;
+    if (!shopButton.visible) {
+      shopButton.setVisible(true).setInteractive();
+      newlyVisible = true;
+    }
+    if (!storageButton.visible) {
+      storageButton.setVisible(true).setInteractive();
+      newlyVisible = true;
+    }
+    if (fromLevelUp && newlyVisible) showUnlockMessage(scene, 'Shopping Unlocked');
+  }
 }
 
 function update(time, delta) {
