@@ -205,6 +205,27 @@ let executioner;
 let executionerIntro = true;
 let executionerWeapon;
 let gameStarted = false;
+let executionCounterEl;
+
+function updateExecutionCounterDisplay(value) {
+  if (executionCounterEl) {
+    executionCounterEl.textContent = `Total Prisoners Executed ${value}`;
+  }
+}
+
+function fetchExecutionCount() {
+  fetch('https://api.countapi.xyz/get/choptoit/prisoners')
+    .then(r => r.json())
+    .then(data => updateExecutionCounterDisplay(data.value))
+    .catch(() => updateExecutionCounterDisplay(0));
+}
+
+function incrementExecutionCount() {
+  fetch('https://api.countapi.xyz/update/choptoit/prisoners?amount=1')
+    .then(r => r.json())
+    .then(data => updateExecutionCounterDisplay(data.value))
+    .catch(() => {});
+}
 
 // Medieval calendar variables
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -2061,7 +2082,7 @@ function create() {
       "So sharpen your blade... and CHOP TO IT."
     ];
     let index = 0;
-    introContainer = scene.add.container(0, 0).setDepth(150);
+    introContainer = scene.add.container(0, 0).setDepth(1000);
     const img = scene.add.image(400, 300, 'intro1').setDisplaySize(800, 600);
     const introTextBg = scene.add.rectangle(400, 480, 760, 300, 0x000000, 0.5)
       .setOrigin(0.5, 0);
@@ -3468,6 +3489,7 @@ function beheadPrisoner(scene, bloodAmount, angleDeg, power = 1) {
   headEmitter.setFrequency(20);
   headEmitter.setQuantity(Math.max(5, bloodAmount / 30));
   headEmitter.start();
+  incrementExecutionCount();
 }
 
 function showAimArrow(scene, bloodAmount, nextSide) {
@@ -4572,12 +4594,30 @@ window.addEventListener('load', () => {
       <li>📉 Buy low, sell high — master the medieval market.</li>
     </ul>
 
+    <h2>🚧 Features Yet to Come</h2>
+    <ul style="list-style: none; padding-left: 0;">
+      <li>🏰 Build your strong hold.</li>
+      <li>⚔️ Random encounters while travelling.</li>
+      <li>🏙️ Each city will offer different beheading games and objectives.</li>
+      <li>🎲 Gambling.</li>
+      <li>💰 Bank interest.</li>
+      <li>🔓 Jail breaks.</li>
+      <li>🧑‍🤝‍🧑 Characters with a story.</li>
+      <li>🎬 More sophisticated animation.</li>
+    </ul>
+
     <h2>🏆 Your Goal</h2>
     <p><em>Earn <strong>1,000,001 gold</strong> within one year.</em></p>
     <p>Only the most brutal and brilliant executioner shall rise to glory.</p>
   `;
 
   document.body.appendChild(instructions);
+  executionCounterEl = document.createElement('div');
+  executionCounterEl.style.textAlign = 'center';
+  executionCounterEl.style.margin = '40px 0';
+  executionCounterEl.style.fontFamily = 'Georgia, serif';
+  document.body.appendChild(executionCounterEl);
+  fetchExecutionCount();
 });
 </script>
 
