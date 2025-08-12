@@ -106,7 +106,7 @@ let missText;
 let missStreak = 0;
 let betweenSwings = false;
 let menuOpen = false;
-const VERSION = 'Pre Alpha —v2.98';
+const VERSION = 'Alpha - V1.1';
 let versionText;
 let inputEnabled = true;
 let killCount = 0;
@@ -134,6 +134,7 @@ let tradeItemIndex = null;
 let tradeMode = 'buy';
 let tradeBuyBtns = [];
 let tradeSellBtns = [];
+let tradeSpaceText;
 let travelButton;
 let storageButton;
 let weaponsButton;
@@ -2062,16 +2063,16 @@ function create() {
     let index = 0;
     introContainer = scene.add.container(0, 0).setDepth(150);
     const img = scene.add.image(400, 300, 'intro1').setDisplaySize(800, 600);
-    const introTextBg = scene.add.rectangle(400, 480, 760, 100, 0x000000, 0.5)
+    const introTextBg = scene.add.rectangle(400, 480, 760, 300, 0x000000, 0.5)
       .setOrigin(0.5, 0);
-    const introText = scene.add.text(400, 480, '', {
+    const introText = scene.add.text(400, 630, '', {
       font: '20px serif',
       fill: '#ff0000',
       stroke: '#000000',
       strokeThickness: 4,
       wordWrap: { width: 760 },
       align: 'center',
-    }).setOrigin(0.5, 0);
+    }).setOrigin(0.5, 0.5);
     introContainer.add([img, introTextBg, introText]);
 
     function showSlide() {
@@ -2578,6 +2579,9 @@ function create() {
   tradeTitle = scene.add.text(280, 10, '', { font: '18px monospace', fill: '#ffffaa' })
     .setOrigin(0.5, 0)
     .setStroke('#000000', 3);
+  tradeSpaceText = scene.add.text(550, 190, '', { font: '16px monospace', fill: '#ffffaa' })
+    .setStroke('#000000', 3)
+    .setOrigin(1, 1);
   const b1 = scene.add.text(20, 50, '[Buy 1]', { font: '18px monospace', fill: '#00ff00' })
     .setStroke('#000000', 3)
     .setInteractive()
@@ -2628,7 +2632,7 @@ function create() {
     .setDisplaySize(100, 100)
     .setInteractive()
     .on('pointerdown', () => { hideTradeMenu(scene); });
-  tradeContainer.add([tradeBg, tradeTitle, b1, b10, bMax, s1, s10, sMax, tradeClose]);
+  tradeContainer.add([tradeBg, tradeTitle, b1, b10, bMax, s1, s10, sMax, tradeClose, tradeSpaceText]);
   tradeBuyBtns = [b1, b10, bMax];
   tradeSellBtns = [s1, s10, sMax];
 
@@ -3193,6 +3197,7 @@ function showTradeMenu(scene, index, mode = 'buy') {
   const showBuy = mode === 'buy';
   tradeBuyBtns.forEach(btn => btn.setVisible(showBuy));
   tradeSellBtns.forEach(btn => btn.setVisible(!showBuy));
+  tradeSpaceText.setText(`Empty Space: ${player.maxStorage - getInventoryCount()}`);
   tradeOverlay.setVisible(true);
   tradeContainer.setVisible(true);
   if (currentWeather === 'rain' && rainEmitter && rainParts) {
@@ -4546,7 +4551,7 @@ window.addEventListener('load', () => {
 
   instructions.innerHTML = `
     <h1>⚔️ Welcome to <em>Chop To It</em> ⚔️</h1>
-    <p><strong>This game is a work-in-progress demo — completely made by AI.</strong></p>
+    <p><strong>This game is a work-in-progress demo.</strong></p>
 
     <h2>🕹️ Instructions</h2>
     <ul style="list-style: none; padding-left: 0;">
@@ -4560,7 +4565,10 @@ window.addEventListener('load', () => {
     <ul style="list-style: none; padding-left: 0;">
       <li>🌦️ Weather alters gravity and shot physics.</li>
       <li>🔥 Hit streaks increase gold and spawn rarer characters.</li>
+      <li>🪓 Over 100 different heads to collect.</li>
+      <li>🌗 Day/night cycles keep the execution schedule dynamic.</li>
       <li>🚚 Buy storage upgrades and travel to new cities.</li>
+      <li>🛒 Item store — you have one year to make your fortune.</li>
       <li>📉 Buy low, sell high — master the medieval market.</li>
     </ul>
 
